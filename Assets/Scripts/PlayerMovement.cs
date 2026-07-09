@@ -13,7 +13,8 @@ public class PlayerMovement : MonoBehaviour
     public float acceleration = 10f;
     public float mouseSensitivity = 200f;
     public float gravity = -30f;
-  
+    public bool canMove = true; 
+
     private float currentSpeed;
     private float xRotation;
 
@@ -45,6 +46,10 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (!canMove)
+        {
+            return;
+        }
         MovePlayer();
         LookAround();
         ApplyGravity();
