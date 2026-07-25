@@ -6,6 +6,7 @@ public class RecipeBook : MonoBehaviour
 {
     [Header("UI")]
     public GameObject recipeBookPanel;
+    public GameObject orderPanel;
 
     public TMP_Text coffeeTitle;
     public Image coffeeImage;
@@ -48,10 +49,17 @@ public class RecipeBook : MonoBehaviour
     {
         bookOpen = !bookOpen;
 
+        // Tarif kitabını aç / kapat
         recipeBookPanel.SetActive(bookOpen);
 
+        // Kitap açıksa sipariş panelini kapat
+        // Kitap kapalıysa sipariş panelini geri aç
+        orderPanel.SetActive(!bookOpen);
+
+        // Kitap açıkken oyuncu hareket etmesin
         playerMovement.canMove = !bookOpen;
 
+        // Mouse kontrolü
         Cursor.visible = bookOpen;
 
         Cursor.lockState = bookOpen

@@ -24,9 +24,10 @@ public class OrderManager : MonoBehaviour
         currentOrder.reward =
             Random.Range(20, 41);
 
-        currentOrder.timeLimit = 90;
+        currentOrder.timeLimit = 5;
 
         Debug.Log("Yeni Sipariş: " + currentOrder.coffeeType);
+        OrderUI.Instance.AddOrder(currentOrder);
     }
 
 
