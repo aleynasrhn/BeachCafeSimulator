@@ -20,15 +20,15 @@ public class PlayerInteraction : MonoBehaviour
             playerCamera.transform.forward
         );
 
-        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
-        {
-            PortafilterPickup portafilter =
-                hit.collider.GetComponentInParent<PortafilterPickup>();
+        if (!Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
+            return;
 
-            if (portafilter != null)
-            {
-                portafilter.PickUp();
-            }
+        IInteractable interactable =
+            hit.collider.GetComponentInParent<IInteractable>();
+
+        if (interactable != null)
+        {
+            interactable.Interact();
         }
     }
 }

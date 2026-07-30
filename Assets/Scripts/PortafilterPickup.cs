@@ -2,35 +2,21 @@ using UnityEngine;
 
 public class PortafilterPickup : MonoBehaviour
 {
-    private Transform holdPoint;
-    private bool isHeld = false;
+    [SerializeField] private GameObject groundCoffee;
+
+    public bool HasGroundCoffee { get; private set; }
 
     private void Start()
     {
-        GameObject point = GameObject.Find("HoldPoint");
-
-        if (point != null)
-        {
-            holdPoint = point.transform;
-        }
-        else
-        {
-            Debug.LogError("HoldPoint bulunamadı!");
-        }
+        groundCoffee.SetActive(false);
     }
 
-    public void PickUp()
+    public void FillWithCoffee()
     {
-        if (isHeld || holdPoint == null)
+        if (HasGroundCoffee)
             return;
 
-        isHeld = true;
-
-        transform.SetParent(holdPoint);
-
-        transform.localPosition = Vector3.zero;
-
-        // Portafiltrenin elde doğru duruşu
-        transform.localRotation = Quaternion.Euler(-90f, 90f, 0f);
+        HasGroundCoffee = true;
+        groundCoffee.SetActive(true);
     }
 }
