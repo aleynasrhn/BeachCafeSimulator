@@ -2,33 +2,49 @@ using UnityEngine;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    public Camera playerCamera;
-    public float interactionDistance = 3f;
+    [Header("References")]
+    [SerializeField] private Camera playerCamera;
+    [SerializeField] private Transform holdPoint;
+
+    [Header("Settings")]
+    [SerializeField] private float interactDistance = 3f;
+
+    private PickupItem heldItem;
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            TryInteract();
-        }
+        CheckInteraction();
     }
 
-    private void TryInteract()
+    private void CheckInteraction()
     {
-        Ray ray = new Ray(
-            playerCamera.transform.position,
-            playerCamera.transform.forward
-        );
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
 
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
-            return;
-
-        IInteractable interactable =
-            hit.collider.GetComponentInParent<IInteractable>();
-
-        if (interactable != null)
+        if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
         {
-            interactable.Interact();
+            if (Input.GetKeyDown(KeyCode.E) && heldItem == null)
+            {
+                PickupItem item = hit.collider.GetComponentInParent<PickupItem>();
+
+                if (item != null)
+                {
+                    heldItem = item;
+                    heldItem.PickUp(holdPoint);
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.F) && heldItem != null)
+            {
+                PlaceableSurface surface = hit.collider.GetComponentInParent<PlaceableSurface>();
+
+                if (surface != null)
+                {
+                    Vector3 placePosition = hit.point + Vector3.up * heldItem.placeHeight;
+
+                    heldItem.Place(placePosition);
+                    heldItem = null;
+                }
+            }
         }
     }
 }

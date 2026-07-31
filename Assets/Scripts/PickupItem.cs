@@ -1,52 +1,79 @@
 using UnityEngine;
 
-public class PickupItem : MonoBehaviour, IInteractable
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Collider))]
+public class PickupItem : MonoBehaviour
 {
     [Header("Hold Settings")]
-    [SerializeField] private Vector3 holdPosition;
-    [SerializeField] private Vector3 holdRotation;
-    [SerializeField] private ItemType itemType;
+    public Vector3 holdPosition;
+    public Vector3 holdRotation;
 
-    private Transform holdPoint;
+    [Header("Place Settings")]
+    public float placeHeight = 0.02f;
+    public Vector3 placeRotation;
 
-    public bool IsHeld { get; private set; }
-    public static PickupItem HeldItem;
-    public ItemType ItemType => itemType;
-    private void Start()
+    [Header("Debug")]
+    public bool livePreview = true;
+
+    private Rigidbody rb;
+    private Collider col;
+
+    private bool isHeld;
+
+    private void Awake()
     {
-        GameObject point = GameObject.Find("HoldPoint");
-
-        if (point != null)
-            holdPoint = point.transform;
+        rb = GetComponent<Rigidbody>();
+        col = GetComponent<Collider>();
     }
 
-    public void PickUp()
+    public void PickUp(Transform holdPoint)
     {
-        if (IsHeld)
-            return;
+        isHeld = true;
 
-        if (HeldItem != null)
-            return;
-
-        IsHeld = true;
-        HeldItem = this;
+        rb.isKinematic = true;
+        col.enabled = false;
 
         transform.SetParent(holdPoint);
 
-        transform.localPosition = holdPosition;
-        transform.localRotation = Quaternion.Euler(holdRotation);
+        ApplyHoldTransform();
+
+        Debug.Log($"{gameObject.name} - Hold Position: {holdPosition}");
+    }
+
+    public void Place(Vector3 position)
+    {
+        isHeld = false;
+
+        transform.SetParent(null);
+
+        transform.position = position;
+        transform.rotation = Quaternion.Euler(placeRotation);
+
+        rb.isKinematic = true;
+        col.enabled = true;
     }
 
     public void Drop()
     {
-        IsHeld = false;
-        HeldItem = null;
+        isHeld = false;
 
         transform.SetParent(null);
+
+        rb.isKinematic = false;
+        col.enabled = true;
     }
 
-    public void Interact()
+    private void LateUpdate()
     {
-        PickUp();
+        if (!livePreview || !isHeld)
+            return;
+
+        ApplyHoldTransform();
+    }
+
+    private void ApplyHoldTransform()
+    {
+        transform.localPosition = holdPosition;
+        transform.localRotation = Quaternion.Euler(holdRotation);
     }
 }
