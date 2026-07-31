@@ -1,50 +1,79 @@
 using UnityEngine;
 
+/// <summary>
+/// Mevcut player/kamera objenize eklenir. Kameranın baktığı yöne raycast atar,
+/// IInteractable bulursa E ile etkileşime izin verir.
+/// HoldPoint objesini Inspector'dan sürükleyip atamayı unutma.
+/// </summary>
 public class PlayerInteraction : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private Camera playerCamera;
-    [SerializeField] private Transform holdPoint;
+    [Header("Referanslar")]
+    [SerializeField] private Camera playerCamera;   // Main Camera'yı sürükle
+    [SerializeField] private Transform holdPoint;    // Hierarchy'deki HoldPoint'i sürükle
 
-    [Header("Settings")]
-    [SerializeField] private float interactDistance = 3f;
+    [Header("Ayarlar")]
+    [SerializeField] private float interactRange = 3f;
+    [SerializeField] private LayerMask interactableLayer = ~0; // varsayılan: her şey
 
-    private PickupItem heldItem;
+    private PickupItem currentHeldItem;
+    private IInteractable currentTarget;
+
+    public Transform HoldPoint => holdPoint;
+    public Vector3 LastHitPoint { get; private set; } // raycast'in çarptığı tam dünya koordinatı
 
     private void Update()
     {
-        CheckInteraction();
-    }
+        HandleRaycast();
 
-    private void CheckInteraction()
-    {
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
-
-        if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            if (Input.GetKeyDown(KeyCode.E) && heldItem == null)
-            {
-                PickupItem item = hit.collider.GetComponentInParent<PickupItem>();
+            TryInteract();
+        }
 
-                if (item != null)
-                {
-                    heldItem = item;
-                    heldItem.PickUp(holdPoint);
-                }
-            }
-
-            if (Input.GetKeyDown(KeyCode.F) && heldItem != null)
-            {
-                PlaceableSurface surface = hit.collider.GetComponentInParent<PlaceableSurface>();
-
-                if (surface != null)
-                {
-                    Vector3 placePosition = hit.point + Vector3.up * heldItem.placeHeight;
-
-                    heldItem.Place(placePosition);
-                    heldItem = null;
-                }
-            }
+        // Herhangi bir placement point'e bakmadan da elindekini bırakabilmek için (opsiyonel)
+        if (Input.GetKeyDown(KeyCode.G) && currentHeldItem != null)
+        {
+            currentHeldItem.Drop(this);
         }
     }
+
+    private void HandleRaycast()
+    {
+        currentTarget = null;
+
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f)); // ekranın tam ortası (crosshair)
+        if (Physics.Raycast(ray, out RaycastHit hit, interactRange, interactableLayer))
+        {
+            LastHitPoint = hit.point;
+
+            if (hit.collider.TryGetComponent(out IInteractable interactable))
+            {
+                currentTarget = interactable;
+                // Burada UI prompt'unu güncelleyebilirsin:
+                // UIManager.Instance.ShowPrompt(interactable.GetInteractPrompt());
+                return;
+            }
+        }
+
+        // Hedef yoksa prompt'u gizle:
+        // UIManager.Instance.HidePrompt();
+    }
+
+    private void TryInteract()
+    {
+        // Elimde bir şey varsa ve hedef başka bir pickup item ise -> önce elimdekini bırakmadan yenisini alma
+        if (currentHeldItem != null && currentTarget is PickupItem targetItem && targetItem != currentHeldItem)
+        {
+            return; // istersen burada "önce elindekini bırak" mesajı gösterebilirsin
+        }
+
+        currentTarget?.Interact(this);
+    }
+
+    public void SetHeldItem(PickupItem item)
+    {
+        currentHeldItem = item;
+    }
+
+    public PickupItem GetHeldItem() => currentHeldItem;
 }
