@@ -25,6 +25,10 @@ public class PickupItem : MonoBehaviour, IInteractable
     [Tooltip("HoldPoint'in rotasyonuna eklenecek ek açı - obje elde yamuk/yan duruyorsa buradan düzelt")]
     [SerializeField] private Vector3 holdRotationOffsetEuler = Vector3.zero;
 
+    [Header("Kahve Doldurma (sadece portafilter için, diğer itemlerde boş bırak)")]
+    [Tooltip("portafilter.001 > GroundCoffee objesini buraya sürükle. Oyun başında otomatik gizlenir, grinder'da doldurulunca görünür.")]
+    [SerializeField] private GameObject groundCoffeeVisual;
+
     private Rigidbody rb;
     private Collider col;
     private Transform holdPoint;
@@ -39,7 +43,26 @@ public class PickupItem : MonoBehaviour, IInteractable
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
         uprightRotation = transform.rotation; // sahnede editörde elle ayarladığın "doğru" duruş
+
+        if (groundCoffeeVisual != null)
+            groundCoffeeVisual.SetActive(false); // oyun başında kahve gizli
     }
+
+    /// <summary>CoffeeGrinderInteraction tarafından çağrılır - portafilterin içini doldurur.</summary>
+    public void FillWithGroundCoffee()
+    {
+        if (groundCoffeeVisual != null)
+            groundCoffeeVisual.SetActive(true);
+    }
+
+    /// <summary>İleride "kahveyi boşalt/temizle" mekaniği için hazır dursun.</summary>
+    public void EmptyGroundCoffee()
+    {
+        if (groundCoffeeVisual != null)
+            groundCoffeeVisual.SetActive(false);
+    }
+
+    public bool HasGroundCoffee => groundCoffeeVisual != null && groundCoffeeVisual.activeSelf;
 
     public string GetInteractPrompt()
     {
@@ -96,6 +119,57 @@ public class PickupItem : MonoBehaviour, IInteractable
         isHeld = false;
     }
 
+    /// <summary>
+    /// MachineDockPoint gibi tam kontrollü yerleşmeler için — surfaceYOffset ya da
+    /// uprightRotation uygulamaz, verilen pozisyon/rotasyonu olduğu gibi kullanır
+    /// (makineye takılırken belirli bir açıda oturması gerekebilir).
+    /// </summary>
+    public void PlaceAtExact(Vector3 worldPosition, Quaternion worldRotation)
+    {
+        transform.position = worldPosition;
+        transform.rotation = worldRotation;
+
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        col.enabled = true;
+
+        isHeld = false;
+    }
+
+    /// <summary>
+    /// MachineDockPoint gibi başka bir sistemin, item'ı dock'tan çıkarıp
+    /// oyuncunun eline zorla vermesi için (normal PickUp() private, bu public wrapper).
+    /// </summary>
+    public void ForcePickUp(PlayerInteraction player)
+    {
+        holdPoint = player.HoldPoint;
+
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        col.enabled = false;
+
+        isHeld = true;
+        player.SetHeldItem(this);
+    }
+
+    /// <summary>
+    /// MachineDockPoint tarafından çağrılır. PlaceAtExact'ten farkı: dock noktasının
+    /// KENDİ rotasyonunu değil, itemin doğal/orijinal duruşunu (uprightRotation) kullanır,
+    /// üstüne sadece verilen ek açıyı ekler. Böylece dock noktasını boş bir GameObject
+    /// olarak (rotasyonuyla hiç uğraşmadan) oluşturabilirsin, item hep doğru şekilde görünür.
+    /// </summary>
+    public void DockAt(Vector3 worldPosition, Vector3 extraRotationEuler)
+    {
+        transform.position = worldPosition;
+        transform.rotation = uprightRotation * Quaternion.Euler(extraRotationEuler);
+
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        col.enabled = true;
+
+        isHeld = false;
+    }
+
     private void Update()
     {
         // Elde tutarken world-space pozisyon/rotasyonu yumuşak şekilde HoldPoint'e (+ offset) kilitle.
@@ -111,4 +185,5 @@ public class PickupItem : MonoBehaviour, IInteractable
     }
 
     public bool IsHeld => isHeld;
+    public string ItemName => itemName;
 }

@@ -15,6 +15,8 @@ public class CounterSurface : MonoBehaviour, IInteractable
     [SerializeField] private float minDistanceBetweenItems = 0.15f;
     [Tooltip("Yerdeki item'ları kontrol etmek için kullanılan layer - Interactable seç")]
     [SerializeField] private LayerMask itemLayer;
+    [Tooltip("Coffee grinder, espresso machine gibi tezgah üstündeki sabit makinelerin collider'larının olduğu layer - buraya item bırakılamasın")]
+    [SerializeField] private LayerMask obstacleLayer;
 
     public string GetInteractPrompt()
     {
@@ -37,12 +39,21 @@ public class CounterSurface : MonoBehaviour, IInteractable
 
     private bool IsSpotOccupied(Vector3 pos)
     {
-        Collider[] nearby = Physics.OverlapSphere(pos + Vector3.up * 0.05f, minDistanceBetweenItems, itemLayer);
-        foreach (var hitCollider in nearby)
+        Vector3 checkCenter = pos + Vector3.up * 0.05f;
+
+        // 1) Zaten bırakılmış bir item var mı?
+        Collider[] nearbyItems = Physics.OverlapSphere(checkCenter, minDistanceBetweenItems, itemLayer);
+        foreach (var hitCollider in nearbyItems)
         {
             if (hitCollider.TryGetComponent(out PickupItem item) && !item.IsHeld)
                 return true;
         }
+
+        // 2) Grinder, espresso machine gibi sabit bir makineye çarpıyor mu?
+        Collider[] nearbyObstacles = Physics.OverlapSphere(checkCenter, minDistanceBetweenItems, obstacleLayer);
+        if (nearbyObstacles.Length > 0)
+            return true;
+
         return false;
     }
 }
