@@ -1,15 +1,16 @@
 using UnityEngine;
 
 /// <summary>
-/// Mevcut player/kamera objenize eklenir. Kameranın baktığı yöne raycast atar,
-/// IInteractable bulursa E ile (tek basış), IHoldInteractable bulursa E'yi basılı
-/// tutarak etkileşime izin verir.
+/// Tek elle çalışan basit sistem. E: bakılan şeyle etkileşim (al/bırak/tak/basılı tut - hepsi
+/// hedefin kendi Interact/OnHoldComplete mantığına göre). Hiçbir yere bakmıyorken elindeki
+/// itemi bırakmak istersen F'ye bas.
 /// </summary>
 public class PlayerInteraction : MonoBehaviour
 {
     [Header("Referanslar")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Transform holdPoint;
+    [SerializeField] private Transform leftHoldPoint; // SADECE tamper gibi isLeftHandOnly itemlar için
     [SerializeField] private InteractionUI interactionUI;
 
     [Header("Ayarlar")]
@@ -17,6 +18,7 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private LayerMask interactableLayer = ~0;
 
     private PickupItem currentHeldItem;
+    private PickupItem currentLeftHeldItem;
     private IInteractable currentTarget;
 
     private IHoldInteractable currentHoldTarget;
@@ -24,7 +26,9 @@ public class PlayerInteraction : MonoBehaviour
     private bool wasShowingPrompt = false;
 
     public Transform HoldPoint => holdPoint;
+    public Transform LeftHoldPoint => leftHoldPoint;
     public Vector3 LastHitPoint { get; private set; }
+    public bool IsLookingAtInteractable => (currentTarget != null && !(currentTarget is CounterSurface)) || currentHoldTarget != null;
 
     private void Update()
     {
@@ -34,11 +38,6 @@ public class PlayerInteraction : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E))
         {
             TryInteract();
-        }
-
-        if (Input.GetKeyDown(KeyCode.G) && currentHeldItem != null)
-        {
-            currentHeldItem.Drop(this);
         }
     }
 
@@ -55,12 +54,14 @@ public class PlayerInteraction : MonoBehaviour
             {
                 if (currentHoldTarget != holdInteractable)
                 {
-                    holdTimer = 0f; // farklı hedef, sayaç sıfırlanır
+                    holdTimer = 0f;
+                    ClearAnyHoldOverride();
                 }
                 currentHoldTarget = holdInteractable;
             }
             else
             {
+                if (currentHoldTarget != null) ClearAnyHoldOverride();
                 currentHoldTarget = null;
             }
 
@@ -72,6 +73,7 @@ public class PlayerInteraction : MonoBehaviour
         }
         else
         {
+            if (currentHoldTarget != null) ClearAnyHoldOverride();
             currentHoldTarget = null;
         }
     }
@@ -80,26 +82,23 @@ public class PlayerInteraction : MonoBehaviour
     {
         bool eligible = currentHoldTarget != null && currentHoldTarget.CanStartHold(this);
 
-        // Hedef yok / uygun değilse (elinde yanlış item, zaten dolu vs.) -> her şeyi kapat
         if (!eligible)
         {
-            if (holdTimer > 0f) holdTimer = 0f;
+            if (holdTimer > 0f) { holdTimer = 0f; ClearAnyHoldOverride(); }
             interactionUI?.HideHoldProgress();
             if (wasShowingPrompt) { interactionUI?.HidePrompt(); wasShowingPrompt = false; }
             return;
         }
 
-        // Uygun hedef var ama E'ye henüz basılmıyor -> sadece prompt göster ("E'ye basılı tut")
         if (!Input.GetKey(KeyCode.E))
         {
-            if (holdTimer > 0f) holdTimer = 0f;
+            if (holdTimer > 0f) { holdTimer = 0f; ClearAnyHoldOverride(); }
             interactionUI?.HideHoldProgress();
             interactionUI?.ShowPrompt(currentHoldTarget.GetHoldPrompt());
             wasShowingPrompt = true;
             return;
         }
 
-        // E basılı tutuluyor -> prompt'u kapat, halkayı doldur
         if (wasShowingPrompt) { interactionUI?.HidePrompt(); wasShowingPrompt = false; }
 
         holdTimer += Time.deltaTime;
@@ -108,6 +107,7 @@ public class PlayerInteraction : MonoBehaviour
         int secondsRemaining = Mathf.CeilToInt(Mathf.Max(0f, duration - holdTimer));
 
         interactionUI?.ShowHoldProgress(progress, secondsRemaining);
+        currentHoldTarget.OnHoldProgress(this, Mathf.Clamp01(progress));
 
         if (holdTimer >= duration)
         {
@@ -117,20 +117,37 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
+    // Hold iptal olduğunda (hedef değişti, E bırakıldı vs.) elde animasyon override kalmışsa temizle.
+    // NOT: TamperableCoffee kendi "settle" coroutine'i sırasında override'ı KENDİSİ yönetir,
+    // bu yüzden hold tamamlandıktan sonra (holdTimer sıfırlandıktan sonra) burası tekrar
+    // override'ı temizlemeye ÇALIŞMAZ çünkü o noktada zaten currentHoldTarget/eligible false olur
+    // ve coroutine kendi ClearHeldPositionOverride'ını çağırana kadar item'ın override'ı korunur.
+    private void ClearAnyHoldOverride()
+    {
+        currentHeldItem?.ClearHeldPositionOverride();
+        currentLeftHeldItem?.ClearHeldPositionOverride();
+    }
+
     private void TryInteract()
     {
-        if (currentHeldItem != null && currentTarget is PickupItem targetItem && targetItem != currentHeldItem)
+        if (currentTarget is PickupItem targetItem)
         {
-            return;
+            if (targetItem.IsLeftHandOnly)
+            {
+                if (currentLeftHeldItem != null && targetItem != currentLeftHeldItem) return; // sol el dolu
+            }
+            else
+            {
+                if (currentHeldItem != null && targetItem != currentHeldItem) return; // sağ el dolu
+            }
         }
 
         currentTarget?.Interact(this);
     }
 
-    public void SetHeldItem(PickupItem item)
-    {
-        currentHeldItem = item;
-    }
-
+    public void SetHeldItem(PickupItem item) => currentHeldItem = item;
     public PickupItem GetHeldItem() => currentHeldItem;
+
+    public void SetLeftHeldItem(PickupItem item) => currentLeftHeldItem = item;
+    public PickupItem GetLeftHeldItem() => currentLeftHeldItem;
 }

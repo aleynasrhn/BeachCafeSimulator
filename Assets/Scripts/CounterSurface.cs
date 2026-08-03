@@ -25,8 +25,15 @@ public class CounterSurface : MonoBehaviour, IInteractable
 
     public void Interact(PlayerInteraction player)
     {
+        // Önce sağ el, boşsa sol el (tamper) denenir
         PickupItem held = player.GetHeldItem();
-        if (held == null) return; // elinde bir şey yoksa tezgahla etkileşimin anlamı yok (şimdilik)
+        bool fromLeftHand = false;
+        if (held == null)
+        {
+            held = player.GetLeftHeldItem();
+            fromLeftHand = true;
+        }
+        if (held == null) return; // ikisi de boş, tezgahla etkileşimin anlamı yok
 
         Vector3 placePos = player.LastHitPoint;
 
@@ -34,7 +41,9 @@ public class CounterSurface : MonoBehaviour, IInteractable
             return; // çok yakında zaten bir item var, üst üste bindirme
 
         held.PlaceOnCounter(placePos);
-        player.SetHeldItem(null);
+
+        if (fromLeftHand) player.SetLeftHeldItem(null);
+        else player.SetHeldItem(null);
     }
 
     private bool IsSpotOccupied(Vector3 pos)

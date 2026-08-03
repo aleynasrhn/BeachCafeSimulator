@@ -24,8 +24,15 @@ public class MachineDockPoint : MonoBehaviour, IInteractable
     [Tooltip("İşaretlenirse, item'ın (HasGroundCoffee) içinde kahve olması ZORUNLU olur - boş portafilter takılamaz. Sadece PortafilterDock'ta işaretle.")]
     [SerializeField] private bool requireGroundCoffee = false;
 
+    [Tooltip("İşaretlenirse, item'ın TAMPERLENMİŞ olması ZORUNLU olur. Sadece PortafilterDock'ta işaretle.")]
+    [SerializeField] private bool requireTamped = false;
+
     private bool isOccupied = false;
     private PickupItem dockedItem;
+
+    // Dışarıdan (EspressoMachineButton gibi) okunabilmesi için
+    public bool IsOccupied => isOccupied;
+    public PickupItem DockedItem => dockedItem;
 
     public string GetInteractPrompt()
     {
@@ -48,6 +55,7 @@ public class MachineDockPoint : MonoBehaviour, IInteractable
         if (held == null) return;
         if (held.ItemName != acceptedItemName) return; // yanlış item, kabul etme
         if (requireGroundCoffee && !held.HasGroundCoffee) return; // boş portafilter takılamaz
+        if (requireTamped && !held.IsTamped) return; // tamperlenmemiş portafilter takılamaz
 
         Vector3 worldPos = transform.position + transform.TransformDirection(dockedLocalPositionOffset);
         held.DockAt(worldPos, dockedExtraRotationEuler); // itemin doğal duruşunu korur, dock'un kendi rotasyonunu YOK SAYAR

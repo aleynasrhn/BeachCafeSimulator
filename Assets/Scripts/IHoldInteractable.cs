@@ -4,16 +4,14 @@
 /// </summary>
 public interface IHoldInteractable
 {
-    // Kaç saniye basılı tutulması gerektiği
     float HoldDuration { get; }
 
-    // Basılı tutma tamamlanınca çağrılır
     void OnHoldComplete(PlayerInteraction player);
 
-    // UI'da gösterilecek metin (örn: "E - Kahve Öğüt")
+    // Basılı tutma sırasında HER FRAME çağrılır (progress01: 0'dan 1'e) - animasyon için
+    void OnHoldProgress(PlayerInteraction player, float progress01);
+
     string GetHoldPrompt();
 
-    // Şu an bu etkileşime başlanabilir mi? (Örn: elinde doğru item yoksa, ya da
-    // zaten tamamlanmışsa false döner - hem prompt gösterilmez hem basılı tutma saymaz)
     bool CanStartHold(PlayerInteraction player);
 }
