@@ -1,22 +1,31 @@
 using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
+using System.Collections;
 
 /// <summary>
-/// Kasa ekranındaki (ComputerInteraction/RegisterInteraction'ın açtığı Canvas'taki)
-/// tüm buton mantığını yönetir: boyut + kahve + ekstra seçimi, sepet, doğrulama,
-/// ve onaylanan siparişin mevcut OrderUI (sağ panel) sistemine eklenmesi.
+/// Kasa ekranındaki tüm sipariş seçimlerini yönetir.
+///
+/// Normal kahveler:
+/// Kahve + Boyut + Ödeme + İsteğe bağlı ekstralar
+///
+/// Espresso:
+/// Espresso + Tek Shot / Double Shot + Ödeme + İsteğe bağlı ekstralar
 /// </summary>
 public class OrderScreenUI : MonoBehaviour
 {
-    [Header("Müşteri Talebi (üstteki yazı)")]
+    [Header("Müşteri Talebi")]
     [SerializeField] private TMP_Text customerRequestText;
 
-    [Header("Doğrulama Mesajı (altta küçük uyarı)")]
+    [Header("Doğrulama Mesajı")]
     [SerializeField] private TMP_Text validationText;
+    [SerializeField] private GameObject validationBackground;
 
     [Header("Boyut Butonları (3 tane)")]
     [SerializeField] private SizeButtonUI[] sizeButtons;
+
+    [Header("Espresso Shot Butonları (2 tane)")]
+    [SerializeField] private EspressoShotButtonUI[] espressoShotButtons;
 
     [Header("Ana Kahve Butonları (4 tane)")]
     [SerializeField] private CoffeeButtonUI[] coffeeButtons;
@@ -34,204 +43,910 @@ public class OrderScreenUI : MonoBehaviour
     [Header("Sipariş Ayarları")]
     [SerializeField] private float orderTimeLimit = 90f;
 
+    
+
+
+    // =========================================================
+    // SEÇİMLER
+    // =========================================================
+
     private CupSize? selectedSize = null;
+
     private CoffeeButtonUI selectedCoffee = null;
-    private readonly List<ExtraButtonUI> selectedExtras = new List<ExtraButtonUI>();
+
+    private EspressoShotButtonUI selectedEspressoShot = null;
+
+    private readonly List<ExtraButtonUI> selectedExtras =
+        new List<ExtraButtonUI>();
+
     private string selectedPaymentMethod = "";
 
     private Order currentTargetOrder;
 
-    private static readonly string[] extraNamePool = { "Ekstra Espresso", "Tarçın", "Çikolata Şurubu", "Karamel Şurup", "Vanilya Şurubu" };
-    private static readonly string[] paymentPool = { "Nakit Ödeme", "Kart Ödeme" };
+
+    // =========================================================
+    // HAVUZLAR
+    // =========================================================
+
+    private static readonly string[] extraNamePool =
+    {
+        "Ekstra Espresso",
+        "Tarçın",
+        "Çikolata Şurubu",
+        "Karamel Şurup",
+        "Vanilya Şurubu"
+    };
+
+    private static readonly string[] paymentPool =
+    {
+        "Nakit Ödeme",
+        "Kart Ödeme"
+    };
+
+
+    // =========================================================
+    // EKRAN AÇILDIĞINDA
+    // =========================================================
 
     private void OnEnable()
     {
         ResetBasket();
+
         GenerateNewCustomerRequest();
     }
 
-    // ---------- Müşteri Talebi ----------
+
+    // =========================================================
+    // MÜŞTERİ TALEBİ OLUŞTUR
+    // =========================================================
 
     private void GenerateNewCustomerRequest()
     {
+        CoffeeType randomCoffee =
+            (CoffeeType)Random.Range(
+                0,
+                System.Enum.GetValues(typeof(CoffeeType)).Length
+            );
+
+
         currentTargetOrder = new Order
         {
-            coffeeType = (CoffeeType)Random.Range(0, System.Enum.GetValues(typeof(CoffeeType)).Length),
-            size = (CupSize)Random.Range(0, System.Enum.GetValues(typeof(CupSize)).Length),
+            coffeeType = randomCoffee,
+
+            size = (CupSize)Random.Range(
+                0,
+                System.Enum.GetValues(typeof(CupSize)).Length
+            ),
+
             reward = 0,
+
             timeLimit = orderTimeLimit,
-            preferredPaymentMethod = paymentPool[Random.Range(0, paymentPool.Length)]
+
+            preferredPaymentMethod =
+                paymentPool[
+                    Random.Range(
+                        0,
+                        paymentPool.Length
+                    )
+                ]
         };
 
-        // %50 ihtimalle bir ekstra da istesin
+
+        // =====================================================
+        // ESPRESSO İSE BOYUT YERİNE SHOT
+        // =====================================================
+
+        if (randomCoffee == CoffeeType.Espresso)
+        {
+            currentTargetOrder.espressoShot =
+                Random.value > 0.5f
+                    ? EspressoShotButtonUI.ShotType.Single
+                    : EspressoShotButtonUI.ShotType.Double;
+        }
+
+
+        // =====================================================
+        // %50 İHTİMALLE EKSTRA İSTE
+        // =====================================================
+
         if (Random.value > 0.5f)
-            currentTargetOrder.requestedExtras.Add(extraNamePool[Random.Range(0, extraNamePool.Length)]);
+        {
+            currentTargetOrder.requestedExtras.Add(
+                extraNamePool[
+                    Random.Range(
+                        0,
+                        extraNamePool.Length
+                    )
+                ]
+            );
+        }
+
 
         UpdateCustomerRequestText();
     }
 
+
+    // =========================================================
+    // MÜŞTERİ TALEBİ YAZISI
+    // =========================================================
+
     private void UpdateCustomerRequestText()
     {
-        if (customerRequestText == null || currentTargetOrder == null) return;
+        if (customerRequestText == null ||
+            currentTargetOrder == null)
+        {
+            return;
+        }
 
-        string extrasPart = currentTargetOrder.requestedExtras.Count > 0
-            ? ", " + string.Join(", ", currentTargetOrder.requestedExtras)
-            : "";
+
+        string coffeePart;
+
+
+        // =====================================================
+        // ESPRESSO
+        // =====================================================
+
+        if (currentTargetOrder.coffeeType ==
+            CoffeeType.Espresso)
+        {
+            string shotName;
+
+            if (currentTargetOrder.espressoShot ==
+                EspressoShotButtonUI.ShotType.Single)
+            {
+                shotName = "Tek Shot";
+            }
+            else
+            {
+                shotName = "Double Shot";
+            }
+
+
+            coffeePart =
+                $"Espresso, {shotName}";
+        }
+
+
+        // =====================================================
+        // NORMAL KAHVELER
+        // =====================================================
+
+        else
+        {
+            coffeePart =
+                $"{SizeToTurkish(currentTargetOrder.size)} " +
+                $"{TypeToTurkish(currentTargetOrder.coffeeType)}";
+        }
+
+
+        // =====================================================
+        // EKSTRA
+        // =====================================================
+
+        string extrasPart = "";
+
+        if (currentTargetOrder.requestedExtras.Count > 0)
+        {
+            extrasPart =
+                ", " +
+                string.Join(
+                    ", ",
+                    currentTargetOrder.requestedExtras
+                );
+        }
+
+
+        // =====================================================
+        // ÖDEME + TALEP
+        // =====================================================
 
         customerRequestText.text =
-            $"Müşterinin İsteği: {SizeToTurkish(currentTargetOrder.size)} {TypeToTurkish(currentTargetOrder.coffeeType)}{extrasPart} / {currentTargetOrder.preferredPaymentMethod}";
+            $"Müşterinin İsteği: {coffeePart}" +
+            $"{extrasPart} / " +
+            $"{currentTargetOrder.preferredPaymentMethod}";
     }
 
-    // ---------- Seçimler ----------
 
-    /// <summary>Boyut butonlarına (Büyük/Orta/Small) OnClick ile bağlanır.</summary>
+    // =========================================================
+    // ESPRESSO SEÇİLİ Mİ?
+    // =========================================================
+
+    private bool IsEspressoSelected()
+    {
+        return selectedCoffee != null &&
+               selectedCoffee.CoffeeType ==
+               CoffeeType.Espresso;
+    }
+
+
+    // =========================================================
+    // BOYUT SEÇ
+    // =========================================================
+
+    /// <summary>
+    /// Büyük / Orta / Küçük butonları.
+    /// Espresso seçiliyken kullanılamaz.
+    /// </summary>
     public void SelectSize(SizeButtonUI button)
     {
+        if (button == null)
+            return;
+
+
+        // Espresso'da boyut yok
+        if (IsEspressoSelected())
+        {
+            ShowValidationMessage(
+                "Espresso için Tek Shot veya Double Shot seçin."
+            );
+
+            return;
+        }
+
+
+        // Shot seçilmişse boyut seçilemez
+        if (selectedEspressoShot != null)
+        {
+            ShowValidationMessage(
+                "Espresso seçmeden shot seçemezsiniz."
+            );
+
+            return;
+        }
+
+
         selectedSize = button.Size;
+
+
         ClearValidationMessage();
+
         UpdateBasketDisplay();
     }
 
-    /// <summary>Ana kahve butonlarına OnClick ile bağlanır.</summary>
+
+    // =========================================================
+    // KAHVE SEÇ
+    // =========================================================
+
+    /// <summary>
+    /// Americano / Latte / Cappuccino / Espresso.
+    /// </summary>
     public void SelectCoffee(CoffeeButtonUI button)
     {
+        if (button == null)
+            return;
+
+
+        // -----------------------------------------------------
+        // SHOT SEÇİLDİYSE SADECE ESPRESSO SEÇİLEBİLİR
+        // -----------------------------------------------------
+
+        if (selectedEspressoShot != null &&
+            button.CoffeeType != CoffeeType.Espresso)
+        {
+            ShowValidationMessage(
+                "Tek Shot ve Double Shot sadece Espresso için kullanılabilir."
+            );
+
+            return;
+        }
+
+
         selectedCoffee = button;
+
+
+        // -----------------------------------------------------
+        // ESPRESSO
+        // -----------------------------------------------------
+
+        if (button.CoffeeType ==
+            CoffeeType.Espresso)
+        {
+            // Espresso'da boyut kullanılmaz
+            selectedSize = null;
+        }
+
+
+        // -----------------------------------------------------
+        // NORMAL KAHVE
+        // -----------------------------------------------------
+
+        else
+        {
+            // Normal kahve seçilince
+            // Espresso shot temizlenir.
+            selectedEspressoShot = null;
+        }
+
+
         ClearValidationMessage();
+
         UpdateBasketDisplay();
     }
 
-    /// <summary>Ekstra butonlarına OnClick ile bağlanır.</summary>
+
+    // =========================================================
+    // ESPRESSO SHOT SEÇ
+    // =========================================================
+
+    /// <summary>
+    /// Tek Shot / Double Shot butonları.
+    /// </summary>
+    public void SelectEspressoShot(
+        EspressoShotButtonUI button)
+    {
+        if (button == null)
+            return;
+
+
+        // Önce kahve seçilmeli
+        if (selectedCoffee == null)
+        {
+            ShowValidationMessage(
+                "Önce Espresso seçin."
+            );
+
+            return;
+        }
+
+
+        // Sadece Espresso'da kullanılabilir
+        if (selectedCoffee.CoffeeType !=
+            CoffeeType.Espresso)
+        {
+            ShowValidationMessage(
+                "Tek Shot ve Double Shot sadece Espresso için kullanılabilir."
+            );
+
+            return;
+        }
+
+
+        selectedEspressoShot = button;
+
+
+        // Espresso'da boyut yok
+        selectedSize = null;
+
+
+        ClearValidationMessage();
+
+        UpdateBasketDisplay();
+    }
+
+
+    // =========================================================
+    // EKSTRA SEÇ / ÇIKAR
+    // =========================================================
+
+    /// <summary>
+    /// Ekstralar zorunlu değildir.
+    /// Seçilirse fiyata eklenir.
+    /// Seçilmezse sipariş yine onaylanabilir.
+    /// </summary>
     public void ToggleExtra(ExtraButtonUI button)
     {
-        if (button.IsLocked) return;
+        if (button == null)
+            return;
+
+
+        if (button.IsLocked)
+            return;
+
 
         if (selectedExtras.Contains(button))
+        {
             selectedExtras.Remove(button);
+        }
         else
+        {
             selectedExtras.Add(button);
+        }
+
 
         UpdateBasketDisplay();
     }
 
-    /// <summary>Nakit Al / Kredi Kartı butonlarına OnClick ile bağlanır, parametre olarak string yaz.</summary>
+
+    // =========================================================
+    // ÖDEME YÖNTEMİ
+    // =========================================================
+
     public void SelectPaymentMethod(string method)
     {
         selectedPaymentMethod = method;
-        if (paymentMethodText != null) paymentMethodText.text = method;
+
+
+        if (paymentMethodText != null)
+        {
+            paymentMethodText.text = method;
+        }
+
+
+        ClearValidationMessage();
     }
 
-    // ---------- Sepet ----------
+
+    // =========================================================
+    // SEPETİ GÜNCELLE
+    // =========================================================
 
     private void UpdateBasketDisplay()
     {
         float total = 0f;
+
         string lines = "";
 
-        // Kahve SADECE hem tür hem boyut seçiliyse sepette görünür
-        if (selectedCoffee != null && selectedSize.HasValue)
+
+        // =====================================================
+        // KAHVE
+        // =====================================================
+
+        if (selectedCoffee != null)
         {
-            float price = selectedCoffee.GetPrice(selectedSize.Value);
-            lines += $"{SizeToTurkish(selectedSize.Value)} {selectedCoffee.CoffeeName} {price:0.00}$\n";
-            total += price;
+            // -------------------------------------------------
+            // ESPRESSO
+            // -------------------------------------------------
+
+            if (selectedCoffee.CoffeeType ==
+                CoffeeType.Espresso)
+            {
+                if (selectedEspressoShot != null)
+                {
+                    float price;
+
+
+                    if (selectedEspressoShot.Shot ==
+                        EspressoShotButtonUI.ShotType.Single)
+                    {
+                        price = 2.15f;
+
+
+                        lines +=
+                            $"Espresso - Tek Shot " +
+                            $"{price:0.00}$\n";
+                    }
+                    else
+                    {
+                        price = 2.75f;
+
+
+                        lines +=
+                            $"Espresso - Double Shot " +
+                            $"{price:0.00}$\n";
+                    }
+
+
+                    total += price;
+                }
+            }
+
+
+            // -------------------------------------------------
+            // NORMAL KAHVELER
+            // -------------------------------------------------
+
+            else if (selectedSize.HasValue)
+            {
+                float price =
+                    selectedCoffee.GetPrice(
+                        selectedSize.Value
+                    );
+
+
+                lines +=
+                    $"{SizeToTurkish(selectedSize.Value)} " +
+                    $"{selectedCoffee.CoffeeName} " +
+                    $"{price:0.00}$\n";
+
+
+                total += price;
+            }
         }
+
+
+        // =====================================================
+        // EKSTRALAR
+        // =====================================================
 
         foreach (var extra in selectedExtras)
         {
-            lines += $"{extra.ExtraName} {extra.Price:0.00}$\n";
+            lines +=
+                $"{extra.ExtraName} " +
+                $"{extra.Price:0.00}$\n";
+
             total += extra.Price;
         }
 
-        if (basketText != null) basketText.text = lines;
-        if (totalText != null) totalText.text = $"Toplam: {total:0.00}$";
+
+        // =====================================================
+        // UI
+        // =====================================================
+
+        if (basketText != null)
+        {
+            basketText.text = lines;
+        }
+
+
+        if (totalText != null)
+        {
+            totalText.text =
+                $"Toplam: {total:0.00}$";
+        }
     }
 
-    /// <summary>"Sepeti Sıfırla" butonuna bağlanır.</summary>
+
+    // =========================================================
+    // SEPETİ SIFIRLA
+    // =========================================================
+
     public void ResetBasket()
     {
         selectedCoffee = null;
+
         selectedSize = null;
+
+        selectedEspressoShot = null;
+
         selectedExtras.Clear();
+
         selectedPaymentMethod = "";
 
-        if (paymentMethodText != null) paymentMethodText.text = "";
+
+        if (paymentMethodText != null)
+        {
+            paymentMethodText.text = "";
+        }
+
 
         UpdateBasketDisplay();
+
         ClearValidationMessage();
     }
 
-    // ---------- Onaylama ----------
 
-    /// <summary>"Siparişi Onayla" butonuna bağlanır.</summary>
+    // =========================================================
+    // SİPARİŞİ ONAYLA
+    // =========================================================
+
     public void ConfirmOrder()
     {
+        // =====================================================
+        // 1 - KAHVE SEÇİLDİ Mİ?
+        // =====================================================
+
         if (selectedCoffee == null)
         {
-            ShowValidationMessage("Lütfen bir kahve seçin.");
+            ShowValidationMessage(
+                "Lütfen bir kahve seçin."
+            );
+
             return;
         }
 
-        if (!selectedSize.HasValue)
+
+        // =====================================================
+        // 2 - ESPRESSO / NORMAL KAHVE KONTROLÜ
+        // =====================================================
+
+        // -----------------------------------------------------
+        // ESPRESSO
+        // -----------------------------------------------------
+
+        if (selectedCoffee.CoffeeType ==
+            CoffeeType.Espresso)
         {
-            ShowValidationMessage("Lütfen boyut seçin.");
+            if (selectedEspressoShot == null)
+            {
+                ShowValidationMessage(
+                    "Lütfen Tek Shot veya Double Shot seçin."
+                );
+
+                return;
+            }
+        }
+
+
+        // -----------------------------------------------------
+        // NORMAL KAHVE
+        // -----------------------------------------------------
+
+        else
+        {
+            if (!selectedSize.HasValue)
+            {
+                ShowValidationMessage(
+                    "Lütfen kahve boyutu seçin."
+                );
+
+                return;
+            }
+        }
+
+
+        // =====================================================
+        // 3 - ÖDEME YÖNTEMİ KONTROLÜ
+        // =====================================================
+
+        if (string.IsNullOrEmpty(selectedPaymentMethod))
+        {
+            ShowValidationMessage(
+                "Lütfen ödeme yöntemi seçin."
+            );
+
             return;
         }
 
-        float total = selectedCoffee.GetPrice(selectedSize.Value);
-        foreach (var extra in selectedExtras) total += extra.Price;
+
+        // =====================================================
+        // 4 - FİYAT HESAPLA
+        // =====================================================
+
+        float total = 0f;
+
+
+        // -----------------------------------------------------
+        // ESPRESSO FİYATI
+        // -----------------------------------------------------
+
+        if (selectedCoffee.CoffeeType ==
+            CoffeeType.Espresso)
+        {
+            if (selectedEspressoShot.Shot ==
+                EspressoShotButtonUI.ShotType.Single)
+            {
+                total = 2.15f;
+            }
+            else
+            {
+                total = 2.75f;
+            }
+        }
+
+
+        // -----------------------------------------------------
+        // NORMAL KAHVE FİYATI
+        // -----------------------------------------------------
+
+        else
+        {
+            total =
+                selectedCoffee.GetPrice(
+                    selectedSize.Value
+                );
+        }
+
+
+        // =====================================================
+        // 5 - EKSTRA FİYATLARI
+        // =====================================================
+
+        // Ekstra seçmek zorunlu DEĞİL.
+        // Seçilmiş olanların fiyatı eklenir.
+
+        foreach (var extra in selectedExtras)
+        {
+            total += extra.Price;
+        }
+
+
+        // =====================================================
+        // 6 - ORDER OLUŞTUR
+        // =====================================================
 
         Order finalOrder = new Order
         {
-            coffeeType = selectedCoffee.CoffeeType,
-            size = selectedSize.Value,
-            reward = Mathf.RoundToInt(total),
-            timeLimit = orderTimeLimit
+            coffeeType =
+                selectedCoffee.CoffeeType,
+
+            // Normal kahvelerde gerçek boyut.
+            //
+            // Espresso'da mevcut Order sistemi size istediği
+            // için şimdilik Small gönderiyoruz.
+            size =
+                selectedSize ?? CupSize.Small,
+
+            // Espresso Shot
+            espressoShot =
+                selectedEspressoShot != null
+                    ? selectedEspressoShot.Shot
+                    : EspressoShotButtonUI.ShotType.Single,
+
+            reward =
+                Mathf.RoundToInt(total),
+
+            timeLimit =
+                orderTimeLimit,
+
+            preferredPaymentMethod =
+                selectedPaymentMethod
         };
 
-        // Sağdaki mevcut sipariş paneline ekle
+
+        // =====================================================
+        // 7 - SAĞ SİPARİŞ PANELİNE EKLE
+        // =====================================================
+
         if (OrderUI.Instance != null)
+        {
             OrderUI.Instance.AddOrder(finalOrder);
+        }
 
-        string summary = $"{SizeToTurkish(selectedSize.Value)} {selectedCoffee.CoffeeName}";
-        foreach (var extra in selectedExtras) summary += $" + {extra.ExtraName}";
 
-        Debug.Log($"Sipariş onaylandı: {summary} - {selectedPaymentMethod} - {total:0.00}$");
+        // =====================================================
+        // 8 - SİPARİŞ ÖZETİ
+        // =====================================================
+
+        string summary =
+            selectedCoffee.CoffeeName;
+
+
+        // -----------------------------------------------------
+        // ESPRESSO ÖZETİ
+        // -----------------------------------------------------
+
+        if (selectedCoffee.CoffeeType ==
+            CoffeeType.Espresso)
+        {
+            if (selectedEspressoShot.Shot ==
+                EspressoShotButtonUI.ShotType.Single)
+            {
+                summary += " + Tek Shot";
+            }
+            else
+            {
+                summary += " + Double Shot";
+            }
+        }
+
+
+        // -----------------------------------------------------
+        // NORMAL KAHVE ÖZETİ
+        // -----------------------------------------------------
+
+        else
+        {
+            summary =
+                $"{SizeToTurkish(selectedSize.Value)} " +
+                $"{summary}";
+        }
+
+
+        // -----------------------------------------------------
+        // EKSTRA ÖZETİ
+        // -----------------------------------------------------
+
+        foreach (var extra in selectedExtras)
+        {
+            summary +=
+                $" + {extra.ExtraName}";
+        }
+
+
+        Debug.Log(
+            $"Sipariş onaylandı: " +
+            $"{summary} - " +
+            $"{selectedPaymentMethod} - " +
+            $"{total:0.00}$"
+        );
+
+
+        // =====================================================
+        // 9 - SIFIRLA
+        // =====================================================
 
         ResetBasket();
+
+
+        // =====================================================
+        // 10 - YENİ MÜŞTERİ TALEBİ
+        // =====================================================
+
         GenerateNewCustomerRequest();
     }
 
+
+    // =========================================================
+    // UYARI GÖSTER
+    // =========================================================
+
+    private Coroutine validationCoroutine;
+
     private void ShowValidationMessage(string message)
     {
-        if (validationText != null) validationText.text = message;
+        if (validationText == null)
+            return;
+
+        if (validationCoroutine != null)
+        {
+            StopCoroutine(validationCoroutine);
+        }
+
+        validationText.text = message;
+
+        if (validationBackground != null)
+            validationBackground.SetActive(true);
+
+        validationCoroutine = StartCoroutine(HideValidationMessage());
+    }
+
+    private IEnumerator HideValidationMessage()
+    {
+        yield return new WaitForSeconds(3f);
+
+        if (validationBackground != null)
+            validationBackground.SetActive(false);
+
+        validationCoroutine = null;
     }
 
     private void ClearValidationMessage()
     {
-        if (validationText != null) validationText.text = "";
+        if (validationCoroutine != null)
+        {
+            StopCoroutine(validationCoroutine);
+            validationCoroutine = null;
+        }
+
+        if (validationBackground != null)
+            validationBackground.SetActive(false);
+
+        if (validationText != null)
+            validationText.text = "";
     }
 
-    // ---------- Yardımcılar ----------
 
-    private string TypeToTurkish(CoffeeType type)
+
+
+
+    // =========================================================
+    // KAHVE TÜRÜNÜ TÜRKÇEYE ÇEVİR
+    // =========================================================
+
+    private string TypeToTurkish(
+        CoffeeType type)
     {
         switch (type)
         {
-            case CoffeeType.Espresso: return "Espresso";
-            case CoffeeType.Latte: return "Latte";
-            case CoffeeType.Cappuccino: return "Cappuccino";
-            case CoffeeType.Americano: return "Americano";
+            case CoffeeType.Espresso:
+                return "Espresso";
+
+            case CoffeeType.Latte:
+                return "Latte";
+
+            case CoffeeType.Cappuccino:
+                return "Cappuccino";
+
+            case CoffeeType.Americano:
+                return "Americano";
         }
+
+
         return "";
     }
 
-    private string SizeToTurkish(CupSize size)
+
+    // =========================================================
+    // BOYUTU TÜRKÇEYE ÇEVİR
+    // =========================================================
+
+    private string SizeToTurkish(
+        CupSize size)
     {
         switch (size)
         {
-            case CupSize.Small: return "Small";
-            case CupSize.Medium: return "Orta";
-            case CupSize.Large: return "Büyük";
+            case CupSize.Small:
+                return "Küçük";
+
+            case CupSize.Medium:
+                return "Orta";
+
+            case CupSize.Large:
+                return "Büyük";
         }
+
+
         return "";
     }
 }
