@@ -1,16 +1,15 @@
 using UnityEngine;
 
 /// <summary>
-/// Tek elle çalışan basit sistem. E: bakılan şeyle etkileşim (al/bırak/tak/basılı tut - hepsi
-/// hedefin kendi Interact/OnHoldComplete mantığına göre). Hiçbir yere bakmıyorken elindeki
-/// itemi bırakmak istersen F'ye bas.
+/// E: Bakılan nesneyle etkileşim.
+/// PC'ye bakılıyorsa ComputerInteraction sistemini çalıştırır.
 /// </summary>
 public class PlayerInteraction : MonoBehaviour
 {
     [Header("Referanslar")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Transform holdPoint;
-    [SerializeField] private Transform leftHoldPoint; // SADECE tamper gibi isLeftHandOnly itemlar için
+    [SerializeField] private Transform leftHoldPoint;
     [SerializeField] private InteractionUI interactionUI;
 
     [Header("Ayarlar")]
@@ -19,7 +18,9 @@ public class PlayerInteraction : MonoBehaviour
 
     private PickupItem currentHeldItem;
     private PickupItem currentLeftHeldItem;
+
     private IInteractable currentTarget;
+    private ComputerInteraction currentComputer;
 
     private IHoldInteractable currentHoldTarget;
     private float holdTimer = 0f;
@@ -27,8 +28,14 @@ public class PlayerInteraction : MonoBehaviour
 
     public Transform HoldPoint => holdPoint;
     public Transform LeftHoldPoint => leftHoldPoint;
+
     public Vector3 LastHitPoint { get; private set; }
-    public bool IsLookingAtInteractable => (currentTarget != null && !(currentTarget is CounterSurface)) || currentHoldTarget != null;
+
+    public bool IsLookingAtInteractable =>
+        (currentTarget != null && !(currentTarget is CounterSurface))
+        || currentHoldTarget != null
+        || currentComputer != null;
+
 
     private void Update()
     {
@@ -41,31 +48,51 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
+
     private void HandleRaycast()
     {
         currentTarget = null;
+        currentComputer = null;
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        if (Physics.Raycast(ray, out RaycastHit hit, interactRange, interactableLayer))
+        Ray ray = playerCamera.ViewportPointToRay(
+            new Vector3(0.5f, 0.5f, 0f)
+        );
+
+        if (Physics.Raycast(
+            ray,
+            out RaycastHit hit,
+            interactRange,
+            interactableLayer))
         {
             LastHitPoint = hit.point;
 
-            if (hit.collider.TryGetComponent(out IHoldInteractable holdInteractable))
+            // PC kontrolü
+            currentComputer =
+                hit.collider.GetComponentInParent<ComputerInteraction>();
+
+            // Hold sistemi
+            if (hit.collider.TryGetComponent(
+                out IHoldInteractable holdInteractable))
             {
                 if (currentHoldTarget != holdInteractable)
                 {
                     holdTimer = 0f;
                     ClearAnyHoldOverride();
                 }
+
                 currentHoldTarget = holdInteractable;
             }
             else
             {
-                if (currentHoldTarget != null) ClearAnyHoldOverride();
+                if (currentHoldTarget != null)
+                    ClearAnyHoldOverride();
+
                 currentHoldTarget = null;
             }
 
-            if (hit.collider.TryGetComponent(out IInteractable interactable))
+            // Normal etkileşim
+            if (hit.collider.TryGetComponent(
+                out IInteractable interactable))
             {
                 currentTarget = interactable;
                 return;
@@ -73,81 +100,164 @@ public class PlayerInteraction : MonoBehaviour
         }
         else
         {
-            if (currentHoldTarget != null) ClearAnyHoldOverride();
+            if (currentHoldTarget != null)
+                ClearAnyHoldOverride();
+
             currentHoldTarget = null;
         }
     }
 
+
     private void HandleHoldInteraction()
     {
-        bool eligible = currentHoldTarget != null && currentHoldTarget.CanStartHold(this);
+        bool eligible =
+            currentHoldTarget != null &&
+            currentHoldTarget.CanStartHold(this);
 
         if (!eligible)
         {
-            if (holdTimer > 0f) { holdTimer = 0f; ClearAnyHoldOverride(); }
+            if (holdTimer > 0f)
+            {
+                holdTimer = 0f;
+                ClearAnyHoldOverride();
+            }
+
             interactionUI?.HideHoldProgress();
-            if (wasShowingPrompt) { interactionUI?.HidePrompt(); wasShowingPrompt = false; }
+
+            if (wasShowingPrompt)
+            {
+                interactionUI?.HidePrompt();
+                wasShowingPrompt = false;
+            }
+
             return;
         }
 
         if (!Input.GetKey(KeyCode.E))
         {
-            if (holdTimer > 0f) { holdTimer = 0f; ClearAnyHoldOverride(); }
+            if (holdTimer > 0f)
+            {
+                holdTimer = 0f;
+                ClearAnyHoldOverride();
+            }
+
             interactionUI?.HideHoldProgress();
-            interactionUI?.ShowPrompt(currentHoldTarget.GetHoldPrompt());
+
+            interactionUI?.ShowPrompt(
+                currentHoldTarget.GetHoldPrompt()
+            );
+
             wasShowingPrompt = true;
+
             return;
         }
 
-        if (wasShowingPrompt) { interactionUI?.HidePrompt(); wasShowingPrompt = false; }
+        if (wasShowingPrompt)
+        {
+            interactionUI?.HidePrompt();
+            wasShowingPrompt = false;
+        }
 
         holdTimer += Time.deltaTime;
-        float duration = currentHoldTarget.HoldDuration;
-        float progress = holdTimer / duration;
-        int secondsRemaining = Mathf.CeilToInt(Mathf.Max(0f, duration - holdTimer));
 
-        interactionUI?.ShowHoldProgress(progress, secondsRemaining);
-        currentHoldTarget.OnHoldProgress(this, Mathf.Clamp01(progress));
+        float duration = currentHoldTarget.HoldDuration;
+
+        float progress = holdTimer / duration;
+
+        int secondsRemaining =
+            Mathf.CeilToInt(
+                Mathf.Max(0f, duration - holdTimer)
+            );
+
+        interactionUI?.ShowHoldProgress(
+            progress,
+            secondsRemaining
+        );
+
+        currentHoldTarget.OnHoldProgress(
+            this,
+            Mathf.Clamp01(progress)
+        );
 
         if (holdTimer >= duration)
         {
             currentHoldTarget.OnHoldComplete(this);
+
             holdTimer = 0f;
+
             interactionUI?.HideHoldProgress();
         }
     }
 
-    // Hold iptal olduğunda (hedef değişti, E bırakıldı vs.) elde animasyon override kalmışsa temizle.
-    // NOT: TamperableCoffee kendi "settle" coroutine'i sırasında override'ı KENDİSİ yönetir,
-    // bu yüzden hold tamamlandıktan sonra (holdTimer sıfırlandıktan sonra) burası tekrar
-    // override'ı temizlemeye ÇALIŞMAZ çünkü o noktada zaten currentHoldTarget/eligible false olur
-    // ve coroutine kendi ClearHeldPositionOverride'ını çağırana kadar item'ın override'ı korunur.
+
     private void ClearAnyHoldOverride()
     {
         currentHeldItem?.ClearHeldPositionOverride();
         currentLeftHeldItem?.ClearHeldPositionOverride();
     }
 
+
     private void TryInteract()
     {
+        // ==========================================
+        // PC
+        // ==========================================
+
+        if (currentComputer != null)
+        {
+            currentComputer.EnterComputer();
+            return;
+        }
+
+
+        // ==========================================
+        // NORMAL ETKİLEŞİMLER
+        // ==========================================
+
         if (currentTarget is PickupItem targetItem)
         {
             if (targetItem.IsLeftHandOnly)
             {
-                if (currentLeftHeldItem != null && targetItem != currentLeftHeldItem) return; // sol el dolu
+                if (currentLeftHeldItem != null &&
+                    targetItem != currentLeftHeldItem)
+                {
+                    return;
+                }
             }
             else
             {
-                if (currentHeldItem != null && targetItem != currentHeldItem) return; // sağ el dolu
+                if (currentHeldItem != null &&
+                    targetItem != currentHeldItem)
+                {
+                    return;
+                }
             }
         }
 
         currentTarget?.Interact(this);
     }
 
-    public void SetHeldItem(PickupItem item) => currentHeldItem = item;
-    public PickupItem GetHeldItem() => currentHeldItem;
 
-    public void SetLeftHeldItem(PickupItem item) => currentLeftHeldItem = item;
-    public PickupItem GetLeftHeldItem() => currentLeftHeldItem;
+    public void SetHeldItem(PickupItem item)
+    {
+        currentHeldItem = item;
+    }
+
+
+    public PickupItem GetHeldItem()
+    {
+        return currentHeldItem;
+    }
+
+
+    public void SetLeftHeldItem(PickupItem item)
+    {
+        currentLeftHeldItem = item;
+    }
+
+
+    public PickupItem GetLeftHeldItem()
+    {
+        return currentLeftHeldItem;
+    }
 }

@@ -20,6 +20,9 @@ public class MilkFiller : MonoBehaviour
     public bool IsFull => isFull;
     public bool IsFilling => isFilling;
     public bool HasMilk => currentProgress > 0.01f; // biraz bile süt varsa true
+    public bool IsFrothed => isFrothed;
+
+    private bool isFrothed = false;
 
     /// <summary>
     /// MilkPourInteraction tarafından E basılı tutulduğu sürece HER FRAME çağrılır.
@@ -53,6 +56,8 @@ public class MilkFiller : MonoBehaviour
     {
         if (milkRenderer != null && frothedMaterial != null)
             milkRenderer.material = frothedMaterial;
+
+        isFrothed = true;
     }
 
     void Start()

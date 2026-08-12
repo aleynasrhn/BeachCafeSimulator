@@ -8,6 +8,8 @@ public class Recipe
 {
     public string coffeeName;
 
+    public CoffeeType coffeeType;
+
     public Sprite coffeeImage;
 
     [TextArea(5, 10)]

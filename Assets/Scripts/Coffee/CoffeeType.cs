@@ -1,12 +1,14 @@
+public enum CoffeeType
+{
+    Espresso,
+    Latte,
+    Cappuccino,
+    Americano
+}
 
-
-
-
-    public enum CoffeeType
-    {
-        Espresso,
-        Latte,
-        Cappuccino,
-        Mocha
-    }
- 
+public enum CupSize
+{
+    Small,
+    Medium,
+    Large
+}
