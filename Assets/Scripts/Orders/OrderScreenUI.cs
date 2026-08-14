@@ -1,7 +1,7 @@
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using System.Collections;
+using UnityEngine;
 
 /// <summary>
 /// Kasa ekranındaki tüm sipariş seçimlerini yönetir.
@@ -42,8 +42,6 @@ public class OrderScreenUI : MonoBehaviour
 
     [Header("Sipariş Ayarları")]
     [SerializeField] private float orderTimeLimit = 90f;
-
-    
 
 
     // =========================================================
@@ -91,7 +89,6 @@ public class OrderScreenUI : MonoBehaviour
     private void OnEnable()
     {
         ResetBasket();
-
         GenerateNewCustomerRequest();
     }
 
@@ -107,7 +104,6 @@ public class OrderScreenUI : MonoBehaviour
                 0,
                 System.Enum.GetValues(typeof(CoffeeType)).Length
             );
-
 
         currentTargetOrder = new Order
         {
@@ -178,7 +174,6 @@ public class OrderScreenUI : MonoBehaviour
             return;
         }
 
-
         string coffeePart;
 
 
@@ -200,7 +195,6 @@ public class OrderScreenUI : MonoBehaviour
             {
                 shotName = "Double Shot";
             }
-
 
             coffeePart =
                 $"Espresso, {shotName}";
@@ -263,10 +257,6 @@ public class OrderScreenUI : MonoBehaviour
     // BOYUT SEÇ
     // =========================================================
 
-    /// <summary>
-    /// Büyük / Orta / Küçük butonları.
-    /// Espresso seçiliyken kullanılamaz.
-    /// </summary>
     public void SelectSize(SizeButtonUI button)
     {
         if (button == null)
@@ -297,7 +287,6 @@ public class OrderScreenUI : MonoBehaviour
 
         selectedSize = button.Size;
 
-
         ClearValidationMessage();
 
         UpdateBasketDisplay();
@@ -308,19 +297,13 @@ public class OrderScreenUI : MonoBehaviour
     // KAHVE SEÇ
     // =========================================================
 
-    /// <summary>
-    /// Americano / Latte / Cappuccino / Espresso.
-    /// </summary>
     public void SelectCoffee(CoffeeButtonUI button)
     {
         if (button == null)
             return;
 
 
-        // -----------------------------------------------------
-        // SHOT SEÇİLDİYSE SADECE ESPRESSO SEÇİLEBİLİR
-        // -----------------------------------------------------
-
+        // Shot seçildiyse sadece Espresso seçilebilir
         if (selectedEspressoShot != null &&
             button.CoffeeType != CoffeeType.Espresso)
         {
@@ -335,9 +318,9 @@ public class OrderScreenUI : MonoBehaviour
         selectedCoffee = button;
 
 
-        // -----------------------------------------------------
+        // =====================================================
         // ESPRESSO
-        // -----------------------------------------------------
+        // =====================================================
 
         if (button.CoffeeType ==
             CoffeeType.Espresso)
@@ -347,9 +330,9 @@ public class OrderScreenUI : MonoBehaviour
         }
 
 
-        // -----------------------------------------------------
+        // =====================================================
         // NORMAL KAHVE
-        // -----------------------------------------------------
+        // =====================================================
 
         else
         {
@@ -369,9 +352,6 @@ public class OrderScreenUI : MonoBehaviour
     // ESPRESSO SHOT SEÇ
     // =========================================================
 
-    /// <summary>
-    /// Tek Shot / Double Shot butonları.
-    /// </summary>
     public void SelectEspressoShot(
         EspressoShotButtonUI button)
     {
@@ -404,10 +384,8 @@ public class OrderScreenUI : MonoBehaviour
 
         selectedEspressoShot = button;
 
-
         // Espresso'da boyut yok
         selectedSize = null;
-
 
         ClearValidationMessage();
 
@@ -419,16 +397,10 @@ public class OrderScreenUI : MonoBehaviour
     // EKSTRA SEÇ / ÇIKAR
     // =========================================================
 
-    /// <summary>
-    /// Ekstralar zorunlu değildir.
-    /// Seçilirse fiyata eklenir.
-    /// Seçilmezse sipariş yine onaylanabilir.
-    /// </summary>
     public void ToggleExtra(ExtraButtonUI button)
     {
         if (button == null)
             return;
-
 
         if (button.IsLocked)
             return;
@@ -456,12 +428,10 @@ public class OrderScreenUI : MonoBehaviour
     {
         selectedPaymentMethod = method;
 
-
         if (paymentMethodText != null)
         {
             paymentMethodText.text = method;
         }
-
 
         ClearValidationMessage();
     }
@@ -501,7 +471,6 @@ public class OrderScreenUI : MonoBehaviour
                     {
                         price = 2.15f;
 
-
                         lines +=
                             $"Espresso - Tek Shot " +
                             $"{price:0.00}$\n";
@@ -509,7 +478,6 @@ public class OrderScreenUI : MonoBehaviour
                     else
                     {
                         price = 2.75f;
-
 
                         lines +=
                             $"Espresso - Double Shot " +
@@ -722,7 +690,7 @@ public class OrderScreenUI : MonoBehaviour
         // 5 - EKSTRA FİYATLARI
         // =====================================================
 
-        // Ekstra seçmek zorunlu DEĞİL.
+        // Ekstra seçmek zorunlu değil.
         // Seçilmiş olanların fiyatı eklenir.
 
         foreach (var extra in selectedExtras)
@@ -741,7 +709,6 @@ public class OrderScreenUI : MonoBehaviour
                 selectedCoffee.CoffeeType,
 
             // Normal kahvelerde gerçek boyut.
-            //
             // Espresso'da mevcut Order sistemi size istediği
             // için şimdilik Small gönderiyoruz.
             size =
@@ -775,7 +742,17 @@ public class OrderScreenUI : MonoBehaviour
 
 
         // =====================================================
-        // 8 - SİPARİŞ ÖZETİ
+        // 8 - PARA EKLE
+        // =====================================================
+
+        if (MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.AddMoney(total);
+        }
+
+
+        // =====================================================
+        // 9 - SİPARİŞ ÖZETİ
         // =====================================================
 
         string summary =
@@ -833,14 +810,14 @@ public class OrderScreenUI : MonoBehaviour
 
 
         // =====================================================
-        // 9 - SIFIRLA
+        // 10 - SIFIRLA
         // =====================================================
 
         ResetBasket();
 
 
         // =====================================================
-        // 10 - YENİ MÜŞTERİ TALEBİ
+        // 11 - YENİ MÜŞTERİ TALEBİ
         // =====================================================
 
         GenerateNewCustomerRequest();
@@ -858,46 +835,75 @@ public class OrderScreenUI : MonoBehaviour
         if (validationText == null)
             return;
 
+
         if (validationCoroutine != null)
         {
             StopCoroutine(validationCoroutine);
         }
 
+
+        validationText.gameObject.SetActive(true);
+
         validationText.text = message;
 
-        if (validationBackground != null)
-            validationBackground.SetActive(true);
 
-        validationCoroutine = StartCoroutine(HideValidationMessage());
+        if (validationBackground != null)
+        {
+            validationBackground.SetActive(true);
+        }
+
+
+        validationCoroutine =
+            StartCoroutine(HideValidationMessage());
     }
+
 
     private IEnumerator HideValidationMessage()
     {
         yield return new WaitForSeconds(3f);
 
+
+        if (validationText != null)
+        {
+            validationText.text = "";
+
+            validationText.gameObject.SetActive(false);
+        }
+
+
         if (validationBackground != null)
+        {
             validationBackground.SetActive(false);
+        }
+
 
         validationCoroutine = null;
     }
+
 
     private void ClearValidationMessage()
     {
         if (validationCoroutine != null)
         {
             StopCoroutine(validationCoroutine);
+
             validationCoroutine = null;
         }
 
+
         if (validationBackground != null)
+        {
             validationBackground.SetActive(false);
+        }
+
 
         if (validationText != null)
+        {
             validationText.text = "";
+
+            validationText.gameObject.SetActive(false);
+        }
     }
-
-
-
 
 
     // =========================================================

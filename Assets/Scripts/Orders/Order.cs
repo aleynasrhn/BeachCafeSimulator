@@ -21,3 +21,4 @@ public class Order
     // Nakit / Kart
     public string preferredPaymentMethod = "";
 }
+
