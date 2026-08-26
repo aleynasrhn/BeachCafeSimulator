@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class OrderManager : MonoBehaviour
-
 {
     public static OrderManager Instance;
 
@@ -11,31 +8,27 @@ public class OrderManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
-    }
-
-    public void CreateRandomOrder()
-    {
-        currentOrder = new Order();
-
-        currentOrder.coffeeType =
-            (CoffeeType)Random.Range(0, 4);
-
-        currentOrder.reward =
-            Random.Range(20, 41);
-
-        currentOrder.timeLimit = 5;
-
-        Debug.Log("Yeni Sipariş: " + currentOrder.coffeeType);
-        OrderUI.Instance.AddOrder(currentOrder);
-    }
-
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.O))
+        if (Instance == null)
         {
-            CreateRandomOrder();
+            Instance = this;
         }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    public void SetCurrentOrder(Order order)
+    {
+        currentOrder = order;
+
+        Debug.Log(
+            "OrderManager yeni müşteri siparişini aldı."
+        );
+    }
+
+    public Order GetCurrentOrder()
+    {
+        return currentOrder;
     }
 }

@@ -42,7 +42,8 @@ public class MoneyManager : MonoBehaviour
     {
         if (moneyText != null)
         {
-            moneyText.text = $"{currentMoney:0.00}$";
+            moneyText.text =
+                $"{currentMoney:0.00}$";
         }
     }
 
