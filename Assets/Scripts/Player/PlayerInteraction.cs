@@ -3,7 +3,8 @@ using UnityEngine;
 /// <summary>
 /// E: Bakılan nesneyle etkileşim.
 /// PC'ye bakılıyorsa ComputerInteraction sistemini çalıştırır.
-/// Kapak eldeyken bardağa bakılırsa kapağı takmayı dener.
+/// Kapak eldeyken bardağa bakılırsa kapağı takar.
+/// Takılı kapağa bakılıp E'ye basılırsa kapağı bardaktan ayırıp ele alır.
 /// </summary>
 public class PlayerInteraction : MonoBehaviour
 {
@@ -26,6 +27,7 @@ public class PlayerInteraction : MonoBehaviour
     private CupLidReceiver currentCupLidReceiver;
 
     private IHoldInteractable currentHoldTarget;
+
     private float holdTimer = 0f;
     private bool wasShowingPrompt = false;
 
@@ -34,12 +36,22 @@ public class PlayerInteraction : MonoBehaviour
 
     public Vector3 LastHitPoint { get; private set; }
 
+
+    // =========================================================
+    // INTERACTABLE KONTROLÜ
+    // =========================================================
+
     public bool IsLookingAtInteractable =>
-        (currentTarget != null && !(currentTarget is CounterSurface))
+        (currentTarget != null &&
+         !(currentTarget is CounterSurface))
         || currentHoldTarget != null
         || currentComputer != null
         || currentCupLidReceiver != null;
 
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
 
     private void Update()
     {
@@ -53,11 +65,16 @@ public class PlayerInteraction : MonoBehaviour
     }
 
 
+    // =========================================================
+    // RAYCAST
+    // =========================================================
+
     private void HandleRaycast()
     {
         currentTarget = null;
         currentComputer = null;
         currentCupLidReceiver = null;
+
 
         Ray ray = playerCamera.ViewportPointToRay(
             new Vector3(0.5f, 0.5f, 0f)
@@ -74,23 +91,27 @@ public class PlayerInteraction : MonoBehaviour
 
 
             // ==========================================
-            // PC KONTROLÜ
+            // PC
             // ==========================================
 
             currentComputer =
-                hit.collider.GetComponentInParent<ComputerInteraction>();
+                hit.collider.GetComponentInParent<
+                    ComputerInteraction
+                >();
 
 
             // ==========================================
-            // KAPAK - BARDAK KONTROLÜ
+            // CUP / LID RECEIVER
             // ==========================================
 
             currentCupLidReceiver =
-                hit.collider.GetComponentInParent<CupLidReceiver>();
+                hit.collider.GetComponentInParent<
+                    CupLidReceiver
+                >();
 
 
             // ==========================================
-            // HOLD SİSTEMİ
+            // HOLD SYSTEM
             // ==========================================
 
             if (hit.collider.TryGetComponent(
@@ -102,19 +123,22 @@ public class PlayerInteraction : MonoBehaviour
                     ClearAnyHoldOverride();
                 }
 
-                currentHoldTarget = holdInteractable;
+                currentHoldTarget =
+                    holdInteractable;
             }
             else
             {
                 if (currentHoldTarget != null)
+                {
                     ClearAnyHoldOverride();
+                }
 
                 currentHoldTarget = null;
             }
 
 
             // ==========================================
-            // NORMAL ETKİLEŞİM
+            // NORMAL INTERACTION
             // ==========================================
 
             if (hit.collider.TryGetComponent(
@@ -127,18 +151,25 @@ public class PlayerInteraction : MonoBehaviour
         else
         {
             if (currentHoldTarget != null)
+            {
                 ClearAnyHoldOverride();
+            }
 
             currentHoldTarget = null;
         }
     }
 
 
+    // =========================================================
+    // HOLD INTERACTION
+    // =========================================================
+
     private void HandleHoldInteraction()
     {
         bool eligible =
             currentHoldTarget != null &&
             currentHoldTarget.CanStartHold(this);
+
 
         if (!eligible)
         {
@@ -149,6 +180,7 @@ public class PlayerInteraction : MonoBehaviour
             }
 
             interactionUI?.HideHoldProgress();
+
 
             if (wasShowingPrompt)
             {
@@ -170,6 +202,7 @@ public class PlayerInteraction : MonoBehaviour
 
             interactionUI?.HideHoldProgress();
 
+
             interactionUI?.ShowPrompt(
                 currentHoldTarget.GetHoldPrompt()
             );
@@ -189,15 +222,21 @@ public class PlayerInteraction : MonoBehaviour
 
         holdTimer += Time.deltaTime;
 
+
         float duration =
             currentHoldTarget.HoldDuration;
+
 
         float progress =
             holdTimer / duration;
 
+
         int secondsRemaining =
             Mathf.CeilToInt(
-                Mathf.Max(0f, duration - holdTimer)
+                Mathf.Max(
+                    0f,
+                    duration - holdTimer
+                )
             );
 
 
@@ -224,12 +263,21 @@ public class PlayerInteraction : MonoBehaviour
     }
 
 
+    // =========================================================
+    // HOLD OVERRIDE TEMİZLE
+    // =========================================================
+
     private void ClearAnyHoldOverride()
     {
         currentHeldItem?.ClearHeldPositionOverride();
+
         currentLeftHeldItem?.ClearHeldPositionOverride();
     }
 
+
+    // =========================================================
+    // ANA ETKİLEŞİM
+    // =========================================================
 
     private void TryInteract()
     {
@@ -245,39 +293,101 @@ public class PlayerInteraction : MonoBehaviour
 
 
         // ==========================================
+        // TAKILI KAPAĞI AYIR
+        // ==========================================
+
+        if (currentTarget is PickupItem targetPickup)
+        {
+            // Bakılan şey PickupItem ise ve başka objeye
+            // takılı bir kapaksa
+            if (targetPickup.IsAttachedToObject)
+            {
+                LidItem lidItem =
+                    targetPickup.GetComponent<LidItem>();
+
+
+                if (lidItem != null)
+                {
+                    // Sağ el doluysa başka item alamıyoruz
+                    if (currentHeldItem != null)
+                    {
+                        return;
+                    }
+
+
+                    // Kapağı bardaktan ayır
+                    targetPickup.DetachFromObject();
+
+
+                    // Ardından doğrudan ele al
+                    targetPickup.ForcePickUp(this);
+
+
+                    return;
+                }
+            }
+        }
+
+
+        // ==========================================
         // KAPAK TAKMA
         // ==========================================
 
         if (currentCupLidReceiver != null)
         {
-            // Sağ elde kapak varsa
+            // --------------------------------------
+            // SAĞ ELDE KAPAK
+            // --------------------------------------
+
             if (currentHeldItem != null)
             {
                 LidItem lid =
                     currentHeldItem.GetComponent<LidItem>();
 
+
                 if (lid != null)
                 {
-                    currentCupLidReceiver.TryAttachLid(
-                        currentHeldItem
-                    );
+                    bool attached =
+                        currentCupLidReceiver.TryAttachLid(
+                            currentHeldItem
+                        );
+
+
+                    if (attached)
+                    {
+                        // Kapak artık elde değil
+                        currentHeldItem = null;
+                    }
+
 
                     return;
                 }
             }
 
 
-            // Sol elde kapak varsa
+            // --------------------------------------
+            // SOL ELDE KAPAK
+            // --------------------------------------
+
             if (currentLeftHeldItem != null)
             {
                 LidItem lid =
                     currentLeftHeldItem.GetComponent<LidItem>();
 
+
                 if (lid != null)
                 {
-                    currentCupLidReceiver.TryAttachLid(
-                        currentLeftHeldItem
-                    );
+                    bool attached =
+                        currentCupLidReceiver.TryAttachLid(
+                            currentLeftHeldItem
+                        );
+
+
+                    if (attached)
+                    {
+                        currentLeftHeldItem = null;
+                    }
+
 
                     return;
                 }
@@ -291,6 +401,7 @@ public class PlayerInteraction : MonoBehaviour
 
         if (currentTarget is PickupItem targetItem)
         {
+            // Sol el
             if (targetItem.IsLeftHandOnly)
             {
                 if (currentLeftHeldItem != null &&
@@ -299,6 +410,7 @@ public class PlayerInteraction : MonoBehaviour
                     return;
                 }
             }
+            // Sağ el
             else
             {
                 if (currentHeldItem != null &&
@@ -318,6 +430,10 @@ public class PlayerInteraction : MonoBehaviour
     }
 
 
+    // =========================================================
+    // SAĞ EL
+    // =========================================================
+
     public void SetHeldItem(PickupItem item)
     {
         currentHeldItem = item;
@@ -329,6 +445,10 @@ public class PlayerInteraction : MonoBehaviour
         return currentHeldItem;
     }
 
+
+    // =========================================================
+    // SOL EL
+    // =========================================================
 
     public void SetLeftHeldItem(PickupItem item)
     {

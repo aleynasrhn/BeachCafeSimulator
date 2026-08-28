@@ -18,10 +18,32 @@ public class CupLidReceiver : MonoBehaviour
     public bool HasLid => attachedLid != null;
 
 
+    private void Awake()
+    {
+        // Prefab içinden sahnedeki InteractionUI'yi bul
+        if (interactionUI == null)
+        {
+            interactionUI = FindFirstObjectByType<InteractionUI>();
+        }
+
+        if (interactionUI == null)
+        {
+            Debug.LogWarning(
+                "CupLidReceiver: Sahnedeki InteractionUI bulunamadı!"
+            );
+        }
+    }
+
+
     public bool TryAttachLid(PickupItem lidPickup)
     {
         if (lidPickup == null)
             return false;
+
+
+        // ==========================================
+        // KAPAK KONTROLÜ
+        // ==========================================
 
         LidItem lidItem =
             lidPickup.GetComponent<LidItem>();
