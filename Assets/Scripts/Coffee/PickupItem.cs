@@ -2,10 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Portafilter, espresso cup, milk pitcher, tamper gibi elle tutulabilen
-/// her objeye bu scripti eklersin. Tek el sistemi - herkes aynı HoldPoint'i kullanır.
-///
-/// ONEMLI: transform.SetParent() hiç kullanılmıyor (scale drift bug'ı için) - parent hiç
-/// değişmiyor, Update() içinde world-space pozisyon/rotasyon elle güncelleniyor.
+/// her objeye bu scripti eklersin.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
@@ -15,18 +12,19 @@ public class PickupItem : MonoBehaviour, IInteractable
     [SerializeField] private string itemName = "Item";
     [SerializeField] private float holdSmoothSpeed = 15f;
     [SerializeField] private float surfaceYOffset = 0f;
-    [Tooltip("İşaretlenirse bu item SADECE sol elde tutulabilir (tamper). İşaretsizse sağ elde tutulur (çoğu item).")]
+
+    [Tooltip("İşaretlenirse bu item SADECE sol elde tutulabilir.")]
     [SerializeField] private bool isLeftHandOnly = false;
 
-    [Header("Elde Tutma Ayarı (pivot farklıysa buradan düzelt)")]
+    [Header("Elde Tutma Ayarı")]
     [SerializeField] private Vector3 holdPositionOffset = Vector3.zero;
     [SerializeField] private Vector3 holdRotationOffsetEuler = Vector3.zero;
 
-    [Header("Kahve Doldurma (sadece portafilter için, diğer itemlerde boş bırak)")]
+    [Header("Kahve Doldurma")]
     [SerializeField] private GameObject groundCoffeeVisual;
     [SerializeField] private float tampedVisualScaleY = 0.85f;
 
-    [Header("Espresso Doldurma (sadece cup için, diğer itemlerde boş bırak)")]
+    [Header("Espresso Doldurma")]
     [SerializeField] private GameObject espressoLiquidVisual;
 
     private bool isTamped = false;
@@ -35,13 +33,12 @@ public class PickupItem : MonoBehaviour, IInteractable
     private Rigidbody rb;
     private Collider col;
     private Transform holdPoint;
+
     private bool isHeld = false;
 
     private Quaternion uprightRotation;
-    private Vector3 originalWorldPosition; // tamper "yerine geri dönerken" kullanılır
+    private Vector3 originalWorldPosition;
 
-    // TamperableCoffee gibi scriptlerin, basılı tutma sırasında elin pozisyonunu
-    // geçici olarak (animasyon için) elle kontrol etmesi için
     private bool hasPositionOverride = false;
     private Vector3 overridePosition;
     private Quaternion overrideRotation;
@@ -50,18 +47,25 @@ public class PickupItem : MonoBehaviour, IInteractable
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+
         uprightRotation = transform.rotation;
         originalWorldPosition = transform.position;
 
         if (groundCoffeeVisual != null)
         {
-            groundCoffeeOriginalScale = groundCoffeeVisual.transform.localScale;
+            groundCoffeeOriginalScale =
+                groundCoffeeVisual.transform.localScale;
+
             groundCoffeeVisual.SetActive(false);
         }
 
         if (espressoLiquidVisual != null)
             espressoLiquidVisual.SetActive(false);
     }
+
+    // =========================================================
+    // KAHVE
+    // =========================================================
 
     public void FillWithGroundCoffee()
     {
@@ -74,24 +78,40 @@ public class PickupItem : MonoBehaviour, IInteractable
         if (groundCoffeeVisual != null)
         {
             groundCoffeeVisual.SetActive(false);
-            groundCoffeeVisual.transform.localScale = groundCoffeeOriginalScale;
+            groundCoffeeVisual.transform.localScale =
+                groundCoffeeOriginalScale;
         }
+
         isTamped = false;
     }
 
-    public bool HasGroundCoffee => groundCoffeeVisual != null && groundCoffeeVisual.activeSelf;
+    public bool HasGroundCoffee =>
+        groundCoffeeVisual != null &&
+        groundCoffeeVisual.activeSelf;
 
     public void TampCoffee()
     {
         isTamped = true;
+
         if (groundCoffeeVisual != null)
         {
-            Vector3 s = groundCoffeeVisual.transform.localScale;
-            groundCoffeeVisual.transform.localScale = new Vector3(s.x, s.y * tampedVisualScaleY, s.z);
+            Vector3 s =
+                groundCoffeeVisual.transform.localScale;
+
+            groundCoffeeVisual.transform.localScale =
+                new Vector3(
+                    s.x,
+                    s.y * tampedVisualScaleY,
+                    s.z
+                );
         }
     }
 
     public bool IsTamped => isTamped;
+
+    // =========================================================
+    // ESPRESSO
+    // =========================================================
 
     public void FillWithEspresso()
     {
@@ -99,11 +119,19 @@ public class PickupItem : MonoBehaviour, IInteractable
             espressoLiquidVisual.SetActive(true);
     }
 
-    public bool HasEspresso => espressoLiquidVisual != null && espressoLiquidVisual.activeSelf;
+    public bool HasEspresso =>
+        espressoLiquidVisual != null &&
+        espressoLiquidVisual.activeSelf;
+
+    // =========================================================
+    // ETKİLEŞİM
+    // =========================================================
 
     public string GetInteractPrompt()
     {
-        return isHeld ? $"E - {itemName} bırak" : $"E - {itemName} al";
+        return isHeld
+            ? $"E - {itemName} bırak"
+            : $"E - {itemName} al";
     }
 
     public void Interact(PlayerInteraction player)
@@ -114,89 +142,143 @@ public class PickupItem : MonoBehaviour, IInteractable
             Drop(player);
     }
 
+    // =========================================================
+    // PICK UP
+    // =========================================================
+
     private void PickUp(PlayerInteraction player)
     {
-        holdPoint = isLeftHandOnly ? player.LeftHoldPoint : player.HoldPoint;
+        holdPoint =
+            isLeftHandOnly
+            ? player.LeftHoldPoint
+            : player.HoldPoint;
 
         rb.isKinematic = true;
         rb.useGravity = false;
+
         col.enabled = false;
 
         isHeld = true;
 
-        if (isLeftHandOnly) player.SetLeftHeldItem(this);
-        else player.SetHeldItem(this);
+        if (isLeftHandOnly)
+            player.SetLeftHeldItem(this);
+        else
+            player.SetHeldItem(this);
     }
+
+    // =========================================================
+    // DROP
+    // =========================================================
 
     public void Drop(PlayerInteraction player)
     {
         rb.isKinematic = false;
         rb.useGravity = true;
+
         col.enabled = true;
 
         isHeld = false;
+
         holdPoint = null;
         hasPositionOverride = false;
 
-        if (isLeftHandOnly) player.SetLeftHeldItem(null);
-        else player.SetHeldItem(null);
+        if (isLeftHandOnly)
+            player.SetLeftHeldItem(null);
+        else
+            player.SetHeldItem(null);
     }
+
+    // =========================================================
+    // COUNTER
+    // =========================================================
 
     public void PlaceOnCounter(Vector3 worldPosition)
     {
-        transform.position = worldPosition + Vector3.up * surfaceYOffset;
-        transform.rotation = uprightRotation;
+        transform.position =
+            worldPosition + Vector3.up * surfaceYOffset;
+
+        transform.rotation =
+            uprightRotation;
 
         rb.isKinematic = true;
         rb.useGravity = false;
+
         col.enabled = true;
 
         isHeld = false;
     }
 
-    public void PlaceAtExact(Vector3 worldPosition, Quaternion worldRotation)
+    public void PlaceAtExact(
+        Vector3 worldPosition,
+        Quaternion worldRotation)
     {
         transform.position = worldPosition;
         transform.rotation = worldRotation;
 
         rb.isKinematic = true;
         rb.useGravity = false;
+
         col.enabled = true;
 
         isHeld = false;
     }
 
+    // =========================================================
+    // FORCE PICKUP
+    // =========================================================
+
     public void ForcePickUp(PlayerInteraction player)
     {
-        holdPoint = isLeftHandOnly ? player.LeftHoldPoint : player.HoldPoint;
+        holdPoint =
+            isLeftHandOnly
+            ? player.LeftHoldPoint
+            : player.HoldPoint;
 
         rb.isKinematic = true;
         rb.useGravity = false;
+
         col.enabled = false;
 
         isHeld = true;
 
-        if (isLeftHandOnly) player.SetLeftHeldItem(this);
-        else player.SetHeldItem(this);
+        if (isLeftHandOnly)
+            player.SetLeftHeldItem(this);
+        else
+            player.SetHeldItem(this);
     }
 
-    public void DockAt(Vector3 worldPosition, Vector3 extraRotationEuler)
+    // =========================================================
+    // DOCK
+    // =========================================================
+
+    public void DockAt(
+        Vector3 worldPosition,
+        Vector3 extraRotationEuler)
     {
         transform.position = worldPosition;
-        transform.rotation = uprightRotation * Quaternion.Euler(extraRotationEuler);
+
+        transform.rotation =
+            uprightRotation *
+            Quaternion.Euler(extraRotationEuler);
 
         rb.isKinematic = true;
         rb.useGravity = false;
+
         col.enabled = true;
 
         isHeld = false;
     }
 
-    /// <summary>TamperableCoffee gibi scriptler, animasyon sırasında elin pozisyonunu
-    /// geçici olarak ezmek için çağırır.</summary>
-    public void OverrideHeldPosition(Vector3 worldPos, Quaternion worldRot)
+    // =========================================================
+    // EL POZİSYON OVERRIDE
+    // =========================================================
+
+    public void OverrideHeldPosition(
+        Vector3 worldPos,
+        Quaternion worldRot)
     {
         hasPositionOverride = true;
+
         overridePosition = worldPos;
         overrideRotation = worldRot;
     }
@@ -206,8 +288,10 @@ public class PickupItem : MonoBehaviour, IInteractable
         hasPositionOverride = false;
     }
 
-    /// <summary>Item'ı oyunun başında durduğu ORİJİNAL pozisyona/rotasyona geri koyar
-    /// (tamper işini bitirince otomatik "yerine dönmesi" için).</summary>
+    // =========================================================
+    // ORİJİNAL POZİSYONA DÖN
+    // =========================================================
+
     public void ReturnToOriginalPosition()
     {
         transform.position = originalWorldPosition;
@@ -215,16 +299,48 @@ public class PickupItem : MonoBehaviour, IInteractable
 
         rb.isKinematic = true;
         rb.useGravity = false;
+
         col.enabled = true;
 
         isHeld = false;
+
         holdPoint = null;
         hasPositionOverride = false;
     }
 
+    // =========================================================
+    // BAŞKA OBJENİN ÜZERİNE TAK
+    // =========================================================
+
+    public void AttachToObject(
+        Transform parent,
+        Vector3 worldPosition,
+        Quaternion worldRotation)
+    {
+        transform.position = worldPosition;
+        transform.rotation = worldRotation;
+
+        transform.SetParent(parent);
+
+        rb.isKinematic = true;
+        rb.useGravity = false;
+
+        col.enabled = false;
+
+        isHeld = false;
+
+        holdPoint = null;
+        hasPositionOverride = false;
+    }
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
+
     private void Update()
     {
-        if (!isHeld || holdPoint == null) return;
+        if (!isHeld || holdPoint == null)
+            return;
 
         Vector3 targetPosition;
         Quaternion targetRotation;
@@ -236,15 +352,41 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
         else
         {
-            targetPosition = holdPoint.TransformPoint(holdPositionOffset);
-            targetRotation = holdPoint.rotation * Quaternion.Euler(holdRotationOffsetEuler);
+            targetPosition =
+                holdPoint.TransformPoint(
+                    holdPositionOffset
+                );
+
+            targetRotation =
+                holdPoint.rotation *
+                Quaternion.Euler(
+                    holdRotationOffsetEuler
+                );
         }
 
-        transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * holdSmoothSpeed);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * holdSmoothSpeed);
+        transform.position =
+            Vector3.Lerp(
+                transform.position,
+                targetPosition,
+                Time.deltaTime * holdSmoothSpeed
+            );
+
+        transform.rotation =
+            Quaternion.Lerp(
+                transform.rotation,
+                targetRotation,
+                Time.deltaTime * holdSmoothSpeed
+            );
     }
 
+    // =========================================================
+    // GETTERS
+    // =========================================================
+
     public bool IsHeld => isHeld;
+
     public string ItemName => itemName;
-    public bool IsLeftHandOnly => isLeftHandOnly;
+
+    public bool IsLeftHandOnly =>
+        isLeftHandOnly;
 }

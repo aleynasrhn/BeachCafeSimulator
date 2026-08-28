@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// E: Bakılan nesneyle etkileşim.
 /// PC'ye bakılıyorsa ComputerInteraction sistemini çalıştırır.
+/// Kapak eldeyken bardağa bakılırsa kapağı takmayı dener.
 /// </summary>
 public class PlayerInteraction : MonoBehaviour
 {
@@ -22,6 +23,8 @@ public class PlayerInteraction : MonoBehaviour
     private IInteractable currentTarget;
     private ComputerInteraction currentComputer;
 
+    private CupLidReceiver currentCupLidReceiver;
+
     private IHoldInteractable currentHoldTarget;
     private float holdTimer = 0f;
     private bool wasShowingPrompt = false;
@@ -34,7 +37,8 @@ public class PlayerInteraction : MonoBehaviour
     public bool IsLookingAtInteractable =>
         (currentTarget != null && !(currentTarget is CounterSurface))
         || currentHoldTarget != null
-        || currentComputer != null;
+        || currentComputer != null
+        || currentCupLidReceiver != null;
 
 
     private void Update()
@@ -53,10 +57,12 @@ public class PlayerInteraction : MonoBehaviour
     {
         currentTarget = null;
         currentComputer = null;
+        currentCupLidReceiver = null;
 
         Ray ray = playerCamera.ViewportPointToRay(
             new Vector3(0.5f, 0.5f, 0f)
         );
+
 
         if (Physics.Raycast(
             ray,
@@ -66,11 +72,27 @@ public class PlayerInteraction : MonoBehaviour
         {
             LastHitPoint = hit.point;
 
-            // PC kontrolü
+
+            // ==========================================
+            // PC KONTROLÜ
+            // ==========================================
+
             currentComputer =
                 hit.collider.GetComponentInParent<ComputerInteraction>();
 
-            // Hold sistemi
+
+            // ==========================================
+            // KAPAK - BARDAK KONTROLÜ
+            // ==========================================
+
+            currentCupLidReceiver =
+                hit.collider.GetComponentInParent<CupLidReceiver>();
+
+
+            // ==========================================
+            // HOLD SİSTEMİ
+            // ==========================================
+
             if (hit.collider.TryGetComponent(
                 out IHoldInteractable holdInteractable))
             {
@@ -90,7 +112,11 @@ public class PlayerInteraction : MonoBehaviour
                 currentHoldTarget = null;
             }
 
-            // Normal etkileşim
+
+            // ==========================================
+            // NORMAL ETKİLEŞİM
+            // ==========================================
+
             if (hit.collider.TryGetComponent(
                 out IInteractable interactable))
             {
@@ -133,6 +159,7 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
+
         if (!Input.GetKey(KeyCode.E))
         {
             if (holdTimer > 0f)
@@ -152,32 +179,39 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
+
         if (wasShowingPrompt)
         {
             interactionUI?.HidePrompt();
             wasShowingPrompt = false;
         }
 
+
         holdTimer += Time.deltaTime;
 
-        float duration = currentHoldTarget.HoldDuration;
+        float duration =
+            currentHoldTarget.HoldDuration;
 
-        float progress = holdTimer / duration;
+        float progress =
+            holdTimer / duration;
 
         int secondsRemaining =
             Mathf.CeilToInt(
                 Mathf.Max(0f, duration - holdTimer)
             );
 
+
         interactionUI?.ShowHoldProgress(
             progress,
             secondsRemaining
         );
 
+
         currentHoldTarget.OnHoldProgress(
             this,
             Mathf.Clamp01(progress)
         );
+
 
         if (holdTimer >= duration)
         {
@@ -211,7 +245,48 @@ public class PlayerInteraction : MonoBehaviour
 
 
         // ==========================================
-        // NORMAL ETKİLEŞİMLER
+        // KAPAK TAKMA
+        // ==========================================
+
+        if (currentCupLidReceiver != null)
+        {
+            // Sağ elde kapak varsa
+            if (currentHeldItem != null)
+            {
+                LidItem lid =
+                    currentHeldItem.GetComponent<LidItem>();
+
+                if (lid != null)
+                {
+                    currentCupLidReceiver.TryAttachLid(
+                        currentHeldItem
+                    );
+
+                    return;
+                }
+            }
+
+
+            // Sol elde kapak varsa
+            if (currentLeftHeldItem != null)
+            {
+                LidItem lid =
+                    currentLeftHeldItem.GetComponent<LidItem>();
+
+                if (lid != null)
+                {
+                    currentCupLidReceiver.TryAttachLid(
+                        currentLeftHeldItem
+                    );
+
+                    return;
+                }
+            }
+        }
+
+
+        // ==========================================
+        // NORMAL PICKUP KONTROLÜ
         // ==========================================
 
         if (currentTarget is PickupItem targetItem)
@@ -233,6 +308,11 @@ public class PlayerInteraction : MonoBehaviour
                 }
             }
         }
+
+
+        // ==========================================
+        // NORMAL ETKİLEŞİM
+        // ==========================================
 
         currentTarget?.Interact(this);
     }

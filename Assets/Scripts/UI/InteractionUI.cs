@@ -14,6 +14,18 @@ public class InteractionUI : MonoBehaviour
     [SerializeField] private Image radialFillImage;
     [SerializeField] private TMP_Text secondsText;
 
+    [Header("Geçici Bilgi / Hata Mesajı")]
+    [SerializeField] private GameObject messageRoot;
+    [SerializeField] private TMP_Text messageText;
+    [SerializeField] private float messageDuration = 1.5f;
+
+    private Coroutine messageCoroutine;
+
+
+    // =========================================================
+    // NORMAL PROMPT
+    // =========================================================
+
     public void ShowPrompt(string text)
     {
         if (promptRoot != null && !promptRoot.activeSelf)
@@ -23,11 +35,17 @@ public class InteractionUI : MonoBehaviour
             promptText.text = text;
     }
 
+
     public void HidePrompt()
     {
         if (promptRoot != null && promptRoot.activeSelf)
             promptRoot.SetActive(false);
     }
+
+
+    // =========================================================
+    // BASILI TUTMA GÖSTERGESİ
+    // =========================================================
 
     public void ShowHoldProgress(float progress01, int secondsRemaining)
     {
@@ -41,11 +59,72 @@ public class InteractionUI : MonoBehaviour
             secondsText.text = secondsRemaining.ToString();
     }
 
+
     public void HideHoldProgress()
     {
         if (holdIndicatorRoot != null && holdIndicatorRoot.activeSelf)
             holdIndicatorRoot.SetActive(false);
     }
+
+
+    // =========================================================
+    // GEÇİCİ MESAJ
+    // =========================================================
+
+    public void ShowMessage(string message)
+    {
+        // Önceki mesajın süresi devam ediyorsa iptal et
+        if (messageCoroutine != null)
+        {
+            StopCoroutine(messageCoroutine);
+            messageCoroutine = null;
+        }
+
+        if (messageRoot != null)
+            messageRoot.SetActive(true);
+
+        if (messageText != null)
+        {
+            messageText.text = message;
+
+            // Tek satır
+            messageText.enableWordWrapping = false;
+
+            // Ortala
+            messageText.alignment = TextAlignmentOptions.Center;
+        }
+
+        messageCoroutine = StartCoroutine(HideMessageAfterDelay());
+    }
+
+
+    private IEnumerator HideMessageAfterDelay()
+    {
+        yield return new WaitForSeconds(messageDuration);
+
+        if (messageRoot != null)
+            messageRoot.SetActive(false);
+
+        messageCoroutine = null;
+    }
+
+
+    public void HideMessage()
+    {
+        if (messageCoroutine != null)
+        {
+            StopCoroutine(messageCoroutine);
+            messageCoroutine = null;
+        }
+
+        if (messageRoot != null)
+            messageRoot.SetActive(false);
+    }
+
+
+    // =========================================================
+    // COUNTDOWN
+    // =========================================================
 
     public IEnumerator ShowCountdown(float duration)
     {
