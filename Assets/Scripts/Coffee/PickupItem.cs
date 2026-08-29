@@ -160,6 +160,14 @@ public class PickupItem : MonoBehaviour, IInteractable
         espressoLiquidVisual != null &&
         espressoLiquidVisual.activeSelf;
 
+    public void EmptyEspresso()
+    {
+        if (espressoLiquidVisual != null)
+        {
+            espressoLiquidVisual.SetActive(false);
+        }
+    }
+
 
     // =========================================================
     // ETKİLEŞİM

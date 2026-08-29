@@ -17,6 +17,14 @@ public class DrinkRecipe : MonoBehaviour
 
     public CupSize Size => size;
 
+    public bool HasEspresso => hasEspresso;
+
+    public bool HasMilk => hasMilk;
+
+    public bool HasFrothedMilk => hasFrothedMilk;
+
+    public bool HasHotWater => hasHotWater;
+
     public bool HasAnyContent =>
         hasEspresso ||
         hasMilk ||

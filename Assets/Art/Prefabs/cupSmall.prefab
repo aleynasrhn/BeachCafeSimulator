@@ -16,6 +16,8 @@ GameObject:
   - component: {fileID: -2919635931960629516}
   - component: {fileID: -9109172725911399242}
   - component: {fileID: 517776092873110667}
+  - component: {fileID: 8055079262682568041}
+  - component: {fileID: 8844031143083803392}
   m_Layer: 3
   m_Name: cupSmall
   m_TagString: Untagged
@@ -187,6 +189,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lidPoint: {fileID: 8832571480417698167}
   cupSize: 0
+  interactionUI: {fileID: 0}
+--- !u!114 &8055079262682568041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840980947899312208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 329f13ce47cc99b41a250b5ee0d00e45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cupLiquidRenderer: {fileID: 0}
+  espressoMaterial: {fileID: 0}
+  milkCoffeeMaterial: {fileID: 0}
+  frothedCoffeeMaterial: {fileID: 0}
+--- !u!114 &8844031143083803392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840980947899312208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61c493bd761674b47a906bef47a05306, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  holdDuration: 1.5
+  pourPrompt: "E'ye bas\u0131l\u0131 tut"
 --- !u!1 &4911079568480735354
 GameObject:
   m_ObjectHideFlags: 0
