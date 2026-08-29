@@ -53,16 +53,20 @@ public class CupPourReceiver : MonoBehaviour
     }
 
 
-    public void SetEspressoProgress(float progress01)
+    public void SetEspressoProgress(
+        float progress01)
     {
         if (liquidVisual == null)
             return;
 
-        liquidVisual.SetEspressoProgress(progress01);
+        liquidVisual.SetEspressoProgress(
+            progress01
+        );
     }
 
 
-    public void ReceiveEspresso(PickupItem source)
+    public void ReceiveEspresso(
+        PickupItem source)
     {
         if (!CanReceiveEspresso(source))
             return;
@@ -78,15 +82,87 @@ public class CupPourReceiver : MonoBehaviour
             liquidVisual.SetEspressoProgress(1f);
         }
 
-        Debug.Log("Espresso cup'a döküldü.");
+        Debug.Log(
+            "Espresso cup'a döküldü."
+        );
     }
 
 
     // =========================================================
+    // MILK SOURCE
+    // SÜT KUTUSU
+    // =========================================================
+
+    public bool CanReceiveMilkSource(
+        MilkSource source)
+    {
+        if (source == null)
+            return false;
+
+        if (recipe == null)
+            return false;
+
+        // Önce espresso bulunmalı.
+        if (!recipe.HasEspresso)
+            return false;
+
+        // Milk kutusu süt vermeli.
+        if (!source.HasMilk)
+            return false;
+
+        // Aynı cup ikinci kez normal süt almasın.
+        if (recipe.HasMilk)
+            return false;
+
+        // Köpüklü süt ile çakışmasın.
+        if (recipe.HasFrothedMilk)
+            return false;
+
+        return true;
+    }
+
+
+    public void SetMilkSourceProgress(
+        float progress01)
+    {
+        if (liquidVisual == null)
+            return;
+
+        liquidVisual.SetMilkProgress(
+            progress01
+        );
+    }
+
+
+    public void ReceiveMilkSource(
+        MilkSource source)
+    {
+        if (!CanReceiveMilkSource(source))
+            return;
+
+        recipe.AddMilk();
+
+        if (liquidVisual != null)
+        {
+            liquidVisual.SetMilkProgress(1f);
+        }
+
+        // MilkSource tüketilmiyor.
+        // Aynı kutudan başka cup'lara da süt verilebilir.
+
+        Debug.Log(
+            "Milk kutusundan süt cup'a döküldü."
+        );
+    }
+
+
+    // =========================================================
+    // MILK PITCHER
     // NORMAL SÜT
     // =========================================================
 
-    public bool CanReceiveMilk(MilkFiller source)
+    public bool CanReceiveMilk(
+        MilkFiller source)
     {
         if (source == null)
             return false;
@@ -97,32 +173,40 @@ public class CupPourReceiver : MonoBehaviour
         if (!source.HasMilk)
             return false;
 
-        // Şimdilik espresso olmadan süt dökülmesini engelle.
+        // Köpüklü süt ayrı işlem.
+        if (source.IsFrothed)
+            return false;
+
+        // Önce espresso.
         if (!recipe.HasEspresso)
             return false;
 
-        // Aynı cup'a ikinci kez normal süt dökülmesin.
+        // Cup daha önce normal süt aldıysa tekrar alma.
         if (recipe.HasMilk)
             return false;
 
-        // Köpüklü süt için ayrı fonksiyon kullanacağız.
-        if (source.IsFrothed)
+        // Cappuccino sütüyle çakışmasın.
+        if (recipe.HasFrothedMilk)
             return false;
 
         return true;
     }
 
 
-    public void SetMilkProgress(float progress01)
+    public void SetMilkProgress(
+        float progress01)
     {
         if (liquidVisual == null)
             return;
 
-        liquidVisual.SetMilkProgress(progress01);
+        liquidVisual.SetMilkProgress(
+            progress01
+        );
     }
 
 
-    public void ReceiveMilk(MilkFiller source)
+    public void ReceiveMilk(
+        MilkFiller source)
     {
         if (!CanReceiveMilk(source))
             return;
@@ -134,15 +218,22 @@ public class CupPourReceiver : MonoBehaviour
             liquidVisual.SetMilkProgress(1f);
         }
 
-        Debug.Log("Normal süt cup'a döküldü.");
+        // Pitcher tamamen boşalır.
+        source.ConsumeAllMilk();
+
+        Debug.Log(
+            "Normal süt pitcher'dan cup'a döküldü."
+        );
     }
 
 
     // =========================================================
     // KÖPÜKLÜ SÜT
+    // MILK PITCHER
     // =========================================================
 
-    public bool CanReceiveFrothedMilk(MilkFiller source)
+    public bool CanReceiveFrothedMilk(
+        MilkFiller source)
     {
         if (source == null)
             return false;
@@ -156,17 +247,24 @@ public class CupPourReceiver : MonoBehaviour
         if (!source.IsFrothed)
             return false;
 
+        // Önce espresso.
         if (!recipe.HasEspresso)
             return false;
 
+        // Aynı cup ikinci kez köpüklü süt almasın.
         if (recipe.HasFrothedMilk)
+            return false;
+
+        // Latte sütüyle çakışmasın.
+        if (recipe.HasMilk)
             return false;
 
         return true;
     }
 
 
-    public void SetFrothedMilkProgress(float progress01)
+    public void SetFrothedMilkProgress(
+        float progress01)
     {
         if (liquidVisual == null)
             return;
@@ -177,7 +275,8 @@ public class CupPourReceiver : MonoBehaviour
     }
 
 
-    public void ReceiveFrothedMilk(MilkFiller source)
+    public void ReceiveFrothedMilk(
+        MilkFiller source)
     {
         if (!CanReceiveFrothedMilk(source))
             return;
@@ -189,6 +288,11 @@ public class CupPourReceiver : MonoBehaviour
             liquidVisual.SetFrothedMilkProgress(1f);
         }
 
-        Debug.Log("Köpüklü süt cup'a döküldü.");
+        // Köpüklü pitcher da tamamen boşalır.
+        source.ConsumeAllMilk();
+
+        Debug.Log(
+            "Köpüklü süt cup'a döküldü."
+        );
     }
 }

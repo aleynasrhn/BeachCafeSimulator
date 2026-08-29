@@ -1,9 +1,13 @@
 using UnityEngine;
 
 /// <summary>
-/// Cup'a espresso veya süt dökme işlemini yönetir.
-/// Oyuncu elinde kaynak varken cup'a bakıp E'yi basılı tuttuğunda
-/// içerik cup'a aktarılır.
+/// Cup'a espresso, normal süt veya köpüklü süt dökme işlemini yönetir.
+///
+/// Kaynaklar:
+/// - Espresso Shot
+/// - Milk kutusu
+/// - Normal süt içeren Milk Pitcher
+/// - Köpürtülmüş Milk Pitcher
 /// </summary>
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(CupPourReceiver))]
@@ -77,7 +81,22 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
 
             // -------------------------------------------------
-            // SÜT PITCHER
+            // MILK KUTUSU
+            // -------------------------------------------------
+
+            MilkSource milkSource =
+                held.GetComponent<MilkSource>();
+
+            if (milkSource != null)
+            {
+                return receiver.CanReceiveMilkSource(
+                    milkSource
+                );
+            }
+
+
+            // -------------------------------------------------
+            // MILK PITCHER
             // -------------------------------------------------
 
             MilkFiller milkFiller =
@@ -85,16 +104,16 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             if (milkFiller != null)
             {
-                // Normal süt
-                if (!milkFiller.IsFrothed)
+                // Köpürtülmüş süt
+                if (milkFiller.IsFrothed)
                 {
-                    return receiver.CanReceiveMilk(
+                    return receiver.CanReceiveFrothedMilk(
                         milkFiller
                     );
                 }
 
-                // Köpüklü süt
-                return receiver.CanReceiveFrothedMilk(
+                // Normal süt
+                return receiver.CanReceiveMilk(
                     milkFiller
                 );
             }
@@ -123,7 +142,22 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
 
             // -------------------------------------------------
-            // SÜT PITCHER
+            // MILK KUTUSU
+            // -------------------------------------------------
+
+            MilkSource milkSource =
+                leftHeld.GetComponent<MilkSource>();
+
+            if (milkSource != null)
+            {
+                return receiver.CanReceiveMilkSource(
+                    milkSource
+                );
+            }
+
+
+            // -------------------------------------------------
+            // MILK PITCHER
             // -------------------------------------------------
 
             MilkFiller milkFiller =
@@ -131,14 +165,14 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             if (milkFiller != null)
             {
-                if (!milkFiller.IsFrothed)
+                if (milkFiller.IsFrothed)
                 {
-                    return receiver.CanReceiveMilk(
+                    return receiver.CanReceiveFrothedMilk(
                         milkFiller
                     );
                 }
 
-                return receiver.CanReceiveFrothedMilk(
+                return receiver.CanReceiveMilk(
                     milkFiller
                 );
             }
@@ -173,7 +207,10 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
         if (held != null)
         {
-            // Espresso
+            // -------------------------------------------------
+            // ESPRESSO
+            // -------------------------------------------------
+
             if (held.HasEspresso)
             {
                 receiver.SetEspressoProgress(
@@ -184,21 +221,41 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             }
 
 
-            // Süt
+            // -------------------------------------------------
+            // MILK KUTUSU
+            // -------------------------------------------------
+
+            MilkSource milkSource =
+                held.GetComponent<MilkSource>();
+
+            if (milkSource != null)
+            {
+                receiver.SetMilkSourceProgress(
+                    progress01
+                );
+
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // MILK PITCHER
+            // -------------------------------------------------
+
             MilkFiller milkFiller =
                 held.GetComponent<MilkFiller>();
 
             if (milkFiller != null)
             {
-                if (!milkFiller.IsFrothed)
+                if (milkFiller.IsFrothed)
                 {
-                    receiver.SetMilkProgress(
+                    receiver.SetFrothedMilkProgress(
                         progress01
                     );
                 }
                 else
                 {
-                    receiver.SetFrothedMilkProgress(
+                    receiver.SetMilkProgress(
                         progress01
                     );
                 }
@@ -217,7 +274,10 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
         if (leftHeld != null)
         {
-            // Espresso
+            // -------------------------------------------------
+            // ESPRESSO
+            // -------------------------------------------------
+
             if (leftHeld.HasEspresso)
             {
                 receiver.SetEspressoProgress(
@@ -228,21 +288,41 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             }
 
 
-            // Süt
+            // -------------------------------------------------
+            // MILK KUTUSU
+            // -------------------------------------------------
+
+            MilkSource milkSource =
+                leftHeld.GetComponent<MilkSource>();
+
+            if (milkSource != null)
+            {
+                receiver.SetMilkSourceProgress(
+                    progress01
+                );
+
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // MILK PITCHER
+            // -------------------------------------------------
+
             MilkFiller milkFiller =
                 leftHeld.GetComponent<MilkFiller>();
 
             if (milkFiller != null)
             {
-                if (!milkFiller.IsFrothed)
+                if (milkFiller.IsFrothed)
                 {
-                    receiver.SetMilkProgress(
+                    receiver.SetFrothedMilkProgress(
                         progress01
                     );
                 }
                 else
                 {
-                    receiver.SetFrothedMilkProgress(
+                    receiver.SetMilkProgress(
                         progress01
                     );
                 }
@@ -276,7 +356,10 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
         if (held != null)
         {
-            // Espresso
+            // -------------------------------------------------
+            // ESPRESSO
+            // -------------------------------------------------
+
             if (held.HasEspresso)
             {
                 receiver.ReceiveEspresso(
@@ -287,21 +370,41 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             }
 
 
-            // Süt
+            // -------------------------------------------------
+            // MILK KUTUSU
+            // -------------------------------------------------
+
+            MilkSource milkSource =
+                held.GetComponent<MilkSource>();
+
+            if (milkSource != null)
+            {
+                receiver.ReceiveMilkSource(
+                    milkSource
+                );
+
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // MILK PITCHER
+            // -------------------------------------------------
+
             MilkFiller milkFiller =
                 held.GetComponent<MilkFiller>();
 
             if (milkFiller != null)
             {
-                if (!milkFiller.IsFrothed)
+                if (milkFiller.IsFrothed)
                 {
-                    receiver.ReceiveMilk(
+                    receiver.ReceiveFrothedMilk(
                         milkFiller
                     );
                 }
                 else
                 {
-                    receiver.ReceiveFrothedMilk(
+                    receiver.ReceiveMilk(
                         milkFiller
                     );
                 }
@@ -320,7 +423,10 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
         if (leftHeld != null)
         {
-            // Espresso
+            // -------------------------------------------------
+            // ESPRESSO
+            // -------------------------------------------------
+
             if (leftHeld.HasEspresso)
             {
                 receiver.ReceiveEspresso(
@@ -331,21 +437,41 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             }
 
 
-            // Süt
+            // -------------------------------------------------
+            // MILK KUTUSU
+            // -------------------------------------------------
+
+            MilkSource milkSource =
+                leftHeld.GetComponent<MilkSource>();
+
+            if (milkSource != null)
+            {
+                receiver.ReceiveMilkSource(
+                    milkSource
+                );
+
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // MILK PITCHER
+            // -------------------------------------------------
+
             MilkFiller milkFiller =
                 leftHeld.GetComponent<MilkFiller>();
 
             if (milkFiller != null)
             {
-                if (!milkFiller.IsFrothed)
+                if (milkFiller.IsFrothed)
                 {
-                    receiver.ReceiveMilk(
+                    receiver.ReceiveFrothedMilk(
                         milkFiller
                     );
                 }
                 else
                 {
-                    receiver.ReceiveFrothedMilk(
+                    receiver.ReceiveMilk(
                         milkFiller
                     );
                 }
