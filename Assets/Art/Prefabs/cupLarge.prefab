@@ -136,9 +136,13 @@ MonoBehaviour:
   espressoScale: {x: -0.025, y: 0.00075, z: -0.025}
   fullPosition: {x: -1.392398, y: -0.0002, z: 0.00984}
   fullScale: {x: -0.026, y: 0.00075, z: -0.026}
-  espressoMaterial: {fileID: 0}
-  milkMaterial: {fileID: 0}
-  frothedMilkMaterial: {fileID: 0}
+  espressoMaterial: {fileID: 2100000, guid: 7d70dfe8b81db3141805007a68c9b0d7, type: 2}
+  espressoMilkMaterial: {fileID: 2100000, guid: 35df048173ac4054f9b04e4842d214a9,
+    type: 2}
+  espressoWaterMaterial: {fileID: 2100000, guid: 5064791e3f5494946aa229dd119ddbc3,
+    type: 2}
+  espressoFrothedMilkMaterial: {fileID: 2100000, guid: 42ba3a9daae319a4dbbc323103a86577,
+    type: 2}
 --- !u!1 &6292610820445834286
 GameObject:
   m_ObjectHideFlags: 0

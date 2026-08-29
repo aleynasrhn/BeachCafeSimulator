@@ -22,7 +22,7 @@ public class CupLiquidVisual : MonoBehaviour
 
 
     // =========================================================
-    // ESPRESSO
+    // SADECE ESPRESSO
     // =========================================================
 
     [Header("ESPRESSO")]
@@ -38,7 +38,7 @@ public class CupLiquidVisual : MonoBehaviour
 
     // =========================================================
     // TAM DOLU
-    // ESPRESSO + SÜT / SU
+    // ESPRESSO + SÜT / SU / KÖPÜKLÜ SÜT
     // =========================================================
 
     [Header("TAM DOLU")]
@@ -53,14 +53,26 @@ public class CupLiquidVisual : MonoBehaviour
 
 
     // =========================================================
-    // MATERIAL
+    // İÇECEK MATERIALARI
     // =========================================================
 
-    [Header("Materiallar")]
+    [Header("İçecek Materialları")]
 
-    [SerializeField] private Material espressoMaterial;
-    [SerializeField] private Material milkMaterial;
-    [SerializeField] private Material frothedMilkMaterial;
+    [Tooltip("Sadece espresso")]
+    [SerializeField]
+    private Material espressoMaterial;
+
+    [Tooltip("Espresso + normal süt = Latte")]
+    [SerializeField]
+    private Material espressoMilkMaterial;
+
+    [Tooltip("Espresso + su = Americano")]
+    [SerializeField]
+    private Material espressoWaterMaterial;
+
+    [Tooltip("Espresso + köpüklü süt = Cappuccino")]
+    [SerializeField]
+    private Material espressoFrothedMilkMaterial;
 
 
     // =========================================================
@@ -85,98 +97,146 @@ public class CupLiquidVisual : MonoBehaviour
 
 
     // =========================================================
-    // ESPRESSO DOLUMU
+    // ESPRESSO
     // =========================================================
 
     public void SetEspressoProgress(float progress01)
     {
         progress01 = Mathf.Clamp01(progress01);
 
-        if (liquidRenderer != null)
-        {
-            liquidRenderer.enabled = true;
+        ShowRenderer();
 
-            if (espressoMaterial != null)
-            {
-                liquidRenderer.material = espressoMaterial;
-            }
+        if (espressoMaterial != null)
+        {
+            liquidRenderer.material =
+                espressoMaterial;
         }
 
-        transform.localPosition = Vector3.Lerp(
-            emptyPosition,
-            espressoPosition,
-            progress01
-        );
+        transform.localPosition =
+            Vector3.Lerp(
+                emptyPosition,
+                espressoPosition,
+                progress01
+            );
 
-        transform.localScale = Vector3.Lerp(
-            emptyScale,
-            espressoScale,
-            progress01
-        );
+        transform.localScale =
+            Vector3.Lerp(
+                emptyScale,
+                espressoScale,
+                progress01
+            );
     }
 
 
     // =========================================================
-    // SÜT DOLUMU
+    // NORMAL SÜT
+    // ESPRESSO + SÜT = LATTE
     // =========================================================
 
     public void SetMilkProgress(float progress01)
     {
         progress01 = Mathf.Clamp01(progress01);
 
-        if (liquidRenderer != null)
-        {
-            liquidRenderer.enabled = true;
+        ShowRenderer();
 
-            if (milkMaterial != null)
-            {
-                liquidRenderer.material = milkMaterial;
-            }
+        if (espressoMilkMaterial != null)
+        {
+            liquidRenderer.material =
+                espressoMilkMaterial;
         }
 
-        transform.localPosition = Vector3.Lerp(
-            espressoPosition,
-            fullPosition,
-            progress01
-        );
+        transform.localPosition =
+            Vector3.Lerp(
+                espressoPosition,
+                fullPosition,
+                progress01
+            );
 
-        transform.localScale = Vector3.Lerp(
-            espressoScale,
-            fullScale,
-            progress01
-        );
+        transform.localScale =
+            Vector3.Lerp(
+                espressoScale,
+                fullScale,
+                progress01
+            );
+    }
+
+
+    // =========================================================
+    // SU
+    // ESPRESSO + SU = AMERICANO
+    // =========================================================
+
+    public void SetWaterProgress(float progress01)
+    {
+        progress01 = Mathf.Clamp01(progress01);
+
+        ShowRenderer();
+
+        if (espressoWaterMaterial != null)
+        {
+            liquidRenderer.material =
+                espressoWaterMaterial;
+        }
+
+        transform.localPosition =
+            Vector3.Lerp(
+                espressoPosition,
+                fullPosition,
+                progress01
+            );
+
+        transform.localScale =
+            Vector3.Lerp(
+                espressoScale,
+                fullScale,
+                progress01
+            );
     }
 
 
     // =========================================================
     // KÖPÜKLÜ SÜT
+    // ESPRESSO + KÖPÜKLÜ SÜT = CAPPUCCINO
     // =========================================================
 
     public void SetFrothedMilkProgress(float progress01)
     {
         progress01 = Mathf.Clamp01(progress01);
 
+        ShowRenderer();
+
+        if (espressoFrothedMilkMaterial != null)
+        {
+            liquidRenderer.material =
+                espressoFrothedMilkMaterial;
+        }
+
+        transform.localPosition =
+            Vector3.Lerp(
+                espressoPosition,
+                fullPosition,
+                progress01
+            );
+
+        transform.localScale =
+            Vector3.Lerp(
+                espressoScale,
+                fullScale,
+                progress01
+            );
+    }
+
+
+    // =========================================================
+    // RENDERER
+    // =========================================================
+
+    private void ShowRenderer()
+    {
         if (liquidRenderer != null)
         {
             liquidRenderer.enabled = true;
-
-            if (frothedMilkMaterial != null)
-            {
-                liquidRenderer.material = frothedMilkMaterial;
-            }
         }
-
-        transform.localPosition = Vector3.Lerp(
-            espressoPosition,
-            fullPosition,
-            progress01
-        );
-
-        transform.localScale = Vector3.Lerp(
-            espressoScale,
-            fullScale,
-            progress01
-        );
     }
 
 
@@ -186,8 +246,11 @@ public class CupLiquidVisual : MonoBehaviour
 
     public void Hide()
     {
-        transform.localPosition = emptyPosition;
-        transform.localScale = emptyScale;
+        transform.localPosition =
+            emptyPosition;
+
+        transform.localScale =
+            emptyScale;
 
         if (liquidRenderer != null)
         {
@@ -197,7 +260,7 @@ public class CupLiquidVisual : MonoBehaviour
 
 
     // =========================================================
-    // TEST
+    // TESTLER
     // =========================================================
 
     [ContextMenu("Test Espresso")]
@@ -206,15 +269,21 @@ public class CupLiquidVisual : MonoBehaviour
         SetEspressoProgress(1f);
     }
 
-    [ContextMenu("Test Full")]
-    public void TestFull()
+    [ContextMenu("Test Latte")]
+    public void TestLatte()
     {
-        transform.localPosition = fullPosition;
-        transform.localScale = fullScale;
+        SetMilkProgress(1f);
+    }
 
-        if (liquidRenderer != null)
-        {
-            liquidRenderer.enabled = true;
-        }
+    [ContextMenu("Test Americano")]
+    public void TestAmericano()
+    {
+        SetWaterProgress(1f);
+    }
+
+    [ContextMenu("Test Cappuccino")]
+    public void TestCappuccino()
+    {
+        SetFrothedMilkProgress(1f);
     }
 }

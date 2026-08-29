@@ -1,5 +1,117 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &765248971660057036
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5171522796134733368}
+  - component: {fileID: 3800065091436244467}
+  - component: {fileID: 5389525018601553092}
+  - component: {fileID: 3056940989459208746}
+  m_Layer: 3
+  m_Name: Capsule
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5171522796134733368
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765248971660057036}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: -0, z: -0.01377}
+  m_LocalScale: {x: 0.01995478, y: 0.00075, z: 0.01995478}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4717255097021366750}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!33 &3800065091436244467
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765248971660057036}
+  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &5389525018601553092
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765248971660057036}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3056940989459208746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765248971660057036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bd028b6084ceac4c9eee1e70eb9e1b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  liquidRenderer: {fileID: 5389525018601553092}
+  emptyPosition: {x: 0, y: 0, z: -0.01377}
+  emptyScale: {x: 0.01995478, y: 0.00075, z: 0.01995478}
+  espressoPosition: {x: 0, y: 0, z: 0.00751}
+  espressoScale: {x: 0.02588298, y: 0.00075, z: 0.02588298}
+  fullPosition: {x: 0, y: 0, z: 0.01243}
+  fullScale: {x: 0.02617352, y: 0.00075, z: 0.02617352}
+  espressoMaterial: {fileID: 2100000, guid: 7d70dfe8b81db3141805007a68c9b0d7, type: 2}
+  espressoMilkMaterial: {fileID: 2100000, guid: 35df048173ac4054f9b04e4842d214a9,
+    type: 2}
+  espressoWaterMaterial: {fileID: 2100000, guid: 5064791e3f5494946aa229dd119ddbc3,
+    type: 2}
+  espressoFrothedMilkMaterial: {fileID: 2100000, guid: 42ba3a9daae319a4dbbc323103a86577,
+    type: 2}
 --- !u!1 &4426206870071789409
 GameObject:
   m_ObjectHideFlags: 0
@@ -39,6 +151,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 997443264827603177}
+  - {fileID: 5171522796134733368}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5888942962899440117
@@ -202,10 +315,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 329f13ce47cc99b41a250b5ee0d00e45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cupLiquidRenderer: {fileID: 0}
-  espressoMaterial: {fileID: 0}
-  milkCoffeeMaterial: {fileID: 0}
-  frothedCoffeeMaterial: {fileID: 0}
+  cup: {fileID: 3559356367102317652}
+  recipe: {fileID: -2124459724867592142}
+  liquidVisual: {fileID: 3056940989459208746}
 --- !u!114 &-5803300456544679528
 MonoBehaviour:
   m_ObjectHideFlags: 0

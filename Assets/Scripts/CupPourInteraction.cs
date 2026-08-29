@@ -64,7 +64,10 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
         if (held != null)
         {
-            // Espresso shot
+            // -------------------------------------------------
+            // ESPRESSO
+            // -------------------------------------------------
+
             if (held.HasEspresso)
             {
                 return receiver.CanReceiveEspresso(
@@ -73,13 +76,25 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             }
 
 
-            // Milk pitcher
+            // -------------------------------------------------
+            // SÜT PITCHER
+            // -------------------------------------------------
+
             MilkFiller milkFiller =
                 held.GetComponent<MilkFiller>();
 
             if (milkFiller != null)
             {
-                return receiver.CanReceiveMilk(
+                // Normal süt
+                if (!milkFiller.IsFrothed)
+                {
+                    return receiver.CanReceiveMilk(
+                        milkFiller
+                    );
+                }
+
+                // Köpüklü süt
+                return receiver.CanReceiveFrothedMilk(
                     milkFiller
                 );
             }
@@ -95,7 +110,10 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
         if (leftHeld != null)
         {
-            // Espresso shot
+            // -------------------------------------------------
+            // ESPRESSO
+            // -------------------------------------------------
+
             if (leftHeld.HasEspresso)
             {
                 return receiver.CanReceiveEspresso(
@@ -104,13 +122,23 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             }
 
 
-            // Milk pitcher
+            // -------------------------------------------------
+            // SÜT PITCHER
+            // -------------------------------------------------
+
             MilkFiller milkFiller =
                 leftHeld.GetComponent<MilkFiller>();
 
             if (milkFiller != null)
             {
-                return receiver.CanReceiveMilk(
+                if (!milkFiller.IsFrothed)
+                {
+                    return receiver.CanReceiveMilk(
+                        milkFiller
+                    );
+                }
+
+                return receiver.CanReceiveFrothedMilk(
                     milkFiller
                 );
             }
@@ -162,10 +190,18 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             if (milkFiller != null)
             {
-                receiver.SetMilkProgress(
-                    progress01,
-                    milkFiller.IsFrothed
-                );
+                if (!milkFiller.IsFrothed)
+                {
+                    receiver.SetMilkProgress(
+                        progress01
+                    );
+                }
+                else
+                {
+                    receiver.SetFrothedMilkProgress(
+                        progress01
+                    );
+                }
 
                 return;
             }
@@ -198,10 +234,18 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             if (milkFiller != null)
             {
-                receiver.SetMilkProgress(
-                    progress01,
-                    milkFiller.IsFrothed
-                );
+                if (!milkFiller.IsFrothed)
+                {
+                    receiver.SetMilkProgress(
+                        progress01
+                    );
+                }
+                else
+                {
+                    receiver.SetFrothedMilkProgress(
+                        progress01
+                    );
+                }
 
                 return;
             }
@@ -249,9 +293,18 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             if (milkFiller != null)
             {
-                receiver.ReceiveMilk(
-                    milkFiller
-                );
+                if (!milkFiller.IsFrothed)
+                {
+                    receiver.ReceiveMilk(
+                        milkFiller
+                    );
+                }
+                else
+                {
+                    receiver.ReceiveFrothedMilk(
+                        milkFiller
+                    );
+                }
 
                 return;
             }
@@ -284,9 +337,18 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             if (milkFiller != null)
             {
-                receiver.ReceiveMilk(
-                    milkFiller
-                );
+                if (!milkFiller.IsFrothed)
+                {
+                    receiver.ReceiveMilk(
+                        milkFiller
+                    );
+                }
+                else
+                {
+                    receiver.ReceiveFrothedMilk(
+                        milkFiller
+                    );
+                }
 
                 return;
             }

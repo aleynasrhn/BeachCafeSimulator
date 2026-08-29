@@ -1705,7 +1705,6 @@ GameObject:
   - component: {fileID: 38353039}
   - component: {fileID: 38353038}
   - component: {fileID: 38353037}
-  - component: {fileID: 38353036}
   m_Layer: 3
   m_Name: EspressoLiquid
   m_TagString: Untagged
@@ -1713,29 +1712,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!136 &38353036
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 38353035}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!23 &38353037
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -11782,7 +11758,9 @@ PrefabInstance:
     - {fileID: 4179901469125164989, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     - {fileID: 1597026643067034579, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     - {fileID: -1681441905271560026, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2044158487070370398, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
+    - {fileID: 1772915242499212692, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
@@ -23614,7 +23592,9 @@ PrefabInstance:
     - {fileID: 1597026643067034579, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     - {fileID: -1681441905271560026, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     - {fileID: 240365389552857596, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2044158487070370398, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
+    - {fileID: 1772915242499212692, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
@@ -46950,7 +46930,9 @@ PrefabInstance:
     - {fileID: 4179901469125164989, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     - {fileID: 1597026643067034579, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     - {fileID: -1681441905271560026, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2044158487070370398, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
+    - {fileID: 1772915242499212692, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
@@ -51888,7 +51870,9 @@ PrefabInstance:
     - {fileID: 4179901469125164989, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     - {fileID: 1597026643067034579, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     - {fileID: -1681441905271560026, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2044158487070370398, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
+    - {fileID: 1772915242499212692, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a11f6721172719b4c804382a8ed7685c, type: 3}
