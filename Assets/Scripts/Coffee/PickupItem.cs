@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Portafilter, espresso cup, milk pitcher, tamper gibi elle tutulabilen
-/// her objeye bu scripti eklersin.
+/// Portafilter, espresso cup, milk pitcher, tamper, kettle gibi
+/// elle tutulabilen objelere eklenir.
 ///
 /// Tek el sistemi kullanır.
 /// Kapak gibi başka bir objeye takılan item'lar da bu scripti kullanabilir.
@@ -160,6 +160,7 @@ public class PickupItem : MonoBehaviour, IInteractable
         espressoLiquidVisual != null &&
         espressoLiquidVisual.activeSelf;
 
+
     public void EmptyEspresso()
     {
         if (espressoLiquidVisual != null)
@@ -290,8 +291,11 @@ public class PickupItem : MonoBehaviour, IInteractable
         Vector3 worldPosition,
         Quaternion worldRotation)
     {
-        transform.position = worldPosition;
-        transform.rotation = worldRotation;
+        transform.position =
+            worldPosition;
+
+        transform.rotation =
+            worldRotation;
 
 
         rb.isKinematic = true;
@@ -398,7 +402,7 @@ public class PickupItem : MonoBehaviour, IInteractable
             worldRotation;
 
 
-        // Bardağın child'ı yap
+        // Objeyi parent'ın child'ı yap
         transform.SetParent(parent);
 
 
@@ -411,11 +415,9 @@ public class PickupItem : MonoBehaviour, IInteractable
         rb.useGravity = false;
 
 
-        // ÖNEMLİ:
-        // Collider artık açık kalıyor.
-        // Böylece takılı kapağa tekrar bakıp E basabileceğiz.
+        // Collider açık kalıyor.
+        // Böylece takılı objeye tekrar bakıp E basabiliriz.
         col.enabled = true;
-
 
         isHeld = false;
 
@@ -462,7 +464,6 @@ public class PickupItem : MonoBehaviour, IInteractable
         rb.useGravity = false;
 
         col.enabled = true;
-
 
         isHeld = false;
 
