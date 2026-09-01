@@ -30,6 +30,7 @@ public class PickupItem : MonoBehaviour, IInteractable
     [Header("Espresso Doldurma")]
     [SerializeField] private GameObject espressoLiquidVisual;
 
+
     private bool isTamped = false;
     private Vector3 groundCoffeeOriginalScale;
 
@@ -68,14 +69,19 @@ public class PickupItem : MonoBehaviour, IInteractable
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
 
-        uprightRotation = transform.rotation;
-        originalWorldPosition = transform.position;
+        uprightRotation =
+            transform.rotation;
+
+        originalWorldPosition =
+            transform.position;
 
 
         if (groundCoffeeVisual != null)
         {
             groundCoffeeOriginalScale =
-                groundCoffeeVisual.transform.localScale;
+                groundCoffeeVisual
+                    .transform
+                    .localScale;
 
             groundCoffeeVisual.SetActive(false);
         }
@@ -220,7 +226,7 @@ public class PickupItem : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // BAŞKA OBJEDEN AYIR
+        // BAĞLI OBJE VARSA AYIR
         // =====================================================
 
         if (isAttachedToObject)
@@ -286,7 +292,8 @@ public class PickupItem : MonoBehaviour, IInteractable
     // COUNTER
     // =========================================================
 
-    public void PlaceOnCounter(Vector3 worldPosition)
+    public void PlaceOnCounter(
+        Vector3 worldPosition)
     {
         transform.position =
             worldPosition +
@@ -307,6 +314,10 @@ public class PickupItem : MonoBehaviour, IInteractable
         hasPositionOverride = false;
     }
 
+
+    // =========================================================
+    // TAM KONUMA YERLEŞTİR
+    // =========================================================
 
     public void PlaceAtExact(
         Vector3 worldPosition,
@@ -335,9 +346,10 @@ public class PickupItem : MonoBehaviour, IInteractable
     // FORCE PICKUP
     // =========================================================
 
-    public void ForcePickUp(PlayerInteraction player)
+    public void ForcePickUp(
+        PlayerInteraction player)
     {
-        // Kettle ısınıyorsa ForcePickUp ile de alınamasın
+        // Kettle ısınıyorsa alınamaz
         KettleHeatController kettleHeat =
             GetComponent<KettleHeatController>();
 
@@ -352,6 +364,7 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
 
 
+        // Bağlıysa ayır
         if (isAttachedToObject)
         {
             DetachFromObject();
@@ -396,7 +409,9 @@ public class PickupItem : MonoBehaviour, IInteractable
 
         transform.rotation =
             uprightRotation *
-            Quaternion.Euler(extraRotationEuler);
+            Quaternion.Euler(
+                extraRotationEuler
+            );
 
 
         rb.isKinematic = true;
@@ -423,7 +438,8 @@ public class PickupItem : MonoBehaviour, IInteractable
         if (parent == null)
         {
             Debug.LogWarning(
-                $"{gameObject.name}: AttachToObject parent null!"
+                $"{gameObject.name}: " +
+                "AttachToObject parent null!"
             );
 
             return;
@@ -440,7 +456,9 @@ public class PickupItem : MonoBehaviour, IInteractable
         transform.SetParent(parent);
 
 
-        attachedParent = parent;
+        attachedParent =
+            parent;
+
         isAttachedToObject = true;
 
 
@@ -466,6 +484,34 @@ public class PickupItem : MonoBehaviour, IInteractable
             return;
 
 
+        // =====================================================
+        // ESKİ PARENT'I KAYDET
+        // =====================================================
+
+        Transform oldParent =
+            attachedParent;
+
+
+        // =====================================================
+        // CUP KAPAĞIYSA CUP'A HABER VER
+        // =====================================================
+
+        if (oldParent != null)
+        {
+            CupLidReceiver cupLidReceiver =
+                oldParent.GetComponent<CupLidReceiver>();
+
+            if (cupLidReceiver != null)
+            {
+                cupLidReceiver.DetachLid(this);
+            }
+        }
+
+
+        // =====================================================
+        // DÜNYA POZİSYONUNU KORU
+        // =====================================================
+
         Vector3 worldPosition =
             transform.position;
 
@@ -473,8 +519,16 @@ public class PickupItem : MonoBehaviour, IInteractable
             transform.rotation;
 
 
+        // =====================================================
+        // PARENT'TAN AYIR
+        // =====================================================
+
         transform.SetParent(null);
 
+
+        // =====================================================
+        // DÜNYA POZİSYONUNU GERİ YAZ
+        // =====================================================
 
         transform.position =
             worldPosition;
@@ -483,7 +537,12 @@ public class PickupItem : MonoBehaviour, IInteractable
             worldRotation;
 
 
+        // =====================================================
+        // BAĞLANTI DURUMUNU TEMİZLE
+        // =====================================================
+
         attachedParent = null;
+
         isAttachedToObject = false;
 
 
@@ -509,8 +568,11 @@ public class PickupItem : MonoBehaviour, IInteractable
     {
         hasPositionOverride = true;
 
-        overridePosition = worldPos;
-        overrideRotation = worldRot;
+        overridePosition =
+            worldPos;
+
+        overrideRotation =
+            worldRot;
     }
 
 

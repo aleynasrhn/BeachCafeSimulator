@@ -15,15 +15,21 @@ public class CupLidReceiver : MonoBehaviour
 
     public CupSize CupSize => cupSize;
 
-    public bool HasLid => attachedLid != null;
+    public bool HasLid =>
+        attachedLid != null;
 
+
+    // =========================================================
+    // BAŞLANGIÇ
+    // =========================================================
 
     private void Awake()
     {
         // Prefab içinden sahnedeki InteractionUI'yi bul
         if (interactionUI == null)
         {
-            interactionUI = FindFirstObjectByType<InteractionUI>();
+            interactionUI =
+                FindFirstObjectByType<InteractionUI>();
         }
 
         if (interactionUI == null)
@@ -35,15 +41,19 @@ public class CupLidReceiver : MonoBehaviour
     }
 
 
+    // =========================================================
+    // KAPAK TAK
+    // =========================================================
+
     public bool TryAttachLid(PickupItem lidPickup)
     {
         if (lidPickup == null)
             return false;
 
 
-        // ==========================================
+        // =====================================================
         // KAPAK KONTROLÜ
-        // ==========================================
+        // =====================================================
 
         LidItem lidItem =
             lidPickup.GetComponent<LidItem>();
@@ -52,9 +62,9 @@ public class CupLidReceiver : MonoBehaviour
             return false;
 
 
-        // ==========================================
-        // YANLIŞ BOYUT
-        // ==========================================
+        // =====================================================
+        // BOYUT KONTROLÜ
+        // =====================================================
 
         if (lidItem.Size != cupSize)
         {
@@ -66,9 +76,9 @@ public class CupLidReceiver : MonoBehaviour
         }
 
 
-        // ==========================================
-        // ZATEN KAPAK VAR
-        // ==========================================
+        // =====================================================
+        // ZATEN KAPAK VAR MI?
+        // =====================================================
 
         if (HasLid)
         {
@@ -80,9 +90,9 @@ public class CupLidReceiver : MonoBehaviour
         }
 
 
-        // ==========================================
+        // =====================================================
         // LID POINT KONTROLÜ
-        // ==========================================
+        // =====================================================
 
         if (lidPoint == null)
         {
@@ -95,11 +105,12 @@ public class CupLidReceiver : MonoBehaviour
         }
 
 
-        // ==========================================
+        // =====================================================
         // KAPAĞI TAK
-        // ==========================================
+        // =====================================================
 
-        attachedLid = lidPickup.gameObject;
+        attachedLid =
+            lidPickup.gameObject;
 
         lidPickup.AttachToObject(
             transform,
@@ -107,6 +118,36 @@ public class CupLidReceiver : MonoBehaviour
             lidPoint.rotation
         );
 
+
+        Debug.Log(
+            "Kapak cup'a takıldı."
+        );
+
+
         return true;
+    }
+
+
+    // =========================================================
+    // KAPAK ÇIKAR
+    // =========================================================
+
+    public void DetachLid(PickupItem lidPickup)
+    {
+        if (lidPickup == null)
+            return;
+
+
+        // Sadece gerçekten bu cup'a bağlı olan
+        // kapağı temizle.
+        if (attachedLid ==
+            lidPickup.gameObject)
+        {
+            attachedLid = null;
+
+            Debug.Log(
+                "Kapak cup'tan çıkarıldı."
+            );
+        }
     }
 }
