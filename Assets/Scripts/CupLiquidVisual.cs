@@ -14,11 +14,19 @@ public class CupLiquidVisual : MonoBehaviour
 
     [SerializeField]
     private Vector3 emptyPosition =
-        new Vector3(-1.392398f, -0.0002f, -0.014f);
+        new Vector3(
+            -1.392398f,
+            -0.0002f,
+            -0.014f
+        );
 
     [SerializeField]
     private Vector3 emptyScale =
-        new Vector3(-0.02014265f, 0.00075f, -0.02014265f);
+        new Vector3(
+            -0.02014265f,
+            0.00075f,
+            -0.02014265f
+        );
 
 
     // =========================================================
@@ -29,11 +37,19 @@ public class CupLiquidVisual : MonoBehaviour
 
     [SerializeField]
     private Vector3 espressoPosition =
-        new Vector3(-1.392398f, -0.0002f, 0.00537f);
+        new Vector3(
+            -1.392398f,
+            -0.0002f,
+            0.00537f
+        );
 
     [SerializeField]
     private Vector3 espressoScale =
-        new Vector3(-0.025f, 0.00075f, -0.025f);
+        new Vector3(
+            -0.025f,
+            0.00075f,
+            -0.025f
+        );
 
 
     // =========================================================
@@ -45,11 +61,19 @@ public class CupLiquidVisual : MonoBehaviour
 
     [SerializeField]
     private Vector3 fullPosition =
-        new Vector3(-1.392398f, -0.0002f, 0.00984f);
+        new Vector3(
+            -1.392398f,
+            -0.0002f,
+            0.00984f
+        );
 
     [SerializeField]
     private Vector3 fullScale =
-        new Vector3(-0.026f, 0.00075f, -0.026f);
+        new Vector3(
+            -0.026f,
+            0.00075f,
+            -0.026f
+        );
 
 
     // =========================================================
@@ -83,11 +107,15 @@ public class CupLiquidVisual : MonoBehaviour
     {
         if (liquidRenderer == null)
         {
-            liquidRenderer = GetComponent<Renderer>();
+            liquidRenderer =
+                GetComponent<Renderer>();
         }
 
-        transform.localPosition = emptyPosition;
-        transform.localScale = emptyScale;
+        transform.localPosition =
+            emptyPosition;
+
+        transform.localScale =
+            emptyScale;
 
         if (liquidRenderer != null)
         {
@@ -100,9 +128,13 @@ public class CupLiquidVisual : MonoBehaviour
     // ESPRESSO
     // =========================================================
 
-    public void SetEspressoProgress(float progress01)
+    public void SetEspressoProgress(
+        float progress01)
     {
-        progress01 = Mathf.Clamp01(progress01);
+        progress01 =
+            Mathf.Clamp01(
+                progress01
+            );
 
         ShowRenderer();
 
@@ -133,9 +165,13 @@ public class CupLiquidVisual : MonoBehaviour
     // ESPRESSO + SÜT = LATTE
     // =========================================================
 
-    public void SetMilkProgress(float progress01)
+    public void SetMilkProgress(
+        float progress01)
     {
-        progress01 = Mathf.Clamp01(progress01);
+        progress01 =
+            Mathf.Clamp01(
+                progress01
+            );
 
         ShowRenderer();
 
@@ -166,9 +202,13 @@ public class CupLiquidVisual : MonoBehaviour
     // ESPRESSO + SU = AMERICANO
     // =========================================================
 
-    public void SetWaterProgress(float progress01)
+    public void SetWaterProgress(
+        float progress01)
     {
-        progress01 = Mathf.Clamp01(progress01);
+        progress01 =
+            Mathf.Clamp01(
+                progress01
+            );
 
         ShowRenderer();
 
@@ -199,9 +239,13 @@ public class CupLiquidVisual : MonoBehaviour
     // ESPRESSO + KÖPÜKLÜ SÜT = CAPPUCCINO
     // =========================================================
 
-    public void SetFrothedMilkProgress(float progress01)
+    public void SetFrothedMilkProgress(
+        float progress01)
     {
-        progress01 = Mathf.Clamp01(progress01);
+        progress01 =
+            Mathf.Clamp01(
+                progress01
+            );
 
         ShowRenderer();
 
@@ -269,17 +313,20 @@ public class CupLiquidVisual : MonoBehaviour
         SetEspressoProgress(1f);
     }
 
+
     [ContextMenu("Test Latte")]
     public void TestLatte()
     {
         SetMilkProgress(1f);
     }
 
+
     [ContextMenu("Test Americano")]
     public void TestAmericano()
     {
         SetWaterProgress(1f);
     }
+
 
     [ContextMenu("Test Cappuccino")]
     public void TestCappuccino()

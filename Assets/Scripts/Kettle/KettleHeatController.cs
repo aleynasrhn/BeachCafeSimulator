@@ -37,8 +37,11 @@ public class KettleHeatController : MonoBehaviour
     private Coroutine steamFadeCoroutine;
 
 
-    public bool IsHeating => isHeating;
-    public bool IsHot => isHot;
+    public bool IsHeating =>
+        isHeating;
+
+    public bool IsHot =>
+        isHot;
 
 
     // =========================================================
@@ -59,12 +62,15 @@ public class KettleHeatController : MonoBehaviour
                 GetComponent<PickupItem>();
         }
 
+
         isHeating = false;
         isHot = false;
+
 
         SetRedLight(false);
         SetGreenLight(false);
         SetSteamRate(0f);
+
 
         if (steamParticle != null)
         {
@@ -73,6 +79,7 @@ public class KettleHeatController : MonoBehaviour
                 ParticleSystemStopBehavior.StopEmittingAndClear
             );
         }
+
 
         if (timerDisplay != null)
         {
@@ -91,14 +98,33 @@ public class KettleHeatController : MonoBehaviour
             return;
 
 
-        // Kettle eldeyse:
-        // ışıkları kapat
+        // =====================================================
+        // YENİ SU GELDİYSE / SU SICAK DEĞİLSE
+        // ESKİ SICAKLIK DURUMUNU TEMİZLE
+        // =====================================================
+
+        if (waterState != null &&
+            !waterState.IsHot &&
+            !isHeating)
+        {
+            isHot = false;
+
+            // Yeni su geldiğinde yeşil yanmasın.
+            SetGreenLight(false);
+        }
+
+
+        // =====================================================
+        // KETTLE ELDEYSE
+        // =====================================================
+
         if (pickupItem.IsHeld)
         {
             SetRedLight(false);
             SetGreenLight(false);
 
-            // Elde alınca buharı da kes
+
+            // Elde iken buhar görünmez.
             if (steamParticle != null)
             {
                 SetSteamRate(0f);
@@ -108,6 +134,7 @@ public class KettleHeatController : MonoBehaviour
                     ParticleSystemStopBehavior.StopEmitting
                 );
             }
+
 
             return;
         }
@@ -153,7 +180,10 @@ public class KettleHeatController : MonoBehaviour
         }
 
 
-        // Kettle dockta olmalı
+        // =====================================================
+        // DOCK KONTROLÜ
+        // =====================================================
+
         if (!IsKettleProperlyDocked())
         {
             Debug.Log(
@@ -164,7 +194,10 @@ public class KettleHeatController : MonoBehaviour
         }
 
 
-        // Su olmalı
+        // =====================================================
+        // SU KONTROLÜ
+        // =====================================================
+
         if (!waterState.HasWater)
         {
             Debug.Log(
@@ -175,13 +208,30 @@ public class KettleHeatController : MonoBehaviour
         }
 
 
-        // Zaten ısınıyorsa
+        // =====================================================
+        // EĞER SU ARTIK SICAK DEĞİLSE
+        // ESKİ isHot DEĞERİNİ TEMİZLE
+        // =====================================================
+
+        if (!waterState.IsHot)
+        {
+            isHot = false;
+        }
+
+
+        // =====================================================
+        // ZATEN ISINIYORSA
+        // =====================================================
+
         if (isHeating)
             return false;
 
 
-        // Zaten sıcaksa
-        if (isHot)
+        // =====================================================
+        // SU ZATEN SICAKSA
+        // =====================================================
+
+        if (isHot && waterState.IsHot)
         {
             Debug.Log(
                 "Kettle'daki su zaten sıcak."
@@ -191,16 +241,20 @@ public class KettleHeatController : MonoBehaviour
         }
 
 
-        // Eski coroutine varsa durdur
+        // =====================================================
+        // ESKİ COROUTINE
+        // =====================================================
+
         if (heatingCoroutine != null)
         {
             StopCoroutine(
                 heatingCoroutine
             );
+
+            heatingCoroutine = null;
         }
 
 
-        // Eski steam fade varsa durdur
         if (steamFadeCoroutine != null)
         {
             StopCoroutine(
@@ -210,6 +264,10 @@ public class KettleHeatController : MonoBehaviour
             steamFadeCoroutine = null;
         }
 
+
+        // =====================================================
+        // KAYNATMAYI BAŞLAT
+        // =====================================================
 
         heatingCoroutine =
             StartCoroutine(
@@ -296,20 +354,20 @@ public class KettleHeatController : MonoBehaviour
         }
 
 
-        // -----------------------------------------------------
+        // =====================================================
         // 10 SANİYE BİTTİ
-        // BURADA KETTLE HEMEN HAZIR
-        // -----------------------------------------------------
+        // KETTLE HEMEN HAZIR
+        // =====================================================
 
         isHeating = false;
         isHot = true;
 
 
-        // Su artık sıcak
+        // Suyu gerçekten sıcak yap
         waterState.SetHot();
 
 
-        // Kırmızı hemen kapanır
+        // Kırmızı hemen söner
         SetRedLight(false);
 
 
@@ -329,9 +387,9 @@ public class KettleHeatController : MonoBehaviour
         );
 
 
-        // -----------------------------------------------------
+        // =====================================================
         // BUHAR 2 SANİYE DAHA AZALACAK
-        // -----------------------------------------------------
+        // =====================================================
 
         steamFadeCoroutine =
             StartCoroutine(
@@ -359,12 +417,17 @@ public class KettleHeatController : MonoBehaviour
             normalSteamRate;
 
 
-        SetSteamRate(startRate);
+        SetSteamRate(
+            startRate
+        );
 
 
-        while (elapsed < steamFadeDuration)
+        while (
+            elapsed < steamFadeDuration
+        )
         {
-            // Kettle eldeyse Update zaten buharı kapatacak.
+            // Kettle oyuncunun elindeyse
+            // buharı hemen kes.
             if (pickupItem != null &&
                 pickupItem.IsHeld)
             {
@@ -386,7 +449,8 @@ public class KettleHeatController : MonoBehaviour
 
             float t =
                 Mathf.Clamp01(
-                    elapsed / steamFadeDuration
+                    elapsed /
+                    steamFadeDuration
                 );
 
 
@@ -410,13 +474,10 @@ public class KettleHeatController : MonoBehaviour
         SetSteamRate(0f);
 
 
-        if (steamParticle != null)
-        {
-            steamParticle.Stop(
-                true,
-                ParticleSystemStopBehavior.StopEmitting
-            );
-        }
+        steamParticle.Stop(
+            true,
+            ParticleSystemStopBehavior.StopEmitting
+        );
 
 
         steamFadeCoroutine = null;
@@ -514,7 +575,6 @@ public class KettleHeatController : MonoBehaviour
 
 
         SetRedLight(false);
-        SetSteamRate(0f);
         StopSteam();
 
 
@@ -524,15 +584,14 @@ public class KettleHeatController : MonoBehaviour
         }
 
 
-        if (!isHot)
+        // Eğer su henüz sıcak değilse
+        // yeşil de kapalı kalır.
+        if (waterState == null ||
+            !waterState.IsHot)
         {
+            isHot = false;
             SetGreenLight(false);
         }
-
-
-        Debug.Log(
-            "Kettle kapatıldı."
-        );
     }
 
 

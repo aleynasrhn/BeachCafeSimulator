@@ -53,8 +53,7 @@ public class CupPourReceiver : MonoBehaviour
     }
 
 
-    public void SetEspressoProgress(
-        float progress01)
+    public void SetEspressoProgress(float progress01)
     {
         if (liquidVisual == null)
             return;
@@ -65,8 +64,7 @@ public class CupPourReceiver : MonoBehaviour
     }
 
 
-    public void ReceiveEspresso(
-        PickupItem source)
+    public void ReceiveEspresso(PickupItem source)
     {
         if (!CanReceiveEspresso(source))
             return;
@@ -102,19 +100,15 @@ public class CupPourReceiver : MonoBehaviour
         if (recipe == null)
             return false;
 
-        // Önce espresso bulunmalı.
         if (!recipe.HasEspresso)
             return false;
 
-        // Milk kutusu süt vermeli.
         if (!source.HasMilk)
             return false;
 
-        // Aynı cup ikinci kez normal süt almasın.
         if (recipe.HasMilk)
             return false;
 
-        // Köpüklü süt ile çakışmasın.
         if (recipe.HasFrothedMilk)
             return false;
 
@@ -147,9 +141,6 @@ public class CupPourReceiver : MonoBehaviour
             liquidVisual.SetMilkProgress(1f);
         }
 
-        // MilkSource tüketilmiyor.
-        // Aynı kutudan başka cup'lara da süt verilebilir.
-
         Debug.Log(
             "Milk kutusundan süt cup'a döküldü."
         );
@@ -173,19 +164,15 @@ public class CupPourReceiver : MonoBehaviour
         if (!source.HasMilk)
             return false;
 
-        // Köpüklü süt ayrı işlem.
         if (source.IsFrothed)
             return false;
 
-        // Önce espresso.
         if (!recipe.HasEspresso)
             return false;
 
-        // Cup daha önce normal süt aldıysa tekrar alma.
         if (recipe.HasMilk)
             return false;
 
-        // Cappuccino sütüyle çakışmasın.
         if (recipe.HasFrothedMilk)
             return false;
 
@@ -229,7 +216,7 @@ public class CupPourReceiver : MonoBehaviour
 
     // =========================================================
     // KÖPÜKLÜ SÜT
-    // MILK PITCHER
+    // CAPPUCCINO
     // =========================================================
 
     public bool CanReceiveFrothedMilk(
@@ -247,15 +234,12 @@ public class CupPourReceiver : MonoBehaviour
         if (!source.IsFrothed)
             return false;
 
-        // Önce espresso.
         if (!recipe.HasEspresso)
             return false;
 
-        // Aynı cup ikinci kez köpüklü süt almasın.
         if (recipe.HasFrothedMilk)
             return false;
 
-        // Latte sütüyle çakışmasın.
         if (recipe.HasMilk)
             return false;
 
@@ -288,11 +272,98 @@ public class CupPourReceiver : MonoBehaviour
             liquidVisual.SetFrothedMilkProgress(1f);
         }
 
-        // Köpüklü pitcher da tamamen boşalır.
+        // Köpüklü pitcher tamamen boşalır.
         source.ConsumeAllMilk();
 
         Debug.Log(
             "Köpüklü süt cup'a döküldü."
+        );
+    }
+
+
+    // =========================================================
+    // SICAK SU
+    // KETTLE → CUP
+    // AMERICANO
+    // =========================================================
+
+    public bool CanReceiveHotWater(
+        KettleWaterState source)
+    {
+        if (source == null)
+            return false;
+
+        if (recipe == null)
+            return false;
+
+        // Cup'ta önce espresso olmalı.
+        if (!recipe.HasEspresso)
+            return false;
+
+        // Kettle'da su olmalı.
+        if (!source.HasWater)
+            return false;
+
+        // Su sıcak olmalı.
+        if (!source.IsHot)
+            return false;
+
+        // Aynı cup daha önce su aldıysa tekrar alma.
+        if (recipe.HasHotWater)
+            return false;
+
+        // Latte ile karışmasın.
+        if (recipe.HasMilk)
+            return false;
+
+        // Cappuccino ile karışmasın.
+        if (recipe.HasFrothedMilk)
+            return false;
+
+        return true;
+    }
+
+
+    public void SetWaterProgress(
+        float progress01)
+    {
+        if (liquidVisual == null)
+            return;
+
+        liquidVisual.SetWaterProgress(
+            progress01
+        );
+    }
+
+
+    public void ReceiveHotWater(
+        KettleWaterState source)
+    {
+        if (!CanReceiveHotWater(source))
+            return;
+
+        recipe.AddHotWater();
+
+        if (liquidVisual != null)
+        {
+            liquidVisual.SetWaterProgress(1f);
+        }
+
+        // Kettle'dan 1 sıcak su kullanımı düşer.
+        bool consumed =
+            source.ConsumeHotWater();
+
+        if (!consumed)
+        {
+            Debug.LogWarning(
+                "Sıcak su tüketilemedi."
+            );
+
+            return;
+        }
+
+        Debug.Log(
+            "Sıcak su cup'a döküldü. Americano hazır."
         );
     }
 }

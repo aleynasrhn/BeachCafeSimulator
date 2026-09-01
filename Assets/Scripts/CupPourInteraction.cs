@@ -1,13 +1,13 @@
 using UnityEngine;
 
 /// <summary>
-/// Cup'a espresso, normal süt veya köpüklü süt dökme işlemini yönetir.
-///
-/// Kaynaklar:
-/// - Espresso Shot
-/// - Milk kutusu
+/// Cup'a:
+/// - Espresso
+/// - Milk kutusundan normal süt
 /// - Normal süt içeren Milk Pitcher
-/// - Köpürtülmüş Milk Pitcher
+/// - Köpüklü süt içeren Milk Pitcher
+/// - Sıcak su içeren Kettle
+/// dökme işlemini yönetir.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(CupPourReceiver))]
@@ -46,7 +46,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
 
     // =========================================================
-    // DÖKME BAŞLATABİLİR Mİ?
+    // BAŞLAYABİLİR Mİ?
     // =========================================================
 
     public bool CanStartHold(
@@ -81,7 +81,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
 
             // -------------------------------------------------
-            // MILK KUTUSU
+            // MILK SOURCE
             // -------------------------------------------------
 
             MilkSource milkSource =
@@ -104,7 +104,6 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             if (milkFiller != null)
             {
-                // Köpürtülmüş süt
                 if (milkFiller.IsFrothed)
                 {
                     return receiver.CanReceiveFrothedMilk(
@@ -112,9 +111,23 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
                     );
                 }
 
-                // Normal süt
                 return receiver.CanReceiveMilk(
                     milkFiller
+                );
+            }
+
+
+            // -------------------------------------------------
+            // KETTLE
+            // -------------------------------------------------
+
+            KettleWaterState kettleWater =
+                held.GetComponent<KettleWaterState>();
+
+            if (kettleWater != null)
+            {
+                return receiver.CanReceiveHotWater(
+                    kettleWater
                 );
             }
         }
@@ -142,7 +155,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
 
             // -------------------------------------------------
-            // MILK KUTUSU
+            // MILK SOURCE
             // -------------------------------------------------
 
             MilkSource milkSource =
@@ -174,6 +187,21 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
                 return receiver.CanReceiveMilk(
                     milkFiller
+                );
+            }
+
+
+            // -------------------------------------------------
+            // KETTLE
+            // -------------------------------------------------
+
+            KettleWaterState kettleWater =
+                leftHeld.GetComponent<KettleWaterState>();
+
+            if (kettleWater != null)
+            {
+                return receiver.CanReceiveHotWater(
+                    kettleWater
                 );
             }
         }
@@ -222,7 +250,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
 
             // -------------------------------------------------
-            // MILK KUTUSU
+            // MILK SOURCE
             // -------------------------------------------------
 
             MilkSource milkSource =
@@ -262,6 +290,23 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
                 return;
             }
+
+
+            // -------------------------------------------------
+            // KETTLE
+            // -------------------------------------------------
+
+            KettleWaterState kettleWater =
+                held.GetComponent<KettleWaterState>();
+
+            if (kettleWater != null)
+            {
+                receiver.SetWaterProgress(
+                    progress01
+                );
+
+                return;
+            }
         }
 
 
@@ -289,7 +334,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
 
             // -------------------------------------------------
-            // MILK KUTUSU
+            // MILK SOURCE
             // -------------------------------------------------
 
             MilkSource milkSource =
@@ -326,6 +371,23 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
                         progress01
                     );
                 }
+
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // KETTLE
+            // -------------------------------------------------
+
+            KettleWaterState kettleWater =
+                leftHeld.GetComponent<KettleWaterState>();
+
+            if (kettleWater != null)
+            {
+                receiver.SetWaterProgress(
+                    progress01
+                );
 
                 return;
             }
@@ -371,7 +433,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
 
             // -------------------------------------------------
-            // MILK KUTUSU
+            // MILK SOURCE
             // -------------------------------------------------
 
             MilkSource milkSource =
@@ -411,6 +473,23 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
                 return;
             }
+
+
+            // -------------------------------------------------
+            // KETTLE
+            // -------------------------------------------------
+
+            KettleWaterState kettleWater =
+                held.GetComponent<KettleWaterState>();
+
+            if (kettleWater != null)
+            {
+                receiver.ReceiveHotWater(
+                    kettleWater
+                );
+
+                return;
+            }
         }
 
 
@@ -438,7 +517,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
 
             // -------------------------------------------------
-            // MILK KUTUSU
+            // MILK SOURCE
             // -------------------------------------------------
 
             MilkSource milkSource =
@@ -475,6 +554,23 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
                         milkFiller
                     );
                 }
+
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // KETTLE
+            // -------------------------------------------------
+
+            KettleWaterState kettleWater =
+                leftHeld.GetComponent<KettleWaterState>();
+
+            if (kettleWater != null)
+            {
+                receiver.ReceiveHotWater(
+                    kettleWater
+                );
 
                 return;
             }

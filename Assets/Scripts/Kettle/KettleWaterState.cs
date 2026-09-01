@@ -6,13 +6,18 @@ public class KettleWaterState : MonoBehaviour
     [SerializeField] private int maxWaterUses = 2;
 
     private int currentWaterUses = 0;
-
-    // Su şu anda sıcak mı?
     private bool isHot = false;
 
-    public int CurrentWaterUses => currentWaterUses;
 
-    public int MaxWaterUses => maxWaterUses;
+    // =========================================================
+    // GETTERS
+    // =========================================================
+
+    public int CurrentWaterUses =>
+        currentWaterUses;
+
+    public int MaxWaterUses =>
+        maxWaterUses;
 
     public bool HasWater =>
         currentWaterUses > 0;
@@ -25,25 +30,28 @@ public class KettleWaterState : MonoBehaviour
 
 
     // =========================================================
-    // SU DOLDUR
+    // KETTLE'I SU İLE DOLDUR
     // =========================================================
 
     public void FillCompletely()
     {
+        // Kettle tamamen yeniden doldurulur.
         currentWaterUses = maxWaterUses;
 
-        // Yeni su doldurulduğu için henüz sıcak değil.
+        // Yeni su geldiği için eski sıcaklık silinir.
         isHot = false;
 
         Debug.Log(
-            "Kettle suyla tamamen dolduruldu. Kullanım: " +
-            currentWaterUses
+            "Kettle tamamen su ile dolduruldu. " +
+            "Kullanım: " +
+            currentWaterUses +
+            " | Sıcak: false"
         );
     }
 
 
     // =========================================================
-    // SICAK SU YAP
+    // SUYU SICAK YAP
     // =========================================================
 
     public void SetHot()
@@ -51,7 +59,7 @@ public class KettleWaterState : MonoBehaviour
         if (!HasWater)
         {
             Debug.Log(
-                "Kettle'da su olmadığı için sıcak hale getirilemez."
+                "Kettle'da su olmadığı için sıcak yapılamaz."
             );
 
             return;
@@ -66,14 +74,23 @@ public class KettleWaterState : MonoBehaviour
 
 
     // =========================================================
-    // SICAK SU KULLAN
+    // 1 SICAK SU KULLAN
     // =========================================================
 
     public bool ConsumeHotWater()
     {
+        // Su yoksa
         if (!HasWater)
-            return false;
+        {
+            Debug.Log(
+                "Kettle'da sıcak su kalmadı."
+            );
 
+            return false;
+        }
+
+
+        // Su sıcak değilse
         if (!IsHot)
         {
             Debug.Log(
@@ -83,31 +100,47 @@ public class KettleWaterState : MonoBehaviour
             return false;
         }
 
+
+        // 1 kullanım tüket
         currentWaterUses--;
 
+
         Debug.Log(
-            "Sıcak su kullanıldı. Kalan kullanım: " +
+            "1 sıcak su kullanıldı. " +
+            "Kalan kullanım: " +
             currentWaterUses
         );
 
 
+        // Tamamen bittiyse
         if (currentWaterUses <= 0)
         {
             currentWaterUses = 0;
+
+            // Artık sıcak su yok
             isHot = false;
+
+            Debug.Log(
+                "Kettle'daki tüm sıcak su bitti."
+            );
         }
+
 
         return true;
     }
 
 
     // =========================================================
-    // BOŞALT
+    // TAMAMEN BOŞALT
     // =========================================================
 
     public void Empty()
     {
         currentWaterUses = 0;
         isHot = false;
+
+        Debug.Log(
+            "Kettle tamamen boşaltıldı."
+        );
     }
 }
