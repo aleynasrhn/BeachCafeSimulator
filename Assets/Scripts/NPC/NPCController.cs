@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -14,7 +15,9 @@ public class NPCController : MonoBehaviour
 
     private Order customerOrder;
 
-    public Order CustomerOrder => customerOrder;
+    public Order CustomerOrder =>
+        customerOrder;
+
 
     private enum NPCState
     {
@@ -27,34 +30,62 @@ public class NPCController : MonoBehaviour
 
     private NPCState currentState;
 
+
+    // =========================================================
+    // AWAKE
+    // =========================================================
+
     private void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();
+        agent =
+            GetComponent<NavMeshAgent>();
+
+        animator =
+            GetComponent<Animator>();
     }
+
+
+    // =========================================================
+    // START
+    // =========================================================
 
     private void Start()
     {
         if (cafeEntrancePoint == null)
         {
-            Debug.LogError("CafeEntrancePoint atanmadı!");
+            Debug.LogError(
+                "CafeEntrancePoint atanmadı!"
+            );
+
             return;
         }
+
 
         if (queuePoint == null)
         {
-            Debug.LogError("QueuePoint atanmadı!");
+            Debug.LogError(
+                "QueuePoint atanmadı!"
+            );
+
             return;
         }
 
+
         agent.isStopped = false;
 
-        currentState = NPCState.GoingToEntrance;
+        currentState =
+            NPCState.GoingToEntrance;
+
 
         agent.SetDestination(
             cafeEntrancePoint.position
         );
     }
+
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
 
     private void Update()
     {
@@ -64,7 +95,8 @@ public class NPCController : MonoBehaviour
 
                 if (HasReachedDestination())
                 {
-                    currentState = NPCState.GoingToQueue;
+                    currentState =
+                        NPCState.GoingToQueue;
 
                     agent.isStopped = false;
 
@@ -112,58 +144,145 @@ public class NPCController : MonoBehaviour
                 break;
         }
 
+
         UpdateAnimation();
     }
+
+
+    // =========================================================
+    // HEDEFE ULAŞTI MI?
+    // =========================================================
 
     private bool HasReachedDestination()
     {
         if (agent.pathPending)
             return false;
 
+
         if (!agent.hasPath)
             return false;
+
 
         return agent.remainingDistance <=
                agent.stoppingDistance;
     }
 
+
+    // =========================================================
+    // KASADA DUR
+    // =========================================================
+
     private void StopAtQueue()
     {
-        currentState = NPCState.Waiting;
+        currentState =
+            NPCState.Waiting;
+
 
         agent.isStopped = true;
+
         agent.ResetPath();
+
 
         if (animator != null)
         {
-            animator.SetFloat("Speed", 0f);
+            animator.SetFloat(
+                "Speed",
+                0f
+            );
         }
+
 
         Debug.Log(
             $"{gameObject.name} QueuePoint'e ulaştı ve bekliyor."
         );
     }
 
+
+    // =========================================================
+    // MÜŞTERİ SİPARİŞİ OLUŞTUR
+    // =========================================================
+
     private void CreateCustomerOrder()
     {
-        customerOrder = new Order();
+        customerOrder =
+            new Order();
 
+
+        // =====================================================
+        // AÇIK KAHVELER
+        // =====================================================
+
+        List<CoffeeType> unlockedCoffees =
+            GetUnlockedCoffeeTypes();
+
+
+        if (unlockedCoffees.Count == 0)
+        {
+            Debug.LogError(
+                "NPC siparişi oluşturulamadı: " +
+                "Hiç açık kahve yok!"
+            );
+
+            return;
+        }
+
+
+        // Rastgele açık kahve
         customerOrder.coffeeType =
-            (CoffeeType)Random.Range(0, 4);
+            unlockedCoffees[
+                Random.Range(
+                    0,
+                    unlockedCoffees.Count
+                )
+            ];
 
-        customerOrder.size =
-            (CupSize)Random.Range(0, 3);
+
+        // =====================================================
+        // BOYUT
+        // =====================================================
+
+        if (customerOrder.coffeeType ==
+            CoffeeType.Espresso)
+        {
+            // Espresso daima küçük.
+            customerOrder.size =
+                CupSize.Small;
+        }
+        else
+        {
+            customerOrder.size =
+                (CupSize)Random.Range(
+                    0,
+                    3
+                );
+        }
+
+
+        // =====================================================
+        // ÖDÜL
+        // =====================================================
 
         customerOrder.reward = 0;
 
-        customerOrder.timeLimit = 90f;
 
+        // =====================================================
+        // SİPARİŞ SÜRESİ
+        // =====================================================
+
+        customerOrder.timeLimit =
+            90f;
+
+
+        // =====================================================
+        // ÖDEME YÖNTEMİ
+        // =====================================================
 
         string[] paymentMethods =
         {
             "Nakit Ödeme",
             "Kart Ödeme"
         };
+
 
         customerOrder.preferredPaymentMethod =
             paymentMethods[
@@ -174,6 +293,10 @@ public class NPCController : MonoBehaviour
             ];
 
 
+        // =====================================================
+        // ESPRESSO SHOT
+        // =====================================================
+
         if (customerOrder.coffeeType ==
             CoffeeType.Espresso)
         {
@@ -182,35 +305,45 @@ public class NPCController : MonoBehaviour
                     ? EspressoShotButtonUI.ShotType.Single
                     : EspressoShotButtonUI.ShotType.Double;
         }
-
-
-        if (Random.value > 0.5f)
+        else
         {
-            string[] extras =
-            {
-                "Ekstra Espresso",
-                "Tarçın",
-                "Çikolata Şurubu",
-                "Karamel Şurubu",
-                "Vanilya Şurubu"
-            };
-
-            customerOrder.requestedExtras.Add(
-                extras[
-                    Random.Range(
-                        0,
-                        extras.Length
-                    )
-                ]
-            );
+            customerOrder.espressoShot =
+                EspressoShotButtonUI.ShotType.Single;
         }
+
+
+        // =====================================================
+        // EKSTRA
+        // =====================================================
+
+        CreateRandomExtra();
+
+
+        // =====================================================
+        // DEBUG
+        // =====================================================
+
+        string extraText =
+            customerOrder.requestedExtras.Count > 0
+                ? string.Join(
+                    ", ",
+                    customerOrder.requestedExtras
+                )
+                : "Yok";
 
 
         Debug.Log(
             $"{gameObject.name} sipariş oluşturdu: " +
-            $"{customerOrder.coffeeType}"
+            $"{customerOrder.coffeeType} | " +
+            $"{customerOrder.size} | " +
+            $"{customerOrder.espressoShot} | " +
+            $"Extra: {extraText}"
         );
 
+
+        // =====================================================
+        // SİPARİŞİ KASA EKRANINA GÖNDER
+        // =====================================================
 
         if (OrderScreenUI.Instance != null)
         {
@@ -226,13 +359,160 @@ public class NPCController : MonoBehaviour
         }
     }
 
+
+    // =========================================================
+    // AÇIK KAHVELERİ GETİR
+    // =========================================================
+
+    private List<CoffeeType> GetUnlockedCoffeeTypes()
+    {
+        List<CoffeeType> result =
+            new List<CoffeeType>();
+
+
+        // UnlockManager yoksa güvenli varsayılanlar
+        if (!UnlockManager.InstanceExists)
+        {
+            result.Add(
+                CoffeeType.Americano
+            );
+
+            result.Add(
+                CoffeeType.Espresso
+            );
+
+            result.Add(
+                CoffeeType.Latte
+            );
+
+            return result;
+        }
+
+
+        if (UnlockManager.Instance.IsCoffeeUnlocked(
+            CoffeeType.Americano))
+        {
+            result.Add(
+                CoffeeType.Americano
+            );
+        }
+
+
+        if (UnlockManager.Instance.IsCoffeeUnlocked(
+            CoffeeType.Espresso))
+        {
+            result.Add(
+                CoffeeType.Espresso
+            );
+        }
+
+
+        if (UnlockManager.Instance.IsCoffeeUnlocked(
+            CoffeeType.Latte))
+        {
+            result.Add(
+                CoffeeType.Latte
+            );
+        }
+
+
+        if (UnlockManager.Instance.IsCoffeeUnlocked(
+            CoffeeType.Cappuccino))
+        {
+            result.Add(
+                CoffeeType.Cappuccino
+            );
+        }
+
+
+        return result;
+    }
+
+
+    // =========================================================
+    // RASTGELE EKSTRA OLUŞTUR
+    // =========================================================
+
+    private void CreateRandomExtra()
+    {
+        // %50 ihtimalle hiç ekstra istemesin.
+        if (Random.value <= 0.5f)
+            return;
+
+
+        string[] allExtras =
+        {
+            "Ekstra Espresso",
+            "Tarçın",
+            "Çikolata Şurubu",
+            "Karamel Şurubu",
+            "Vanilya Şurubu"
+        };
+
+
+        List<string> unlockedExtras =
+            new List<string>();
+
+
+        foreach (string extra in allExtras)
+        {
+            // =================================================
+            // ESPRESSO ÖZEL KURALI
+            // =================================================
+
+            if (customerOrder.coffeeType ==
+                CoffeeType.Espresso &&
+                extra == "Ekstra Espresso")
+            {
+                // Espresso zaten Single / Double seçiyor.
+                // Ekstra Espresso istemeyecek.
+                continue;
+            }
+
+
+            // =================================================
+            // GÜN KONTROLÜ
+            // =================================================
+
+            if (UnlockManager.InstanceExists &&
+                UnlockManager.Instance.IsExtraUnlocked(
+                    extra))
+            {
+                unlockedExtras.Add(
+                    extra
+                );
+            }
+        }
+
+
+        // Hiç açık ekstra yoksa
+        if (unlockedExtras.Count == 0)
+            return;
+
+
+        string selectedExtra =
+            unlockedExtras[
+                Random.Range(
+                    0,
+                    unlockedExtras.Count
+                )
+            ];
+
+
+        customerOrder.requestedExtras.Add(
+            selectedExtra
+        );
+    }
+
+
     // =========================================================
     // SİPARİŞ ONAYLANDI
     // =========================================================
 
     public void ConfirmCustomerOrder()
     {
-        if (currentState != NPCState.Waiting)
+        if (currentState !=
+            NPCState.Waiting)
         {
             Debug.LogWarning(
                 $"{gameObject.name} şu anda sipariş beklemiyor."
@@ -241,13 +521,20 @@ public class NPCController : MonoBehaviour
             return;
         }
 
+
         if (SeatManager.Instance == null)
         {
-            Debug.LogError("SeatManager sahnede bulunamadı!");
+            Debug.LogError(
+                "SeatManager sahnede bulunamadı!"
+            );
+
             return;
         }
 
-        assignedSeat = SeatManager.Instance.GetFreeSeat();
+
+        assignedSeat =
+            SeatManager.Instance.GetFreeSeat();
+
 
         if (assignedSeat == null)
         {
@@ -258,13 +545,18 @@ public class NPCController : MonoBehaviour
             return;
         }
 
-        currentState = NPCState.GoingToTable;
+
+        currentState =
+            NPCState.GoingToTable;
+
 
         agent.isStopped = false;
+
 
         agent.SetDestination(
             assignedSeat.position
         );
+
 
         Debug.Log(
             $"{gameObject.name} siparişi onaylandı. " +
@@ -272,42 +564,80 @@ public class NPCController : MonoBehaviour
         );
     }
 
+
+    // =========================================================
+    // SANDALYEYE ULAŞTI
+    // =========================================================
+
     private void ArriveAtTable()
     {
-        currentState = NPCState.AtTable;
+        currentState =
+            NPCState.AtTable;
+
 
         agent.isStopped = true;
+
         agent.ResetPath();
 
-        // NPC gidebildiği en yakın noktaya vardı.
-        // Tam sandalyeye "ışınlayıp" oturma pozuna sabitliyoruz.
+
+        // NPC'yi tam sandalyeye oturt.
         agent.enabled = false;
 
-        transform.position = assignedSeat.position;
-        transform.rotation = assignedSeat.rotation;
+
+        transform.position =
+            assignedSeat.position;
+
+        transform.rotation =
+            assignedSeat.rotation;
+
 
         if (animator != null)
         {
-            animator.SetFloat("Speed", 0f);
-            animator.SetBool("IsSitting", true);
+            animator.SetFloat(
+                "Speed",
+                0f
+            );
+
+
+            animator.SetBool(
+                "IsSitting",
+                true
+            );
         }
+
 
         Debug.Log(
             $"{gameObject.name} masaya ulaştı."
         );
     }
 
+
+    // =========================================================
+    // ANİMASYON
+    // =========================================================
+
     private void UpdateAnimation()
     {
-        if (animator == null || agent == null)
-            return;
-
-        if (currentState == NPCState.Waiting ||
-            currentState == NPCState.AtTable)
+        if (animator == null ||
+            agent == null)
         {
-            animator.SetFloat("Speed", 0f);
             return;
         }
+
+
+        if (currentState ==
+            NPCState.Waiting ||
+            currentState ==
+            NPCState.AtTable)
+        {
+            animator.SetFloat(
+                "Speed",
+                0f
+            );
+
+            return;
+        }
+
 
         animator.SetFloat(
             "Speed",

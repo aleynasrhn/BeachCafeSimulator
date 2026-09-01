@@ -7,31 +7,40 @@ public class OrderScreenUI : MonoBehaviour
 {
     public static OrderScreenUI Instance;
 
+
     [Header("Müşteri Talebi")]
     [SerializeField] private TMP_Text customerRequestText;
+
 
     [Header("Doğrulama Mesajı")]
     [SerializeField] private TMP_Text validationText;
     [SerializeField] private GameObject validationBackground;
 
-    [Header("Boyut Butonları (3 tane)")]
+
+    [Header("Boyut Butonları")]
     [SerializeField] private SizeButtonUI[] sizeButtons;
 
-    [Header("Espresso Shot Butonları (2 tane)")]
+
+    [Header("Espresso Shot Butonları")]
     [SerializeField] private EspressoShotButtonUI[] espressoShotButtons;
 
-    [Header("Ana Kahve Butonları (4 tane)")]
+
+    [Header("Ana Kahve Butonları")]
     [SerializeField] private CoffeeButtonUI[] coffeeButtons;
+
 
     [Header("Ekstra Butonları")]
     [SerializeField] private ExtraButtonUI[] extraButtons;
+
 
     [Header("Sepet")]
     [SerializeField] private TMP_Text basketText;
     [SerializeField] private TMP_Text totalText;
 
+
     [Header("Ödeme")]
     [SerializeField] private TMP_Text paymentMethodText;
+
 
     [Header("Sipariş Ayarları")]
     [SerializeField] private float orderTimeLimit = 90f;
@@ -51,6 +60,7 @@ public class OrderScreenUI : MonoBehaviour
         new List<ExtraButtonUI>();
 
     private string selectedPaymentMethod = "";
+
 
     // NPC'nin gerçek siparişi
     private Order currentTargetOrder;
@@ -88,7 +98,8 @@ public class OrderScreenUI : MonoBehaviour
     // NPC'DEN SİPARİŞ AL
     // =========================================================
 
-    public void SetCustomerOrder(Order order)
+    public void SetCustomerOrder(
+        Order order)
     {
         if (order == null)
         {
@@ -99,11 +110,16 @@ public class OrderScreenUI : MonoBehaviour
             return;
         }
 
-        currentTargetOrder = order;
+
+        currentTargetOrder =
+            order;
+
 
         ResetBasket();
 
+
         UpdateCustomerRequestText();
+
 
         Debug.Log(
             "Kasa ekranına NPC siparişi geldi: " +
@@ -124,6 +140,7 @@ public class OrderScreenUI : MonoBehaviour
             return;
         }
 
+
         string coffeePart;
 
 
@@ -136,15 +153,19 @@ public class OrderScreenUI : MonoBehaviour
         {
             string shotName;
 
+
             if (currentTargetOrder.espressoShot ==
                 EspressoShotButtonUI.ShotType.Single)
             {
-                shotName = "Tek Shot";
+                shotName =
+                    "Tek Shot";
             }
             else
             {
-                shotName = "Double Shot";
+                shotName =
+                    "Double Shot";
             }
+
 
             coffeePart =
                 $"Espresso, {shotName}";
@@ -169,6 +190,7 @@ public class OrderScreenUI : MonoBehaviour
 
         string extrasPart = "";
 
+
         if (currentTargetOrder.requestedExtras != null &&
             currentTargetOrder.requestedExtras.Count > 0)
         {
@@ -182,7 +204,7 @@ public class OrderScreenUI : MonoBehaviour
 
 
         // =====================================================
-        // ÖDEME + TALEP
+        // YAZI
         // =====================================================
 
         customerRequestText.text =
@@ -208,22 +230,25 @@ public class OrderScreenUI : MonoBehaviour
     // BOYUT SEÇ
     // =========================================================
 
-    public void SelectSize(SizeButtonUI button)
+    public void SelectSize(
+        SizeButtonUI button)
     {
         if (button == null)
             return;
 
-        // Espresso'da boyut yok
+
+        // Espresso'da boyut seçilmez.
         if (IsEspressoSelected())
         {
             ShowValidationMessage(
-                "Espresso için Tek Shot veya Double Shot seçin."
+                "Espresso her zaman küçük bardakta hazırlanır."
             );
 
             return;
         }
 
-        // Shot seçilmişse boyut seçilemez
+
+        // Shot seçilmişse boyut seçilemez.
         if (selectedEspressoShot != null)
         {
             ShowValidationMessage(
@@ -233,9 +258,13 @@ public class OrderScreenUI : MonoBehaviour
             return;
         }
 
-        selectedSize = button.Size;
+
+        selectedSize =
+            button.Size;
+
 
         ClearValidationMessage();
+
 
         UpdateBasketDisplay();
     }
@@ -245,14 +274,34 @@ public class OrderScreenUI : MonoBehaviour
     // KAHVE SEÇ
     // =========================================================
 
-    public void SelectCoffee(CoffeeButtonUI button)
+    public void SelectCoffee(
+        CoffeeButtonUI button)
     {
         if (button == null)
             return;
 
-        // Shot seçildiyse sadece Espresso seçilebilir
+
+        // =====================================================
+        // KİLİT KONTROLÜ
+        // =====================================================
+
+        if (!button.IsUnlocked)
+        {
+            ShowValidationMessage(
+                "Bu kahve henüz açılmadı."
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // SHOT SEÇİMİYLE ÇAKIŞMA
+        // =====================================================
+
         if (selectedEspressoShot != null &&
-            button.CoffeeType != CoffeeType.Espresso)
+            button.CoffeeType !=
+            CoffeeType.Espresso)
         {
             ShowValidationMessage(
                 "Tek Shot ve Double Shot sadece Espresso için kullanılabilir."
@@ -261,7 +310,9 @@ public class OrderScreenUI : MonoBehaviour
             return;
         }
 
-        selectedCoffee = button;
+
+        selectedCoffee =
+            button;
 
 
         // =====================================================
@@ -271,7 +322,7 @@ public class OrderScreenUI : MonoBehaviour
         if (button.CoffeeType ==
             CoffeeType.Espresso)
         {
-            // Espresso'da boyut kullanılmaz
+            // Espresso her zaman küçük.
             selectedSize = null;
         }
 
@@ -287,7 +338,9 @@ public class OrderScreenUI : MonoBehaviour
             selectedEspressoShot = null;
         }
 
+
         ClearValidationMessage();
+
 
         UpdateBasketDisplay();
     }
@@ -303,7 +356,8 @@ public class OrderScreenUI : MonoBehaviour
         if (button == null)
             return;
 
-        // Önce kahve seçilmeli
+
+        // Önce kahve seçilmeli.
         if (selectedCoffee == null)
         {
             ShowValidationMessage(
@@ -313,7 +367,8 @@ public class OrderScreenUI : MonoBehaviour
             return;
         }
 
-        // Sadece Espresso'da kullanılabilir
+
+        // Sadece Espresso'da.
         if (selectedCoffee.CoffeeType !=
             CoffeeType.Espresso)
         {
@@ -324,12 +379,17 @@ public class OrderScreenUI : MonoBehaviour
             return;
         }
 
-        selectedEspressoShot = button;
 
-        // Espresso'da boyut yok
+        selectedEspressoShot =
+            button;
+
+
+        // Espresso'da boyut yok.
         selectedSize = null;
 
+
         ClearValidationMessage();
+
 
         UpdateBasketDisplay();
     }
@@ -339,22 +399,66 @@ public class OrderScreenUI : MonoBehaviour
     // EKSTRA SEÇ / ÇIKAR
     // =========================================================
 
-    public void ToggleExtra(ExtraButtonUI button)
+    public void ToggleExtra(
+        ExtraButtonUI button)
     {
         if (button == null)
             return;
 
+
+        // Kilitli ekstra
         if (button.IsLocked)
             return;
 
+
+        // =====================================================
+        // ÖNCE KAHVE SEÇİLMELİ
+        // =====================================================
+
+        if (selectedCoffee == null)
+        {
+            ShowValidationMessage(
+                "Önce bir kahve seçin."
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // ESPRESSO + EKSTRA ESPRESSO YASAK
+        // =====================================================
+
+        if (selectedCoffee.CoffeeType ==
+            CoffeeType.Espresso &&
+            button.ExtraName ==
+            "Ekstra Espresso")
+        {
+            ShowValidationMessage(
+                "Espresso için Ekstra Espresso seçilemez. Tek Shot veya Double Shot kullanın."
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // EKSTRA EKLE / ÇIKAR
+        // =====================================================
+
         if (selectedExtras.Contains(button))
         {
-            selectedExtras.Remove(button);
+            selectedExtras.Remove(
+                button
+            );
         }
         else
         {
-            selectedExtras.Add(button);
+            selectedExtras.Add(
+                button
+            );
         }
+
 
         UpdateBasketDisplay();
     }
@@ -364,14 +468,19 @@ public class OrderScreenUI : MonoBehaviour
     // ÖDEME YÖNTEMİ
     // =========================================================
 
-    public void SelectPaymentMethod(string method)
+    public void SelectPaymentMethod(
+        string method)
     {
-        selectedPaymentMethod = method;
+        selectedPaymentMethod =
+            method;
+
 
         if (paymentMethodText != null)
         {
-            paymentMethodText.text = method;
+            paymentMethodText.text =
+                method;
         }
+
 
         ClearValidationMessage();
     }
@@ -394,9 +503,9 @@ public class OrderScreenUI : MonoBehaviour
 
         if (selectedCoffee != null)
         {
-            // =================================================
+            // -------------------------------------------------
             // ESPRESSO
-            // =================================================
+            // -------------------------------------------------
 
             if (selectedCoffee.CoffeeType ==
                 CoffeeType.Espresso)
@@ -405,10 +514,12 @@ public class OrderScreenUI : MonoBehaviour
                 {
                     float price;
 
+
                     if (selectedEspressoShot.Shot ==
                         EspressoShotButtonUI.ShotType.Single)
                     {
                         price = 2.15f;
+
 
                         lines +=
                             $"Espresso - Tek Shot " +
@@ -418,19 +529,21 @@ public class OrderScreenUI : MonoBehaviour
                     {
                         price = 2.75f;
 
+
                         lines +=
                             $"Espresso - Double Shot " +
                             $"{price:0.00}$\n";
                     }
+
 
                     total += price;
                 }
             }
 
 
-            // =================================================
+            // -------------------------------------------------
             // NORMAL KAHVELER
-            // =================================================
+            // -------------------------------------------------
 
             else if (selectedSize.HasValue)
             {
@@ -439,10 +552,12 @@ public class OrderScreenUI : MonoBehaviour
                         selectedSize.Value
                     );
 
+
                 lines +=
                     $"{SizeToTurkish(selectedSize.Value)} " +
                     $"{selectedCoffee.CoffeeName} " +
                     $"{price:0.00}$\n";
+
 
                 total += price;
             }
@@ -453,13 +568,17 @@ public class OrderScreenUI : MonoBehaviour
         // EKSTRALAR
         // =====================================================
 
-        foreach (var extra in selectedExtras)
+        foreach (
+            ExtraButtonUI extra
+            in selectedExtras)
         {
             lines +=
                 $"{extra.ExtraName} " +
                 $"{extra.Price:0.00}$\n";
 
-            total += extra.Price;
+
+            total +=
+                extra.Price;
         }
 
 
@@ -469,8 +588,10 @@ public class OrderScreenUI : MonoBehaviour
 
         if (basketText != null)
         {
-            basketText.text = lines;
+            basketText.text =
+                lines;
         }
+
 
         if (totalText != null)
         {
@@ -496,12 +617,15 @@ public class OrderScreenUI : MonoBehaviour
 
         selectedPaymentMethod = "";
 
+
         if (paymentMethodText != null)
         {
             paymentMethodText.text = "";
         }
 
+
         UpdateBasketDisplay();
+
 
         ClearValidationMessage();
     }
@@ -542,7 +666,21 @@ public class OrderScreenUI : MonoBehaviour
 
 
         // =====================================================
-        // ESPRESSO / NORMAL KAHVE KONTROLÜ
+        // KAHVE HÂLÂ AÇIK MI?
+        // =====================================================
+
+        if (!selectedCoffee.IsUnlocked)
+        {
+            ShowValidationMessage(
+                "Bu kahve henüz açılmadı."
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // ESPRESSO / NORMAL KAHVE
         // =====================================================
 
         if (selectedCoffee.CoffeeType ==
@@ -556,6 +694,28 @@ public class OrderScreenUI : MonoBehaviour
 
                 return;
             }
+
+
+            // Espresso daima küçük.
+            selectedSize = null;
+
+
+            // Espresso + Ekstra Espresso yasak.
+            foreach (
+                ExtraButtonUI extra
+                in selectedExtras)
+            {
+                if (extra != null &&
+                    extra.ExtraName ==
+                    "Ekstra Espresso")
+                {
+                    ShowValidationMessage(
+                        "Espresso için Ekstra Espresso kullanılamaz."
+                    );
+
+                    return;
+                }
+            }
         }
         else
         {
@@ -563,6 +723,29 @@ public class OrderScreenUI : MonoBehaviour
             {
                 ShowValidationMessage(
                     "Lütfen kahve boyutu seçin."
+                );
+
+                return;
+            }
+        }
+
+
+        // =====================================================
+        // EKSTRALARIN KİLİT KONTROLÜ
+        // =====================================================
+
+        foreach (
+            ExtraButtonUI extra
+            in selectedExtras)
+        {
+            if (extra == null)
+                continue;
+
+
+            if (extra.IsLocked)
+            {
+                ShowValidationMessage(
+                    "Seçtiğiniz ekstralardan biri henüz açılmadı."
                 );
 
                 return;
@@ -586,7 +769,7 @@ public class OrderScreenUI : MonoBehaviour
 
 
         // =====================================================
-        // FİYAT HESAPLA
+        // FİYAT
         // =====================================================
 
         float total = 0f;
@@ -628,9 +811,12 @@ public class OrderScreenUI : MonoBehaviour
         // EKSTRA FİYATLARI
         // =====================================================
 
-        foreach (var extra in selectedExtras)
+        foreach (
+            ExtraButtonUI extra
+            in selectedExtras)
         {
-            total += extra.Price;
+            total +=
+                extra.Price;
         }
 
 
@@ -638,35 +824,41 @@ public class OrderScreenUI : MonoBehaviour
         // OYUNCUNUN HAZIRLADIĞI SİPARİŞ
         // =====================================================
 
-        Order finalOrder = new Order
-        {
-            coffeeType =
-                selectedCoffee.CoffeeType,
+        Order finalOrder =
+            new Order
+            {
+                coffeeType =
+                    selectedCoffee.CoffeeType,
 
-            size =
-                selectedSize ?? CupSize.Small,
+                size =
+                    selectedCoffee.CoffeeType ==
+                    CoffeeType.Espresso
+                        ? CupSize.Small
+                        : selectedSize.Value,
 
-            espressoShot =
-                selectedEspressoShot != null
-                    ? selectedEspressoShot.Shot
-                    : EspressoShotButtonUI.ShotType.Single,
+                espressoShot =
+                    selectedEspressoShot != null
+                        ? selectedEspressoShot.Shot
+                        : EspressoShotButtonUI.ShotType.Single,
 
-            reward =
-                Mathf.RoundToInt(total),
+                reward =
+                    Mathf.RoundToInt(total),
 
-            timeLimit =
-                orderTimeLimit,
+                timeLimit =
+                    orderTimeLimit,
 
-            preferredPaymentMethod =
-                selectedPaymentMethod
-        };
+                preferredPaymentMethod =
+                    selectedPaymentMethod
+            };
 
 
         // =====================================================
         // EKSTRALARI EKLE
         // =====================================================
 
-        foreach (var extra in selectedExtras)
+        foreach (
+            ExtraButtonUI extra
+            in selectedExtras)
         {
             finalOrder.requestedExtras.Add(
                 extra.ExtraName
@@ -675,7 +867,7 @@ public class OrderScreenUI : MonoBehaviour
 
 
         // =====================================================
-        // SİPARİŞİ ORDER UI'YA EKLE
+        // ORDER UI
         // =====================================================
 
         if (OrderUI.Instance != null)
@@ -687,12 +879,15 @@ public class OrderScreenUI : MonoBehaviour
 
 
         // =====================================================
-        // PARA EKLE
+        // PARA
         // =====================================================
 
         if (MoneyManager.Instance != null)
         {
-            MoneyManager.Instance.AddMoney(total);
+            MoneyManager.Instance.AddMoney(
+                total
+            );
+
 
             Debug.Log(
                 $"Sipariş parası eklendi: " +
@@ -708,11 +903,12 @@ public class OrderScreenUI : MonoBehaviour
 
 
         // =====================================================
-        // NPC'Yİ MASAYA GÖNDER
+        // NPC
         // =====================================================
 
         NPCController currentCustomer =
             FindObjectOfType<NPCController>();
+
 
         if (currentCustomer != null)
         {
@@ -744,11 +940,13 @@ public class OrderScreenUI : MonoBehaviour
             if (selectedEspressoShot.Shot ==
                 EspressoShotButtonUI.ShotType.Single)
             {
-                summary += " + Tek Shot";
+                summary +=
+                    " + Tek Shot";
             }
             else
             {
-                summary += " + Double Shot";
+                summary +=
+                    " + Double Shot";
             }
         }
 
@@ -769,7 +967,9 @@ public class OrderScreenUI : MonoBehaviour
         // EKSTRA ÖZETİ
         // =====================================================
 
-        foreach (var extra in selectedExtras)
+        foreach (
+            ExtraButtonUI extra
+            in selectedExtras)
         {
             summary +=
                 $" + {extra.ExtraName}";
@@ -805,6 +1005,7 @@ public class OrderScreenUI : MonoBehaviour
         if (validationText == null)
             return;
 
+
         if (validationCoroutine != null)
         {
             StopCoroutine(
@@ -812,14 +1013,23 @@ public class OrderScreenUI : MonoBehaviour
             );
         }
 
-        validationText.gameObject.SetActive(true);
 
-        validationText.text = message;
+        validationText.gameObject.SetActive(
+            true
+        );
+
+
+        validationText.text =
+            message;
+
 
         if (validationBackground != null)
         {
-            validationBackground.SetActive(true);
+            validationBackground.SetActive(
+                true
+            );
         }
+
 
         validationCoroutine =
             StartCoroutine(
@@ -830,19 +1040,29 @@ public class OrderScreenUI : MonoBehaviour
 
     private IEnumerator HideValidationMessage()
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(
+            3f
+        );
+
 
         if (validationText != null)
         {
-            validationText.text = "";
+            validationText.text =
+                "";
 
-            validationText.gameObject.SetActive(false);
+            validationText.gameObject.SetActive(
+                false
+            );
         }
+
 
         if (validationBackground != null)
         {
-            validationBackground.SetActive(false);
+            validationBackground.SetActive(
+                false
+            );
         }
+
 
         validationCoroutine = null;
     }
@@ -859,16 +1079,23 @@ public class OrderScreenUI : MonoBehaviour
             validationCoroutine = null;
         }
 
+
         if (validationBackground != null)
         {
-            validationBackground.SetActive(false);
+            validationBackground.SetActive(
+                false
+            );
         }
+
 
         if (validationText != null)
         {
-            validationText.text = "";
+            validationText.text =
+                "";
 
-            validationText.gameObject.SetActive(false);
+            validationText.gameObject.SetActive(
+                false
+            );
         }
     }
 
@@ -895,6 +1122,7 @@ public class OrderScreenUI : MonoBehaviour
                 return "Americano";
         }
 
+
         return "";
     }
 
@@ -917,6 +1145,7 @@ public class OrderScreenUI : MonoBehaviour
             case CupSize.Large:
                 return "Büyük";
         }
+
 
         return "";
     }

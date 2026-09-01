@@ -1,16 +1,64 @@
 using UnityEngine;
+using UnityEngine.UI;
 
-/// <summary>
-/// Ekstra Espresso/Çikolata Şurubu/Karamel Şurup/Tarçın/Vanilya Şurubu
-/// butonlarının HER BİRİNE eklenir.
-/// </summary>
 public class ExtraButtonUI : MonoBehaviour
 {
-    [SerializeField] private string extraName = "Ekstra Espresso";
-    [SerializeField] private float price = 2f;
-    [SerializeField] private bool locked = false;
+    [Header("Ekstra")]
+    [SerializeField]
+    private string extraName =
+        "Ekstra Espresso";
 
-    public string ExtraName => extraName;
-    public float Price => price;
-    public bool IsLocked => locked;
+    [SerializeField] private float price = 2f;
+
+
+    [Header("Kilit")]
+    [SerializeField] private int unlockDay = 1;
+    [SerializeField] private GameObject lockOverlay;
+    [SerializeField] private Button button;
+
+
+    private bool isUnlocked = true;
+
+
+    public string ExtraName =>
+        extraName;
+
+    public float Price =>
+        price;
+
+    public int UnlockDay =>
+        unlockDay;
+
+    public bool IsLocked =>
+        !isUnlocked;
+
+    public bool IsUnlocked =>
+        isUnlocked;
+
+
+    // =========================================================
+    // KİLİT DURUMU
+    // =========================================================
+
+    public void SetUnlocked(
+        bool unlocked)
+    {
+        isUnlocked =
+            unlocked;
+
+
+        if (lockOverlay != null)
+        {
+            lockOverlay.SetActive(
+                !unlocked
+            );
+        }
+
+
+        if (button != null)
+        {
+            button.interactable =
+                unlocked;
+        }
+    }
 }
