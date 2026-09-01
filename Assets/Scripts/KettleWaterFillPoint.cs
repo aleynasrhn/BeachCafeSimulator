@@ -11,13 +11,8 @@ public class KettleWaterFillPoint : MonoBehaviour, IInteractable
     [SerializeField] private string acceptedItemName = "Kettle";
 
     [Header("Yerleşim")]
-    [SerializeField]
-    private Vector3 positionOffset =
-        Vector3.zero;
-
-    [SerializeField]
-    private Vector3 rotationOffsetEuler =
-        Vector3.zero;
+    [SerializeField] private Vector3 positionOffset = Vector3.zero;
+    [SerializeField] private Vector3 rotationOffsetEuler = Vector3.zero;
 
     [Header("Smooth Yerleşim")]
     [SerializeField] private float moveDuration = 0.35f;
@@ -25,14 +20,20 @@ public class KettleWaterFillPoint : MonoBehaviour, IInteractable
     [Header("Su Dolumu")]
     [SerializeField] private float fillDuration = 3f;
 
+    [Header("Sayaç")]
+    [SerializeField] private KettleTimerDisplay timerDisplay;
+
     private PickupItem dockedKettle;
     private KettleWaterState kettleState;
 
     private bool isOccupied = false;
+    private bool isFilling = false;
 
     private float fillTimer = 0f;
 
     private Coroutine moveCoroutine;
+
+    private Collider kettleCollider;
 
 
     // =========================================================
@@ -56,13 +57,26 @@ public class KettleWaterFillPoint : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // KETTLE ZATEN BURADAYSA → AL
+        // DOLUM SÜRÜYORSA KETTLE ALINAMAZ
+        // =====================================================
+
+        if (isOccupied && isFilling)
+        {
+            return;
+        }
+
+
+        // =====================================================
+        // KETTLE ZATEN NOKTADAYSA → AL
         // =====================================================
 
         if (isOccupied)
         {
             if (dockedKettle != null)
             {
+                if (kettleCollider != null)
+                    kettleCollider.enabled = true;
+
                 dockedKettle.ForcePickUp(player);
             }
 
@@ -70,14 +84,12 @@ public class KettleWaterFillPoint : MonoBehaviour, IInteractable
             kettleState = null;
 
             isOccupied = false;
+            isFilling = false;
 
             fillTimer = 0f;
 
-            if (moveCoroutine != null)
-            {
-                StopCoroutine(moveCoroutine);
-                moveCoroutine = null;
-            }
+            if (timerDisplay != null)
+                timerDisplay.HideTimer();
 
             return;
         }
@@ -111,8 +123,13 @@ public class KettleWaterFillPoint : MonoBehaviour, IInteractable
         }
 
 
+        // Kettle collider referansını al
+        kettleCollider =
+            held.GetComponent<Collider>();
+
+
         // =====================================================
-        // HEDEF POZİSYON
+        // HEDEF
         // =====================================================
 
         Vector3 targetPosition =
@@ -136,12 +153,18 @@ public class KettleWaterFillPoint : MonoBehaviour, IInteractable
         kettleState = state;
 
         isOccupied = true;
-
+        isFilling = false;
         fillTimer = 0f;
 
 
+        if (timerDisplay != null)
+        {
+            timerDisplay.HideTimer();
+        }
+
+
         // =====================================================
-        // SMOOTH YERLEŞTİR
+        // SMOOTH YERLEŞİM
         // =====================================================
 
         if (moveCoroutine != null)
@@ -162,7 +185,7 @@ public class KettleWaterFillPoint : MonoBehaviour, IInteractable
 
 
     // =========================================================
-    // SMOOTH KETTLE HAREKETİ
+    // KETTLE'I SMOOTH ŞEKİLDE NOKTAYA TAŞI
     // =========================================================
 
     private IEnumerator MoveKettleToPoint(
@@ -216,24 +239,30 @@ public class KettleWaterFillPoint : MonoBehaviour, IInteractable
         }
 
 
-        // =====================================================
-        // TAM HEDEFE OTURT
-        // =====================================================
-
+        // Tam noktaya oturt
         kettle.PlaceAtExact(
             targetPosition,
             targetRotation
         );
 
 
-        // Oyuncunun elinden çıkar
+        // =====================================================
+        // DOLUM BAŞLAMADAN ÖNCE KETTLE COLLIDERINI KAPAT
+        // =====================================================
+
+        if (kettleCollider != null)
+        {
+            kettleCollider.enabled = false;
+        }
+
+
         player.SetHeldItem(null);
 
         moveCoroutine = null;
 
 
         Debug.Log(
-            "Kettle musluğun altındaki dolum noktasına yerleştirildi."
+            "Kettle musluk altına yerleştirildi."
         );
     }
 
@@ -255,54 +284,158 @@ public class KettleWaterFillPoint : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // KAPAK KONTROLÜ
+        // KAPAK
         // =====================================================
 
         KettleLidInteraction lid =
-            dockedKettle.GetComponentInChildren<KettleLidInteraction>();
+            dockedKettle
+            .GetComponentInChildren<KettleLidInteraction>();
 
         if (lid == null)
         {
-            fillTimer = 0f;
+            StopFilling();
             return;
         }
 
 
         // =====================================================
-        // KAPAK KAPALIYSA SU DOLMASIN
+        // KAPAK KAPALIYSA DOLUM YOK
         // =====================================================
 
         if (!lid.IsOpen)
         {
-            fillTimer = 0f;
+            StopFilling();
             return;
         }
 
 
         // =====================================================
-        // KAPAK AÇIK + MUSLUK AÇIK
+        // MUSLUK YOKSA
         // =====================================================
 
-        if (faucet != null &&
-            faucet.IsOpen &&
-            !kettleState.IsFull)
+        if (faucet == null)
         {
-            fillTimer += Time.deltaTime;
+            StopFilling();
+            return;
+        }
 
-            if (fillTimer >= fillDuration)
+
+        // =====================================================
+        // MUSLUK KAPALIYSA
+        // =====================================================
+
+        if (!faucet.IsOpen)
+        {
+            StopFilling();
+            return;
+        }
+
+
+        // =====================================================
+        // KETTLE ZATEN DOLUYSA
+        // =====================================================
+
+        if (kettleState.IsFull)
+        {
+            StopFilling();
+            return;
+        }
+
+
+        // =====================================================
+        // DOLUM BAŞLA
+        // =====================================================
+
+        if (!isFilling)
+        {
+            isFilling = true;
+            fillTimer = 0f;
+
+            if (timerDisplay != null)
             {
-                kettleState.FillCompletely();
-
-                fillTimer = 0f;
-
-                Debug.Log(
-                    "Kettle suyla tamamen dolduruldu."
+                timerDisplay.ShowTimer(
+                    Mathf.CeilToInt(fillDuration)
                 );
             }
         }
-        else
+
+
+        // =====================================================
+        // ZAMAN
+        // =====================================================
+
+        fillTimer += Time.deltaTime;
+
+
+        int remainingSeconds =
+            Mathf.CeilToInt(
+                fillDuration - fillTimer
+            );
+
+        remainingSeconds =
+            Mathf.Clamp(
+                remainingSeconds,
+                0,
+                Mathf.CeilToInt(fillDuration)
+            );
+
+
+        if (timerDisplay != null &&
+            remainingSeconds > 0)
         {
+            timerDisplay.ShowTimer(
+                remainingSeconds
+            );
+        }
+
+
+        // =====================================================
+        // DOLUM BİTTİ
+        // =====================================================
+
+        if (fillTimer >= fillDuration)
+        {
+            kettleState.FillCompletely();
+
             fillTimer = 0f;
+            isFilling = false;
+
+
+            if (timerDisplay != null)
+            {
+                timerDisplay.HideTimer();
+            }
+
+
+            // Artık tekrar alınabilir
+            if (kettleCollider != null)
+            {
+                kettleCollider.enabled = true;
+            }
+
+
+            Debug.Log(
+                "Kettle tamamen doldu. 2 kullanım hazır."
+            );
+        }
+    }
+
+
+    // =========================================================
+    // DOLUMU DURDUR
+    // =========================================================
+
+    private void StopFilling()
+    {
+        if (!isFilling)
+            return;
+
+        isFilling = false;
+        fillTimer = 0f;
+
+        if (timerDisplay != null)
+        {
+            timerDisplay.HideTimer();
         }
     }
 

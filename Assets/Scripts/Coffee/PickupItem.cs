@@ -201,7 +201,28 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     private void PickUp(PlayerInteraction player)
     {
-        // Eğer başka objeye bağlıysa önce ayır
+        // =====================================================
+        // KETTLE ISINIYORSA ALINAMAZ
+        // =====================================================
+
+        KettleHeatController kettleHeat =
+            GetComponent<KettleHeatController>();
+
+        if (kettleHeat != null &&
+            kettleHeat.IsHeating)
+        {
+            Debug.Log(
+                "Kettle şu anda ısınıyor, alınamaz."
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // BAŞKA OBJEDEN AYIR
+        // =====================================================
+
         if (isAttachedToObject)
         {
             DetachFromObject();
@@ -316,6 +337,21 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     public void ForcePickUp(PlayerInteraction player)
     {
+        // Kettle ısınıyorsa ForcePickUp ile de alınamasın
+        KettleHeatController kettleHeat =
+            GetComponent<KettleHeatController>();
+
+        if (kettleHeat != null &&
+            kettleHeat.IsHeating)
+        {
+            Debug.Log(
+                "Kettle şu anda ısınıyor, alınamaz."
+            );
+
+            return;
+        }
+
+
         if (isAttachedToObject)
         {
             DetachFromObject();
@@ -394,7 +430,6 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
 
 
-        // Önce dünya pozisyonunu ayarla
         transform.position =
             worldPosition;
 
@@ -402,11 +437,9 @@ public class PickupItem : MonoBehaviour, IInteractable
             worldRotation;
 
 
-        // Objeyi parent'ın child'ı yap
         transform.SetParent(parent);
 
 
-        // Bağlantıyı kaydet
         attachedParent = parent;
         isAttachedToObject = true;
 
@@ -414,9 +447,6 @@ public class PickupItem : MonoBehaviour, IInteractable
         rb.isKinematic = true;
         rb.useGravity = false;
 
-
-        // Collider açık kalıyor.
-        // Böylece takılı objeye tekrar bakıp E basabiliriz.
         col.enabled = true;
 
         isHeld = false;
@@ -436,7 +466,6 @@ public class PickupItem : MonoBehaviour, IInteractable
             return;
 
 
-        // Mevcut dünya pozisyon/rotasyonunu koru
         Vector3 worldPosition =
             transform.position;
 
@@ -444,11 +473,9 @@ public class PickupItem : MonoBehaviour, IInteractable
             transform.rotation;
 
 
-        // Parent'tan çıkar
         transform.SetParent(null);
 
 
-        // Dünya pozisyonunu koru
         transform.position =
             worldPosition;
 
@@ -499,7 +526,6 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     public void ReturnToOriginalPosition()
     {
-        // Eğer başka objeye bağlıysa önce ayır
         if (isAttachedToObject)
         {
             DetachFromObject();

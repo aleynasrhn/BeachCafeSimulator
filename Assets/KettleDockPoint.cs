@@ -7,14 +7,23 @@ public class KettleDockPoint : MonoBehaviour, IInteractable
     [SerializeField] private string acceptedItemName = "Kettle";
 
     [Header("Yerleşim")]
-    [SerializeField] private Vector3 positionOffset = Vector3.zero;
-    [SerializeField] private Vector3 rotationOffsetEuler = Vector3.zero;
+    [SerializeField]
+    private Vector3 positionOffset =
+        Vector3.zero;
+
+    [SerializeField]
+    private Vector3 rotationOffsetEuler =
+        Vector3.zero;
 
     private bool isOccupied = false;
     private PickupItem dockedItem;
 
-    public bool IsOccupied => isOccupied;
-    public PickupItem DockedItem => dockedItem;
+
+    public bool IsOccupied =>
+        isOccupied;
+
+    public PickupItem DockedItem =>
+        dockedItem;
 
 
     // =========================================================
@@ -23,10 +32,7 @@ public class KettleDockPoint : MonoBehaviour, IInteractable
 
     public string GetInteractPrompt()
     {
-        if (isOccupied)
-            return $"E - {acceptedItemName} çıkar";
-
-        return $"E - {acceptedItemName} koy";
+        return "";
     }
 
 
@@ -36,6 +42,10 @@ public class KettleDockPoint : MonoBehaviour, IInteractable
 
     public void Interact(PlayerInteraction player)
     {
+        if (player == null)
+            return;
+
+
         // =====================================================
         // DOCK DOLUYSA → KETTLE'I AL
         // =====================================================
@@ -44,8 +54,24 @@ public class KettleDockPoint : MonoBehaviour, IInteractable
         {
             if (dockedItem != null)
             {
+                // Kettle ısınıyorsa alınamaz
+                KettleHeatController kettleHeat =
+                    dockedItem.GetComponent<KettleHeatController>();
+
+                if (kettleHeat != null &&
+                    kettleHeat.IsHeating)
+                {
+                    Debug.Log(
+                        "Kettle ısınıyor, şu anda alınamaz."
+                    );
+
+                    return;
+                }
+
+
                 dockedItem.ForcePickUp(player);
             }
+
 
             isOccupied = false;
             dockedItem = null;
@@ -64,12 +90,13 @@ public class KettleDockPoint : MonoBehaviour, IInteractable
         if (held == null)
             return;
 
+
         if (held.ItemName != acceptedItemName)
             return;
 
 
         // =====================================================
-        // POZİSYON
+        // HEDEF POZİSYON
         // =====================================================
 
         Vector3 targetPosition =
@@ -80,7 +107,7 @@ public class KettleDockPoint : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // ROTASYON
+        // HEDEF ROTASYON
         // =====================================================
 
         Quaternion targetRotation =
@@ -91,7 +118,7 @@ public class KettleDockPoint : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // TAM OLARAK YERLEŞTİR
+        // KETTLE'I YERLEŞTİR
         // =====================================================
 
         held.PlaceAtExact(
@@ -100,18 +127,16 @@ public class KettleDockPoint : MonoBehaviour, IInteractable
         );
 
 
-        // =====================================================
-        // KAYDET
-        // =====================================================
-
         dockedItem = held;
+
         isOccupied = true;
+
 
         player.SetHeldItem(null);
 
 
         Debug.Log(
-            "Kettle dock noktasına düzgün şekilde yerleştirildi."
+            "Kettle dock noktasına yerleştirildi."
         );
     }
 
@@ -126,6 +151,7 @@ public class KettleDockPoint : MonoBehaviour, IInteractable
             isOccupied
             ? Color.red
             : Color.cyan;
+
 
         Gizmos.DrawWireSphere(
             transform.position,
