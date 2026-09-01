@@ -26,9 +26,7 @@ public class KettleTimerDisplay : MonoBehaviour
             return;
 
         timerText.gameObject.SetActive(true);
-
-        timerText.text =
-            seconds.ToString();
+        timerText.text = seconds.ToString();
     }
 
 
