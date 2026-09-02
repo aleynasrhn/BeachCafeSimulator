@@ -19,12 +19,12 @@ using System.Collections;
 /// - Başlatma düğmesine tekrar basılamaz.
 ///
 /// Brew tamamlandığında:
-/// - Espresso bardağa aktarılır.
+/// - Seçilen shot miktarı bardağa işlenir.
 /// - Portafilter kullanılmış kahve durumuna geçer.
 /// - Dock kilitleri açılır.
-/// - Single / Double kilitleri açılır.
-/// - Shot seçimi sıfırlanır.
-/// - Seçilen LED söner.
+/// - Shot butonları açılır.
+/// - Shot seçimi temizlenir.
+/// - LED söner.
 ///
 /// Single = 1 shot
 /// Double = 2 shot
@@ -271,7 +271,7 @@ public class EspressoMachineButton : MonoBehaviour, IInteractable
 
 
         // -----------------------------------------------------
-        // BREW SÜRESİ
+        // BREW
         // -----------------------------------------------------
 
         yield return new WaitForSeconds(
@@ -290,7 +290,7 @@ public class EspressoMachineButton : MonoBehaviour, IInteractable
 
 
         // -----------------------------------------------------
-        // CUP'A ESPRESSO
+        // CUP'A ESPRESSO EKLE
         // -----------------------------------------------------
 
         if (cupDock != null &&
@@ -301,21 +301,23 @@ public class EspressoMachineButton : MonoBehaviour, IInteractable
                 cupDock.DockedItem;
 
 
-            cup.FillWithEspresso();
+            DrinkRecipe recipe =
+                cup.GetComponent<DrinkRecipe>();
 
 
-            // Double ise ikinci shot'ı ekle.
-            if (shotCount == 2)
+            if (recipe != null)
             {
-                DrinkRecipe recipe =
-                    cup.GetComponent<DrinkRecipe>();
-
-
-                if (recipe != null)
+                // Single = 1 kez
+                // Double = 2 kez
+                for (int i = 0; i < shotCount; i++)
                 {
                     recipe.AddEspresso();
                 }
             }
+
+
+            // Cup üzerindeki espresso görselini aç.
+            cup.FillWithEspresso();
         }
 
 

@@ -227,7 +227,10 @@ public class NPCController : MonoBehaviour
         }
 
 
-        // Rastgele açık kahve
+        // =====================================================
+        // RASTGELE KAHVE
+        // =====================================================
+
         customerOrder.coffeeType =
             unlockedCoffees[
                 Random.Range(
@@ -300,6 +303,8 @@ public class NPCController : MonoBehaviour
         if (customerOrder.coffeeType ==
             CoffeeType.Espresso)
         {
+            // Espresso kendi başına
+            // Single veya Double olabilir.
             customerOrder.espressoShot =
                 Random.value > 0.5f
                     ? EspressoShotButtonUI.ShotType.Single
@@ -307,6 +312,7 @@ public class NPCController : MonoBehaviour
         }
         else
         {
+            // Normal kahveler başlangıçta her zaman Single.
             customerOrder.espressoShot =
                 EspressoShotButtonUI.ShotType.Single;
         }
@@ -317,6 +323,24 @@ public class NPCController : MonoBehaviour
         // =====================================================
 
         CreateRandomExtra();
+
+
+        // =====================================================
+        // EKSTRA ESPRESSO KURALI
+        // =====================================================
+
+        // Normal bir kahve ekstra espresso istiyorsa
+        // bu sipariş Double shot olarak hazırlanmalı.
+        if (customerOrder.coffeeType !=
+            CoffeeType.Espresso)
+        {
+            if (customerOrder.requestedExtras.Contains(
+                "Ekstra Espresso"))
+            {
+                customerOrder.espressoShot =
+                    EspressoShotButtonUI.ShotType.Double;
+            }
+        }
 
 
         // =====================================================

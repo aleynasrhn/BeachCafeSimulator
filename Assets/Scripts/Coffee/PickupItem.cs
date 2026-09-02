@@ -62,6 +62,19 @@ public class PickupItem : MonoBehaviour, IInteractable
 
 
     // =========================================================
+    // COLLIDER TRIGGER KONTROLÜ
+    // =========================================================
+
+    public void SetColliderTrigger(bool trigger)
+    {
+        if (col != null)
+        {
+            col.isTrigger = trigger;
+        }
+    }
+
+
+    // =========================================================
     // ELDE TUTMA
     // =========================================================
 
