@@ -6,6 +6,13 @@ using UnityEngine;
 ///
 /// Tek el sistemi kullanır.
 /// Kapak gibi başka bir objeye takılan item'lar da bu scripti kullanabilir.
+///
+/// Ayrıca:
+/// - Kahve doldurma
+/// - Tamp durumu
+/// - Kullanılmış kahve durumu
+/// - Espresso durumu
+/// - Geçici etkileşim kilidi
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
@@ -19,27 +26,52 @@ public class PickupItem : MonoBehaviour, IInteractable
     [Tooltip("İşaretlenirse bu item SADECE sol elde tutulabilir.")]
     [SerializeField] private bool isLeftHandOnly = false;
 
+
     [Header("Elde Tutma Ayarı")]
     [SerializeField] private Vector3 holdPositionOffset = Vector3.zero;
     [SerializeField] private Vector3 holdRotationOffsetEuler = Vector3.zero;
+
 
     [Header("Kahve Doldurma")]
     [SerializeField] private GameObject groundCoffeeVisual;
     [SerializeField] private float tampedVisualScaleY = 0.85f;
 
+
     [Header("Espresso Doldurma")]
     [SerializeField] private GameObject espressoLiquidVisual;
 
 
+    // =========================================================
+    // KAHVE DURUMLARI
+    // =========================================================
+
     private bool isTamped = false;
+
+    // Portafilter içinde kullanılmış kahve var mı?
+    private bool hasUsedCoffee = false;
+
     private Vector3 groundCoffeeOriginalScale;
+
+
+    // =========================================================
+    // PHYSICS
+    // =========================================================
 
     private Rigidbody rb;
     private Collider col;
 
-    private Transform holdPoint;
 
+    // =========================================================
+    // ELDE TUTMA
+    // =========================================================
+
+    private Transform holdPoint;
     private bool isHeld = false;
+
+
+    // =========================================================
+    // POZİSYON
+    // =========================================================
 
     private Quaternion uprightRotation;
     private Vector3 originalWorldPosition;
@@ -47,6 +79,14 @@ public class PickupItem : MonoBehaviour, IInteractable
     private bool hasPositionOverride = false;
     private Vector3 overridePosition;
     private Quaternion overrideRotation;
+
+
+    // =========================================================
+    // ETKİLEŞİM KİLİDİ
+    // =========================================================
+
+    // Tamper, başka bir işlem vb. sırasında item alınamasın.
+    private bool isInteractionLocked = false;
 
 
     // =========================================================
@@ -69,12 +109,17 @@ public class PickupItem : MonoBehaviour, IInteractable
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
 
+
         uprightRotation =
             transform.rotation;
 
         originalWorldPosition =
             transform.position;
 
+
+        // -----------------------------------------------------
+        // GROUND COFFEE
+        // -----------------------------------------------------
 
         if (groundCoffeeVisual != null)
         {
@@ -87,6 +132,10 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
 
 
+        // -----------------------------------------------------
+        // ESPRESSO
+        // -----------------------------------------------------
+
         if (espressoLiquidVisual != null)
         {
             espressoLiquidVisual.SetActive(false);
@@ -98,15 +147,33 @@ public class PickupItem : MonoBehaviour, IInteractable
     // KAHVE
     // =========================================================
 
+    /// <summary>
+    /// Portafilter içine yeni kahve doldurur.
+    /// Yeni kahve geldiğinde:
+    /// - Used Coffee sıfırlanır.
+    /// - Tamp sıfırlanır.
+    /// </summary>
     public void FillWithGroundCoffee()
     {
+        hasUsedCoffee = false;
+        isTamped = false;
+
+
         if (groundCoffeeVisual != null)
         {
             groundCoffeeVisual.SetActive(true);
+
+            groundCoffeeVisual.transform.localScale =
+                groundCoffeeOriginalScale;
         }
     }
 
 
+    /// <summary>
+    /// Portafilter içindeki kahveyi tamamen boşaltır.
+    ///
+    /// Çöp kovası bu metodu kullanabilir.
+    /// </summary>
     public void EmptyGroundCoffee()
     {
         if (groundCoffeeVisual != null)
@@ -117,23 +184,45 @@ public class PickupItem : MonoBehaviour, IInteractable
                 groundCoffeeOriginalScale;
         }
 
+
         isTamped = false;
+        hasUsedCoffee = false;
     }
 
 
+    /// <summary>
+    /// Portafilter içinde kahve var mı?
+    ///
+    /// Kullanılmış kahve de hâlâ kahve olarak kabul edilir.
+    /// </summary>
     public bool HasGroundCoffee =>
         groundCoffeeVisual != null &&
         groundCoffeeVisual.activeSelf;
 
 
+    /// <summary>
+    /// Portafilter içindeki kahve kullanılmış mı?
+    /// </summary>
+    public bool HasUsedCoffee =>
+        hasUsedCoffee;
+
+
+    // =========================================================
+    // TAMP
+    // =========================================================
+
     public void TampCoffee()
     {
         isTamped = true;
 
+
         if (groundCoffeeVisual != null)
         {
             Vector3 s =
-                groundCoffeeVisual.transform.localScale;
+                groundCoffeeVisual
+                    .transform
+                    .localScale;
+
 
             groundCoffeeVisual.transform.localScale =
                 new Vector3(
@@ -147,6 +236,24 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     public bool IsTamped =>
         isTamped;
+
+
+    // =========================================================
+    // USED COFFEE
+    // =========================================================
+
+    /// <summary>
+    /// Espresso hazırlandıktan sonra
+    /// portafilter içindeki kahveyi kullanılmış
+    /// kahve durumuna geçirir.
+    /// </summary>
+    public void MarkCoffeeAsUsed()
+    {
+        hasUsedCoffee = true;
+
+        // Kullanılmış kahve artık tamp edilmemiş kabul edilir.
+        isTamped = false;
+    }
 
 
     // =========================================================
@@ -182,6 +289,10 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     public string GetInteractPrompt()
     {
+        if (isInteractionLocked)
+            return "Meşgul...";
+
+
         return isHeld
             ? $"E - {itemName} bırak"
             : $"E - {itemName} al";
@@ -190,6 +301,11 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     public void Interact(PlayerInteraction player)
     {
+        // Kilitliyse hiçbir pickup işlemi yapma.
+        if (isInteractionLocked)
+            return;
+
+
         if (!isHeld)
         {
             PickUp(player);
@@ -202,17 +318,44 @@ public class PickupItem : MonoBehaviour, IInteractable
 
 
     // =========================================================
+    // ETKİLEŞİM KİLİDİ
+    // =========================================================
+
+    /// <summary>
+    /// Item'ın oyuncu tarafından alınmasını/bırakılmasını
+    /// geçici olarak kilitler veya açar.
+    /// </summary>
+    public void SetInteractionLocked(bool locked)
+    {
+        isInteractionLocked = locked;
+    }
+
+
+    /// <summary>
+    /// Item şu anda etkileşim kilidinde mi?
+    /// </summary>
+    public bool IsInteractionLocked =>
+        isInteractionLocked;
+
+
+    // =========================================================
     // PICK UP
     // =========================================================
 
     private void PickUp(PlayerInteraction player)
     {
+        // Kilitli item alınamaz.
+        if (isInteractionLocked)
+            return;
+
+
         // =====================================================
         // KETTLE ISINIYORSA ALINAMAZ
         // =====================================================
 
         KettleHeatController kettleHeat =
             GetComponent<KettleHeatController>();
+
 
         if (kettleHeat != null &&
             kettleHeat.IsHeating)
@@ -237,8 +380,8 @@ public class PickupItem : MonoBehaviour, IInteractable
 
         holdPoint =
             isLeftHandOnly
-            ? player.LeftHoldPoint
-            : player.HoldPoint;
+                ? player.LeftHoldPoint
+                : player.HoldPoint;
 
 
         rb.isKinematic = true;
@@ -266,6 +409,11 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     public void Drop(PlayerInteraction player)
     {
+        // Kilitliyken bırakma da yapılmasın.
+        if (isInteractionLocked)
+            return;
+
+
         rb.isKinematic = false;
         rb.useGravity = true;
 
@@ -297,7 +445,9 @@ public class PickupItem : MonoBehaviour, IInteractable
     {
         transform.position =
             worldPosition +
-            Vector3.up * surfaceYOffset;
+            Vector3.up *
+            surfaceYOffset;
+
 
         transform.rotation =
             uprightRotation;
@@ -349,9 +499,15 @@ public class PickupItem : MonoBehaviour, IInteractable
     public void ForcePickUp(
         PlayerInteraction player)
     {
-        // Kettle ısınıyorsa alınamaz
+        // Kilitliyken zorla bile alınamasın.
+        if (isInteractionLocked)
+            return;
+
+
+        // Kettle ısınıyorsa alınamaz.
         KettleHeatController kettleHeat =
             GetComponent<KettleHeatController>();
+
 
         if (kettleHeat != null &&
             kettleHeat.IsHeating)
@@ -364,7 +520,7 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
 
 
-        // Bağlıysa ayır
+        // Bağlıysa ayır.
         if (isAttachedToObject)
         {
             DetachFromObject();
@@ -373,8 +529,8 @@ public class PickupItem : MonoBehaviour, IInteractable
 
         holdPoint =
             isLeftHandOnly
-            ? player.LeftHoldPoint
-            : player.HoldPoint;
+                ? player.LeftHoldPoint
+                : player.HoldPoint;
 
 
         rb.isKinematic = true;
@@ -406,6 +562,7 @@ public class PickupItem : MonoBehaviour, IInteractable
     {
         transform.position =
             worldPosition;
+
 
         transform.rotation =
             uprightRotation *
@@ -500,6 +657,7 @@ public class PickupItem : MonoBehaviour, IInteractable
         {
             CupLidReceiver cupLidReceiver =
                 oldParent.GetComponent<CupLidReceiver>();
+
 
             if (cupLidReceiver != null)
             {

@@ -1,73 +1,268 @@
 using UnityEngine;
 
 /// <summary>
-/// Espresso makinesinin grup kafası (group head) altına, portafilterin tam oturması
-/// gereken noktaya koyulacak küçük/görünmez bir GameObject'e eklenir.
-/// GameObject'in Layer'ı "Interactable" olmalı (Machines DEĞİL - o layer sadece obstacle
-/// kontrolü için, raycast onu görmüyor).
+/// Belirli bir item'ı belirli bir dock noktasına yerleştirir.
 ///
-/// CounterSurface'ten farklı olarak: sabit tek nokta, sadece belirli item'ı (portafilter)
-/// kabul eder, ve elinde doğru item olmadan buraya bir şey konamaz.
+/// Örnek:
+/// - PortafilterDock
+/// - CupDock
+/// - TamperDock
+///
+/// Sağ ve sol elde tutulan item'ları destekler.
+/// Brew gibi işlemler sırasında dock kilitlenebilir.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class MachineDockPoint : MonoBehaviour, IInteractable
 {
-    [Tooltip("Buraya sadece bu isimdeki item'lar takılabilsin (PickupItem'daki Item Name ile eşleşmeli)")]
+    [Header("Kabul Edilen Item")]
+    [Tooltip("Buraya sadece bu isimdeki item takılabilir.")]
     [SerializeField] private string acceptedItemName = "Portafilter";
 
-    [Tooltip("Item'ın buraya oturduğunda alacağı local pozisyon ofseti (genelde 0,0,0 yeterli)")]
+
+    [Header("Dock Pozisyonu")]
+    [Tooltip("Item dock'a oturduğunda kullanılacak pozisyon ofseti.")]
     [SerializeField] private Vector3 dockedLocalPositionOffset = Vector3.zero;
 
-    [Tooltip("Item'ın doğal duruşuna (uprightRotation) EKLENECEK açı - genelde 0,0,0 yeterli, sadece garip bir açıda oturursa buradan ince ayar yap")]
+    [Tooltip("Item'ın doğal rotasyonuna eklenecek ekstra rotasyon.")]
     [SerializeField] private Vector3 dockedExtraRotationEuler = Vector3.zero;
 
-    [Tooltip("İşaretlenirse, item'ın (HasGroundCoffee) içinde kahve olması ZORUNLU olur - boş portafilter takılamaz. Sadece PortafilterDock'ta işaretle.")]
+
+    [Header("Gereksinimler")]
+    [Tooltip("İşaretliyse item içinde ground coffee olmak zorunda.")]
     [SerializeField] private bool requireGroundCoffee = false;
 
-    [Tooltip("İşaretlenirse, item'ın TAMPERLENMİŞ olması ZORUNLU olur. Sadece PortafilterDock'ta işaretle.")]
+    [Tooltip("İşaretliyse item tamp edilmiş olmak zorunda.")]
     [SerializeField] private bool requireTamped = false;
 
+    [Tooltip("İşaretliyse kullanılmış kahveli item buraya takılamaz.")]
+    [SerializeField] private bool rejectUsedCoffee = false;
+
+
+    // =========================================================
+    // DURUM
+    // =========================================================
+
     private bool isOccupied = false;
+
     private PickupItem dockedItem;
 
-    // Dışarıdan (EspressoMachineButton gibi) okunabilmesi için
-    public bool IsOccupied => isOccupied;
-    public PickupItem DockedItem => dockedItem;
+    private bool isLocked = false;
+
+
+    // =========================================================
+    // DIŞARIDAN OKUNANLAR
+    // =========================================================
+
+    public bool IsOccupied =>
+        isOccupied;
+
+    public PickupItem DockedItem =>
+        dockedItem;
+
+    public bool IsLocked =>
+        isLocked;
+
+
+    // =========================================================
+    // PROMPT
+    // =========================================================
 
     public string GetInteractPrompt()
     {
-        if (isOccupied) return $"E - {acceptedItemName} çıkar";
+        if (isLocked)
+            return "Meşgul...";
+
+
+        if (isOccupied)
+            return $"E - {acceptedItemName} çıkar";
+
+
         return $"E - {acceptedItemName} tak";
     }
 
+
+    // =========================================================
+    // INTERACT
+    // =========================================================
+
     public void Interact(PlayerInteraction player)
     {
+        if (player == null)
+            return;
+
+
+        // Kilitliyse hiçbir şey yapılamaz.
+        if (isLocked)
+            return;
+
+
+        // -----------------------------------------------------
+        // DOCK DOLUYSA
+        // -----------------------------------------------------
+
         if (isOccupied)
         {
-            // Takılı item'ı geri al
-            dockedItem.ForcePickUp(player);
+            if (dockedItem != null)
+            {
+                dockedItem.ForcePickUp(player);
+            }
+
+
             isOccupied = false;
             dockedItem = null;
+
             return;
         }
 
-        PickupItem held = player.GetHeldItem();
-        if (held == null) return;
-        if (held.ItemName != acceptedItemName) return; // yanlış item, kabul etme
-        if (requireGroundCoffee && !held.HasGroundCoffee) return; // boş portafilter takılamaz
-        if (requireTamped && !held.IsTamped) return; // tamperlenmemiş portafilter takılamaz
 
-        Vector3 worldPos = transform.position + transform.TransformDirection(dockedLocalPositionOffset);
-        held.DockAt(worldPos, dockedExtraRotationEuler); // itemin doğal duruşunu korur, dock'un kendi rotasyonunu YOK SAYAR
+        // -----------------------------------------------------
+        // OYUNCUNUN ELİNDEKİ ITEM'I BUL
+        // -----------------------------------------------------
+
+        PickupItem held = null;
+
+        bool isLeftHandItem = false;
+
+
+        // Önce normal eldeki itemı kontrol et.
+        PickupItem rightHandItem =
+            player.GetHeldItem();
+
+
+        if (rightHandItem != null &&
+            rightHandItem.ItemName == acceptedItemName)
+        {
+            held = rightHandItem;
+            isLeftHandItem = false;
+        }
+        else
+        {
+            // Sonra sol eldeki itemı kontrol et.
+            PickupItem leftHandItem =
+                player.GetLeftHeldItem();
+
+
+            if (leftHandItem != null &&
+                leftHandItem.ItemName == acceptedItemName)
+            {
+                held = leftHandItem;
+                isLeftHandItem = true;
+            }
+        }
+
+
+        // Uygun item bulunamadı.
+        if (held == null)
+            return;
+
+
+        // -----------------------------------------------------
+        // GROUND COFFEE KONTROLÜ
+        // -----------------------------------------------------
+
+        if (requireGroundCoffee &&
+            !held.HasGroundCoffee)
+        {
+            return;
+        }
+
+
+        // -----------------------------------------------------
+        // TAMP KONTROLÜ
+        // -----------------------------------------------------
+
+        if (requireTamped &&
+            !held.IsTamped)
+        {
+            return;
+        }
+
+
+        // -----------------------------------------------------
+        // USED COFFEE KONTROLÜ
+        // -----------------------------------------------------
+
+        if (rejectUsedCoffee &&
+            held.HasUsedCoffee)
+        {
+            Debug.Log(
+                "Bu item içinde kullanılmış kahve var."
+            );
+
+            return;
+        }
+
+
+        // -----------------------------------------------------
+        // DOCK POZİSYONU
+        // -----------------------------------------------------
+
+        Vector3 worldPos =
+            transform.position +
+            transform.TransformDirection(
+                dockedLocalPositionOffset
+            );
+
+
+        held.DockAt(
+            worldPos,
+            dockedExtraRotationEuler
+        );
+
 
         dockedItem = held;
+
         isOccupied = true;
-        player.SetHeldItem(null);
+
+
+        // -----------------------------------------------------
+        // HANGİ ELDEYSE ONU BOŞALT
+        // -----------------------------------------------------
+
+        if (isLeftHandItem)
+        {
+            player.SetLeftHeldItem(null);
+        }
+        else
+        {
+            player.SetHeldItem(null);
+        }
     }
+
+
+    // =========================================================
+    // LOCK / UNLOCK
+    // =========================================================
+
+    public void SetLocked(bool locked)
+    {
+        isLocked = locked;
+    }
+
+
+    // =========================================================
+    // GİZMO
+    // =========================================================
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = isOccupied ? Color.red : Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, 0.03f);
+        if (isLocked)
+        {
+            Gizmos.color = Color.yellow;
+        }
+        else if (isOccupied)
+        {
+            Gizmos.color = Color.red;
+        }
+        else
+        {
+            Gizmos.color = Color.cyan;
+        }
+
+
+        Gizmos.DrawWireSphere(
+            transform.position,
+            0.03f
+        );
     }
 }
