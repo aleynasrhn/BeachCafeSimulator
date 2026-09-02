@@ -9,22 +9,11 @@ using System.Collections;
 /// - Portafilter kahveli olmalı.
 /// - Portafilter tamp edilmiş olmalı.
 /// - Portafilter kullanılmış kahve içermemeli.
-/// - Cup takılı olmalı.
+/// - Espresso shot bardağı takılı olmalı.
 /// - Single veya Double seçilmiş olmalı.
 ///
-/// Brew sırasında:
-/// - Portafilter kilitlenir.
-/// - Cup kilitlenir.
-/// - Single / Double butonları kilitlenir.
-/// - Başlatma düğmesine tekrar basılamaz.
-///
-/// Brew tamamlandığında:
-/// - Seçilen shot miktarı bardağa işlenir.
-/// - Portafilter kullanılmış kahve durumuna geçer.
-/// - Dock kilitleri açılır.
-/// - Shot butonları açılır.
-/// - Shot seçimi temizlenir.
-/// - LED söner.
+/// Brew sonunda espresso shot bardağına
+/// seçilen miktarda espresso yüklenir.
 ///
 /// Single = 1 shot
 /// Double = 2 shot
@@ -36,18 +25,14 @@ public class EspressoMachineButton : MonoBehaviour, IInteractable
     [Tooltip("Makinedeki portafilter dock'u.")]
     [SerializeField] private MachineDockPoint portafilterDock;
 
-
-    [Tooltip("Makinedeki cup dock'u.")]
+    [Tooltip("Makinedeki espresso shot bardağı dock'u.")]
     [SerializeField] private MachineDockPoint cupDock;
-
 
     [Tooltip("Espresso akışı sırasında gösterilecek görsel.")]
     [SerializeField] private GameObject pouringVisual;
 
-
     [Tooltip("Makinedeki fiziksel Single butonu.")]
     [SerializeField] private EspressoShotButton singleButton;
-
 
     [Tooltip("Makinedeki fiziksel Double butonu.")]
     [SerializeField] private EspressoShotButton doubleButton;
@@ -103,14 +88,14 @@ public class EspressoMachineButton : MonoBehaviour, IInteractable
 
 
         // -----------------------------------------------------
-        // CUP
+        // ESPRESSO SHOT BARDAĞI
         // -----------------------------------------------------
 
         if (cupDock == null ||
             !cupDock.IsOccupied ||
             cupDock.DockedItem == null)
         {
-            return "Önce bardağı koy";
+            return "Önce espresso shot bardağını koy";
         }
 
 
@@ -128,6 +113,12 @@ public class EspressoMachineButton : MonoBehaviour, IInteractable
         }
 
 
+        Debug.Log(
+            "MAKİNE SEÇİLEN SHOT: " +
+            selectedShot.Shot
+        );
+
+
         return "E - Espresso Başlat";
     }
 
@@ -138,7 +129,6 @@ public class EspressoMachineButton : MonoBehaviour, IInteractable
 
     public void Interact(PlayerInteraction player)
     {
-        // Makine zaten çalışıyorsa tekrar başlatma.
         if (isBrewing)
             return;
 
@@ -170,7 +160,7 @@ public class EspressoMachineButton : MonoBehaviour, IInteractable
 
 
         // -----------------------------------------------------
-        // CUP
+        // SHOT BARDAĞI
         // -----------------------------------------------------
 
         if (cupDock == null ||
@@ -270,8 +260,14 @@ public class EspressoMachineButton : MonoBehaviour, IInteractable
                 : 1;
 
 
+        Debug.Log(
+            $"BREW SHOT: {shotType} | " +
+            $"SHOT COUNT: {shotCount}"
+        );
+
+
         // -----------------------------------------------------
-        // BREW
+        // BREW SÜRESİ
         // -----------------------------------------------------
 
         yield return new WaitForSeconds(
@@ -290,34 +286,43 @@ public class EspressoMachineButton : MonoBehaviour, IInteractable
 
 
         // -----------------------------------------------------
-        // CUP'A ESPRESSO EKLE
+        // ESPRESSO SHOT BARDAĞINA ESPRESSO YÜKLE
         // -----------------------------------------------------
 
         if (cupDock != null &&
             cupDock.IsOccupied &&
             cupDock.DockedItem != null)
         {
-            PickupItem cup =
+            PickupItem espressoCup =
                 cupDock.DockedItem;
 
 
-            DrinkRecipe recipe =
-                cup.GetComponent<DrinkRecipe>();
+            PourSource espressoSource =
+                espressoCup.GetComponent<PourSource>();
 
 
-            if (recipe != null)
+            if (espressoSource != null)
             {
-                // Single = 1 kez
-                // Double = 2 kez
-                for (int i = 0; i < shotCount; i++)
-                {
-                    recipe.AddEspresso();
-                }
+                espressoSource.SetEspressoShots(
+                    shotCount
+                );
+
+
+                espressoCup.FillWithEspresso();
+
+
+                Debug.Log(
+                    $"ESPRESSO KAYNAĞI HAZIR: " +
+                    $"{shotCount} shot"
+                );
             }
-
-
-            // Cup üzerindeki espresso görselini aç.
-            cup.FillWithEspresso();
+            else
+            {
+                Debug.LogError(
+                    "ESPRESSO SHOT BARDAĞINDA " +
+                    "PourSource bulunamadı!"
+                );
+            }
         }
 
 

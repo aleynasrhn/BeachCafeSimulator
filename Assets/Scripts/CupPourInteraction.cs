@@ -1,14 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Cup'a:
-/// - Espresso
-/// - Milk kutusundan normal süt
-/// - Normal süt içeren Milk Pitcher
-/// - Köpüklü süt içeren Milk Pitcher
-/// - Sıcak su içeren Kettle
-/// dökme işlemini yönetir.
-/// </summary>
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(CupPourReceiver))]
 public class CupPourInteraction : MonoBehaviour, IHoldInteractable
@@ -16,13 +7,19 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
     [Header("Ayarlar")]
     [SerializeField] private float holdDuration = 1.5f;
 
+
     [Header("UI")]
     [SerializeField]
     private string pourPrompt =
         "E'ye basılı tut";
 
+
     private CupPourReceiver receiver;
 
+
+    // =========================================================
+    // AWAKE
+    // =========================================================
 
     private void Awake()
     {
@@ -55,6 +52,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
         if (player == null)
             return false;
 
+
         if (receiver == null)
             return false;
 
@@ -66,16 +64,22 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
         PickupItem held =
             player.GetHeldItem();
 
+
         if (held != null)
         {
             // -------------------------------------------------
             // ESPRESSO
             // -------------------------------------------------
 
-            if (held.HasEspresso)
+            PourSource espressoSource =
+                held.GetComponent<PourSource>();
+
+
+            if (espressoSource != null &&
+                espressoSource.HasEspresso)
             {
                 return receiver.CanReceiveEspresso(
-                    held
+                    espressoSource
                 );
             }
 
@@ -86,6 +90,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             MilkSource milkSource =
                 held.GetComponent<MilkSource>();
+
 
             if (milkSource != null)
             {
@@ -102,6 +107,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             MilkFiller milkFiller =
                 held.GetComponent<MilkFiller>();
 
+
             if (milkFiller != null)
             {
                 if (milkFiller.IsFrothed)
@@ -110,6 +116,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
                         milkFiller
                     );
                 }
+
 
                 return receiver.CanReceiveMilk(
                     milkFiller
@@ -123,6 +130,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             KettleWaterState kettleWater =
                 held.GetComponent<KettleWaterState>();
+
 
             if (kettleWater != null)
             {
@@ -140,16 +148,22 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
         PickupItem leftHeld =
             player.GetLeftHeldItem();
 
+
         if (leftHeld != null)
         {
             // -------------------------------------------------
             // ESPRESSO
             // -------------------------------------------------
 
-            if (leftHeld.HasEspresso)
+            PourSource espressoSource =
+                leftHeld.GetComponent<PourSource>();
+
+
+            if (espressoSource != null &&
+                espressoSource.HasEspresso)
             {
                 return receiver.CanReceiveEspresso(
-                    leftHeld
+                    espressoSource
                 );
             }
 
@@ -160,6 +174,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             MilkSource milkSource =
                 leftHeld.GetComponent<MilkSource>();
+
 
             if (milkSource != null)
             {
@@ -176,6 +191,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             MilkFiller milkFiller =
                 leftHeld.GetComponent<MilkFiller>();
 
+
             if (milkFiller != null)
             {
                 if (milkFiller.IsFrothed)
@@ -184,6 +200,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
                         milkFiller
                     );
                 }
+
 
                 return receiver.CanReceiveMilk(
                     milkFiller
@@ -197,6 +214,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             KettleWaterState kettleWater =
                 leftHeld.GetComponent<KettleWaterState>();
+
 
             if (kettleWater != null)
             {
@@ -222,6 +240,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
         if (player == null)
             return;
 
+
         if (receiver == null)
             return;
 
@@ -233,13 +252,19 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
         PickupItem held =
             player.GetHeldItem();
 
+
         if (held != null)
         {
             // -------------------------------------------------
             // ESPRESSO
             // -------------------------------------------------
 
-            if (held.HasEspresso)
+            PourSource espressoSource =
+                held.GetComponent<PourSource>();
+
+
+            if (espressoSource != null &&
+                espressoSource.HasEspresso)
             {
                 receiver.SetEspressoProgress(
                     progress01
@@ -255,6 +280,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             MilkSource milkSource =
                 held.GetComponent<MilkSource>();
+
 
             if (milkSource != null)
             {
@@ -272,6 +298,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             MilkFiller milkFiller =
                 held.GetComponent<MilkFiller>();
+
 
             if (milkFiller != null)
             {
@@ -299,6 +326,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             KettleWaterState kettleWater =
                 held.GetComponent<KettleWaterState>();
 
+
             if (kettleWater != null)
             {
                 receiver.SetWaterProgress(
@@ -317,13 +345,15 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
         PickupItem leftHeld =
             player.GetLeftHeldItem();
 
+
         if (leftHeld != null)
         {
-            // -------------------------------------------------
-            // ESPRESSO
-            // -------------------------------------------------
+            PourSource espressoSource =
+                leftHeld.GetComponent<PourSource>();
 
-            if (leftHeld.HasEspresso)
+
+            if (espressoSource != null &&
+                espressoSource.HasEspresso)
             {
                 receiver.SetEspressoProgress(
                     progress01
@@ -333,12 +363,9 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             }
 
 
-            // -------------------------------------------------
-            // MILK SOURCE
-            // -------------------------------------------------
-
             MilkSource milkSource =
                 leftHeld.GetComponent<MilkSource>();
+
 
             if (milkSource != null)
             {
@@ -350,12 +377,9 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             }
 
 
-            // -------------------------------------------------
-            // MILK PITCHER
-            // -------------------------------------------------
-
             MilkFiller milkFiller =
                 leftHeld.GetComponent<MilkFiller>();
+
 
             if (milkFiller != null)
             {
@@ -376,12 +400,9 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             }
 
 
-            // -------------------------------------------------
-            // KETTLE
-            // -------------------------------------------------
-
             KettleWaterState kettleWater =
                 leftHeld.GetComponent<KettleWaterState>();
+
 
             if (kettleWater != null)
             {
@@ -405,6 +426,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
         if (player == null)
             return;
 
+
         if (receiver == null)
             return;
 
@@ -416,16 +438,22 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
         PickupItem held =
             player.GetHeldItem();
 
+
         if (held != null)
         {
             // -------------------------------------------------
             // ESPRESSO
             // -------------------------------------------------
 
-            if (held.HasEspresso)
+            PourSource espressoSource =
+                held.GetComponent<PourSource>();
+
+
+            if (espressoSource != null &&
+                espressoSource.HasEspresso)
             {
                 receiver.ReceiveEspresso(
-                    held
+                    espressoSource
                 );
 
                 return;
@@ -438,6 +466,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             MilkSource milkSource =
                 held.GetComponent<MilkSource>();
+
 
             if (milkSource != null)
             {
@@ -455,6 +484,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             MilkFiller milkFiller =
                 held.GetComponent<MilkFiller>();
+
 
             if (milkFiller != null)
             {
@@ -482,6 +512,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
             KettleWaterState kettleWater =
                 held.GetComponent<KettleWaterState>();
 
+
             if (kettleWater != null)
             {
                 receiver.ReceiveHotWater(
@@ -500,16 +531,22 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
         PickupItem leftHeld =
             player.GetLeftHeldItem();
 
+
         if (leftHeld != null)
         {
             // -------------------------------------------------
             // ESPRESSO
             // -------------------------------------------------
 
-            if (leftHeld.HasEspresso)
+            PourSource espressoSource =
+                leftHeld.GetComponent<PourSource>();
+
+
+            if (espressoSource != null &&
+                espressoSource.HasEspresso)
             {
                 receiver.ReceiveEspresso(
-                    leftHeld
+                    espressoSource
                 );
 
                 return;
@@ -522,6 +559,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             MilkSource milkSource =
                 leftHeld.GetComponent<MilkSource>();
+
 
             if (milkSource != null)
             {
@@ -539,6 +577,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             MilkFiller milkFiller =
                 leftHeld.GetComponent<MilkFiller>();
+
 
             if (milkFiller != null)
             {
@@ -565,6 +604,7 @@ public class CupPourInteraction : MonoBehaviour, IHoldInteractable
 
             KettleWaterState kettleWater =
                 leftHeld.GetComponent<KettleWaterState>();
+
 
             if (kettleWater != null)
             {

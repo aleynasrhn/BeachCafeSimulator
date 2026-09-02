@@ -10,6 +10,9 @@ public class NPCController : MonoBehaviour
 
     private Transform assignedSeat;
 
+    // NPC'nin bağlı olduğu kahve bırakma noktası
+    private DrinkPlacePoint assignedDrinkPlacePoint;
+
     private NavMeshAgent agent;
     private Animator animator;
 
@@ -18,6 +21,10 @@ public class NPCController : MonoBehaviour
     public Order CustomerOrder =>
         customerOrder;
 
+
+    // =========================================================
+    // NPC DURUMLARI
+    // =========================================================
 
     private enum NPCState
     {
@@ -248,6 +255,7 @@ public class NPCController : MonoBehaviour
             CoffeeType.Espresso)
         {
             // Espresso daima küçük.
+
             customerOrder.size =
                 CupSize.Small;
         }
@@ -305,6 +313,7 @@ public class NPCController : MonoBehaviour
         {
             // Espresso kendi başına
             // Single veya Double olabilir.
+
             customerOrder.espressoShot =
                 Random.value > 0.5f
                     ? EspressoShotButtonUI.ShotType.Single
@@ -313,6 +322,7 @@ public class NPCController : MonoBehaviour
         else
         {
             // Normal kahveler başlangıçta her zaman Single.
+
             customerOrder.espressoShot =
                 EspressoShotButtonUI.ShotType.Single;
         }
@@ -331,6 +341,7 @@ public class NPCController : MonoBehaviour
 
         // Normal bir kahve ekstra espresso istiyorsa
         // bu sipariş Double shot olarak hazırlanmalı.
+
         if (customerOrder.coffeeType !=
             CoffeeType.Espresso)
         {
@@ -395,6 +406,7 @@ public class NPCController : MonoBehaviour
 
 
         // UnlockManager yoksa güvenli varsayılanlar
+
         if (!UnlockManager.InstanceExists)
         {
             result.Add(
@@ -460,6 +472,7 @@ public class NPCController : MonoBehaviour
     private void CreateRandomExtra()
     {
         // %50 ihtimalle hiç ekstra istemesin.
+
         if (Random.value <= 0.5f)
             return;
 
@@ -490,6 +503,7 @@ public class NPCController : MonoBehaviour
             {
                 // Espresso zaten Single / Double seçiyor.
                 // Ekstra Espresso istemeyecek.
+
                 continue;
             }
 
@@ -510,6 +524,7 @@ public class NPCController : MonoBehaviour
 
 
         // Hiç açık ekstra yoksa
+
         if (unlockedExtras.Count == 0)
             return;
 
@@ -556,6 +571,10 @@ public class NPCController : MonoBehaviour
         }
 
 
+        // =====================================================
+        // BOŞ SANDALYE AL
+        // =====================================================
+
         assignedSeat =
             SeatManager.Instance.GetFreeSeat();
 
@@ -569,6 +588,48 @@ public class NPCController : MonoBehaviour
             return;
         }
 
+
+        // =====================================================
+        // KARŞILIK GELEN DRINK PLACE POINTİ BUL
+        // =====================================================
+
+        assignedDrinkPlacePoint =
+            SeatManager.Instance.GetDrinkPlacePoint(
+                assignedSeat
+            );
+
+
+        if (assignedDrinkPlacePoint == null)
+        {
+            Debug.LogError(
+                $"{gameObject.name} için " +
+                $"{assignedSeat.name} koltuğuna karşılık gelen " +
+                "DrinkPlacePoint bulunamadı!"
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // DRINK PLACE POINTİ BU NPC'YE BAĞLA
+        // =====================================================
+
+        assignedDrinkPlacePoint.SetCustomer(
+            this
+        );
+
+
+        Debug.Log(
+            $"{gameObject.name} bağlantısı kuruldu: " +
+            $"{assignedSeat.name} → " +
+            $"{assignedDrinkPlacePoint.gameObject.name}"
+        );
+
+
+        // =====================================================
+        // MASAYA GİT
+        // =====================================================
 
         currentState =
             NPCState.GoingToTable;
@@ -633,6 +694,21 @@ public class NPCController : MonoBehaviour
         Debug.Log(
             $"{gameObject.name} masaya ulaştı."
         );
+
+
+        // =====================================================
+        // BAĞLANTI KONTROLÜ
+        // =====================================================
+
+        if (assignedDrinkPlacePoint != null &&
+            customerOrder != null)
+        {
+            Debug.Log(
+                $"{gameObject.name} artık " +
+                $"{assignedDrinkPlacePoint.gameObject.name} " +
+                "üzerinden sipariş teslim alabilir."
+            );
+        }
     }
 
 
@@ -668,4 +744,7 @@ public class NPCController : MonoBehaviour
             agent.velocity.magnitude
         );
     }
+
+
+
 }

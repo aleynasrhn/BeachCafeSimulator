@@ -65,6 +65,9 @@ public class OrderScreenUI : MonoBehaviour
     // NPC'nin gerçek siparişi
     private Order currentTargetOrder;
 
+    public Order CurrentTargetOrder =>
+    currentTargetOrder;
+
 
     // =========================================================
     // AWAKE
