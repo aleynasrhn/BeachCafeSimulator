@@ -8,6 +8,16 @@ public class NPCController : MonoBehaviour
     [SerializeField] private Transform cafeEntrancePoint;
     [SerializeField] private Transform queuePoint;
 
+
+    // =========================================================
+    // ÇIKIŞ NOKTALARI
+    // =========================================================
+
+    [Header("Çıkış Noktaları")]
+    [SerializeField] private Transform exitPoint1;
+    [SerializeField] private Transform exitPoint2;
+
+
     private Transform assignedSeat;
 
     // NPC'nin bağlı olduğu kahve bırakma noktası
@@ -15,6 +25,51 @@ public class NPCController : MonoBehaviour
 
     private NavMeshAgent agent;
     private Animator animator;
+
+
+    // =========================================================
+    // İÇME
+    // =========================================================
+    //
+    // Bardağın elde nasıl konumlanacağı, küçüleceği ve
+    // masaya bırakılması NPCDrinkCupController tarafından
+    // yönetiliyor.
+    //
+    // Bu script sadece:
+    // - hangi bardağın içileceğini bildirir
+    // - içme döngüsünü yönetir
+    //
+    // =========================================================
+
+    [Header("İçme")]
+    [SerializeField] private NPCDrinkCupController drinkCupController;
+
+    [SerializeField] private int totalDrinkCycles = 3;
+
+    [SerializeField] private float minWaitBetweenDrinks = 6f;
+
+    [SerializeField] private float maxWaitBetweenDrinks = 7f;
+
+    private bool drinkSequenceActive = false;
+
+    private int drinkCount = 0;
+
+    private bool wasInDrinkState = false;
+
+    private Coroutine waitBeforeNextDrinkCoroutine;
+
+
+    // =========================================================
+    // KAFEDEN AYRILMA
+    // =========================================================
+
+    [Header("Kafeden Ayrılma")]
+    [SerializeField] private float minWaitBeforeLeaving = 4f;
+
+    [SerializeField] private float maxWaitBeforeLeaving = 5f;
+
+    private Coroutine waitBeforeLeaveCoroutine;
+
 
     private Order customerOrder;
 
@@ -32,7 +87,16 @@ public class NPCController : MonoBehaviour
         GoingToQueue,
         Waiting,
         GoingToTable,
-        AtTable
+        AtTable,
+
+        // NPC kalkma animasyonunu oynatıyor
+        StandingUpFromTable,
+
+        // Kalktıktan sonra CafeEntrancePoint'e gidiyor
+        GoingToCafeEntranceExit,
+
+        // CafeEntrancePoint'ten seçilen çıkışa gidiyor
+        GoingToExit
     }
 
     private NPCState currentState;
@@ -49,6 +113,22 @@ public class NPCController : MonoBehaviour
 
         animator =
             GetComponent<Animator>();
+
+
+        // Inspector'da atanmadıysa otomatik bul
+        if (drinkCupController == null)
+        {
+            drinkCupController =
+                GetComponent<NPCDrinkCupController>();
+        }
+
+
+        if (drinkCupController == null)
+        {
+            Debug.LogError(
+                $"{gameObject.name}: NPCDrinkCupController bulunamadı!"
+            );
+        }
     }
 
 
@@ -98,6 +178,10 @@ public class NPCController : MonoBehaviour
     {
         switch (currentState)
         {
+            // =================================================
+            // GİRİŞTEN KASAYA
+            // =================================================
+
             case NPCState.GoingToEntrance:
 
                 if (HasReachedDestination())
@@ -115,6 +199,10 @@ public class NPCController : MonoBehaviour
                 break;
 
 
+            // =================================================
+            // KASADA BEKLE
+            // =================================================
+
             case NPCState.GoingToQueue:
 
                 if (HasReachedDestination())
@@ -127,12 +215,18 @@ public class NPCController : MonoBehaviour
                 break;
 
 
-            case NPCState.Waiting:
+            // =================================================
+            // SİPARİŞ ONAYI BEKLE
+            // =================================================
 
-                // Sipariş onaylanmasını bekliyor.
+            case NPCState.Waiting:
 
                 break;
 
+
+            // =================================================
+            // MASAYA GİT
+            // =================================================
 
             case NPCState.GoingToTable:
 
@@ -144,15 +238,65 @@ public class NPCController : MonoBehaviour
                 break;
 
 
+            // =================================================
+            // MASADA
+            // =================================================
+
             case NPCState.AtTable:
 
-                // Şimdilik burada bekleyecek.
+                // Doğru kahve teslim edilmesini bekliyor.
+
+                break;
+
+
+            // =================================================
+            // KALKMA ANİMASYONU
+            // =================================================
+
+            case NPCState.StandingUpFromTable:
+
+                // Burada NPC henüz hareket etmiyor.
+                // StandingUp animasyonu devam ediyor.
+
+                break;
+
+
+            // =================================================
+            // CAFE ENTRANCE'A GİDİYOR
+            // =================================================
+
+            case NPCState.GoingToCafeEntranceExit:
+
+                if (HasReachedDestination())
+                {
+                    GoToRandomExitPoint();
+                }
+
+                break;
+
+
+            // =================================================
+            // SEÇİLEN ÇIKIŞA GİDİYOR
+            // =================================================
+
+            case NPCState.GoingToExit:
+
+                if (HasReachedDestination())
+                {
+                    Debug.Log(
+                        $"{gameObject.name} kafeden çıktı ve kayboldu."
+                    );
+
+                    Destroy(gameObject);
+                }
 
                 break;
         }
 
 
         UpdateAnimation();
+
+        HandleDrinkSequence();
     }
 
 
@@ -162,6 +306,13 @@ public class NPCController : MonoBehaviour
 
     private bool HasReachedDestination()
     {
+        if (agent == null ||
+            !agent.enabled)
+        {
+            return false;
+        }
+
+
         if (agent.pathPending)
             return false;
 
@@ -254,8 +405,6 @@ public class NPCController : MonoBehaviour
         if (customerOrder.coffeeType ==
             CoffeeType.Espresso)
         {
-            // Espresso daima küçük.
-
             customerOrder.size =
                 CupSize.Small;
         }
@@ -273,7 +422,8 @@ public class NPCController : MonoBehaviour
         // ÖDÜL
         // =====================================================
 
-        customerOrder.reward = 0;
+        customerOrder.reward =
+            0;
 
 
         // =====================================================
@@ -311,9 +461,6 @@ public class NPCController : MonoBehaviour
         if (customerOrder.coffeeType ==
             CoffeeType.Espresso)
         {
-            // Espresso kendi başına
-            // Single veya Double olabilir.
-
             customerOrder.espressoShot =
                 Random.value > 0.5f
                     ? EspressoShotButtonUI.ShotType.Single
@@ -321,8 +468,6 @@ public class NPCController : MonoBehaviour
         }
         else
         {
-            // Normal kahveler başlangıçta her zaman Single.
-
             customerOrder.espressoShot =
                 EspressoShotButtonUI.ShotType.Single;
         }
@@ -336,11 +481,8 @@ public class NPCController : MonoBehaviour
 
 
         // =====================================================
-        // EKSTRA ESPRESSO KURALI
+        // EKSTRA ESPRESSO
         // =====================================================
-
-        // Normal bir kahve ekstra espresso istiyorsa
-        // bu sipariş Double shot olarak hazırlanmalı.
 
         if (customerOrder.coffeeType !=
             CoffeeType.Espresso)
@@ -377,7 +519,7 @@ public class NPCController : MonoBehaviour
 
 
         // =====================================================
-        // SİPARİŞİ KASA EKRANINA GÖNDER
+        // SİPARİŞ EKRANI
         // =====================================================
 
         if (OrderScreenUI.Instance != null)
@@ -501,9 +643,6 @@ public class NPCController : MonoBehaviour
                 CoffeeType.Espresso &&
                 extra == "Ekstra Espresso")
             {
-                // Espresso zaten Single / Double seçiyor.
-                // Ekstra Espresso istemeyecek.
-
                 continue;
             }
 
@@ -522,8 +661,6 @@ public class NPCController : MonoBehaviour
             }
         }
 
-
-        // Hiç açık ekstra yoksa
 
         if (unlockedExtras.Count == 0)
             return;
@@ -590,7 +727,7 @@ public class NPCController : MonoBehaviour
 
 
         // =====================================================
-        // KARŞILIK GELEN DRINK PLACE POINTİ BUL
+        // DRINK PLACE POINT
         // =====================================================
 
         assignedDrinkPlacePoint =
@@ -612,7 +749,7 @@ public class NPCController : MonoBehaviour
 
 
         // =====================================================
-        // DRINK PLACE POINTİ BU NPC'YE BAĞLA
+        // DRINK PLACE POINT'İ BU NPC'YE BAĞLA
         // =====================================================
 
         assignedDrinkPlacePoint.SetCustomer(
@@ -713,6 +850,472 @@ public class NPCController : MonoBehaviour
 
 
     // =========================================================
+    // DOĞRU KAHVE GELDİĞİNDE İÇMEYİ BAŞLAT
+    // =========================================================
+
+    public void StartDrinkSequence(PickupItem cup)
+    {
+        if (currentState !=
+            NPCState.AtTable)
+        {
+            return;
+        }
+
+
+        if (drinkSequenceActive)
+            return;
+
+
+        if (animator == null)
+            return;
+
+
+        if (cup == null)
+        {
+            Debug.LogWarning(
+                $"{gameObject.name} için içilecek kahve bulunamadı."
+            );
+
+            return;
+        }
+
+
+        if (drinkCupController == null)
+        {
+            Debug.LogWarning(
+                $"{gameObject.name} için NPCDrinkCupController bulunamadı."
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // BARDAĞI DRINK CUP CONTROLLER'A DEVRET
+        // =====================================================
+
+        drinkCupController.SetCup(
+            cup
+        );
+
+
+        // =====================================================
+        // İÇMEYİ BAŞLAT
+        // =====================================================
+
+        drinkSequenceActive =
+            true;
+
+
+        drinkCount =
+            0;
+
+
+        wasInDrinkState =
+            false;
+
+
+        if (waitBeforeNextDrinkCoroutine != null)
+        {
+            StopCoroutine(
+                waitBeforeNextDrinkCoroutine
+            );
+
+            waitBeforeNextDrinkCoroutine =
+                null;
+        }
+
+
+        animator.ResetTrigger(
+            "Drink"
+        );
+
+
+        animator.SetTrigger(
+            "Drink"
+        );
+
+
+        Debug.Log(
+            $"{gameObject.name} doğru kahveyi aldı. " +
+            "İçme animasyonu başlatılıyor."
+        );
+    }
+
+
+    // =========================================================
+    // İÇME DÖNGÜSÜ
+    // =========================================================
+
+    private void HandleDrinkSequence()
+    {
+        if (!drinkSequenceActive ||
+            animator == null)
+        {
+            return;
+        }
+
+
+        AnimatorStateInfo stateInfo =
+            animator.GetCurrentAnimatorStateInfo(0);
+
+
+        bool inDrinkState =
+            stateInfo.IsName(
+                "Drinking"
+            );
+
+
+        // =====================================================
+        // DRINKING STATE'İNE YENİ GİRDİ
+        // =====================================================
+
+        if (inDrinkState &&
+            !wasInDrinkState)
+        {
+            drinkCount++;
+
+
+            Debug.Log(
+                $"{gameObject.name} içme animasyonu: " +
+                $"{drinkCount}/{totalDrinkCycles}"
+            );
+        }
+
+
+        // =====================================================
+        // DRINKING STATE'İNDEN ÇIKTI
+        // =====================================================
+
+        if (!inDrinkState &&
+            wasInDrinkState)
+        {
+            if (drinkCount < totalDrinkCycles)
+            {
+                // Bir sonraki içme öncesi bekle.
+
+                if (waitBeforeNextDrinkCoroutine != null)
+                {
+                    StopCoroutine(
+                        waitBeforeNextDrinkCoroutine
+                    );
+                }
+
+
+                waitBeforeNextDrinkCoroutine =
+                    StartCoroutine(
+                        WaitThenDrinkAgain()
+                    );
+            }
+            else
+            {
+                // =================================================
+                // TÜM İÇME DÖNGÜLERİ BİTTİ
+                // =================================================
+
+                drinkSequenceActive =
+                    false;
+
+
+                Debug.Log(
+                    $"{gameObject.name} tüm içme döngülerini " +
+                    "tamamladı. Biraz sonra kalkıp kafeden çıkacak."
+                );
+
+
+                if (waitBeforeLeaveCoroutine != null)
+                {
+                    StopCoroutine(
+                        waitBeforeLeaveCoroutine
+                    );
+                }
+
+
+                waitBeforeLeaveCoroutine =
+                    StartCoroutine(
+                        WaitThenLeaveTable()
+                    );
+            }
+        }
+
+
+        wasInDrinkState =
+            inDrinkState;
+    }
+
+
+    // =========================================================
+    // BEKLE, SONRA TEKRAR İÇ
+    // =========================================================
+
+    private System.Collections.IEnumerator WaitThenDrinkAgain()
+    {
+        float waitTime =
+            Random.Range(
+                minWaitBetweenDrinks,
+                maxWaitBetweenDrinks
+            );
+
+
+        yield return new WaitForSeconds(
+            waitTime
+        );
+
+
+        if (animator == null)
+            yield break;
+
+
+        animator.ResetTrigger(
+            "Drink"
+        );
+
+
+        animator.SetTrigger(
+            "Drink"
+        );
+
+
+        waitBeforeNextDrinkCoroutine =
+            null;
+    }
+
+
+    // =========================================================
+    // BEKLE, SONRA MASADAN KALK
+    // =========================================================
+
+    private System.Collections.IEnumerator WaitThenLeaveTable()
+    {
+        float waitTime =
+            Random.Range(
+                minWaitBeforeLeaving,
+                maxWaitBeforeLeaving
+            );
+
+
+        yield return new WaitForSeconds(
+            waitTime
+        );
+
+
+        LeaveTable();
+
+
+        waitBeforeLeaveCoroutine =
+            null;
+    }
+
+
+    // =========================================================
+    // MASADAN KALK
+    // =========================================================
+    //
+    // BURADA NPC HENÜZ YÜRÜMEYE BAŞLAMAZ.
+    // Sadece StandingUp animasyonunu başlatır.
+    //
+    // NavMeshAgent:
+    // StandingUp animasyonu bittikten sonra
+    // Animation Event ile açılacak.
+    //
+    // =========================================================
+
+    private void LeaveTable()
+    {
+        if (cafeEntrancePoint == null)
+        {
+            Debug.LogError(
+                $"{gameObject.name}: CafeEntrancePoint atanmadı!"
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // KALKMA DURUMUNA GEÇ
+        // =====================================================
+
+        currentState =
+            NPCState.StandingUpFromTable;
+
+
+        // =====================================================
+        // OTURMA ANİMASYONUNDAN ÇIK
+        // =====================================================
+
+        if (animator != null)
+        {
+            animator.SetBool(
+                "IsSitting",
+                false
+            );
+        }
+
+
+        // =====================================================
+        // SANDALYEYİ BOŞALT
+        // =====================================================
+
+        if (SeatManager.Instance != null &&
+            assignedSeat != null)
+        {
+            SeatManager.Instance.ReleaseSeat(
+                assignedSeat
+            );
+        }
+
+
+        // =====================================================
+        // DRINK PLACE POINT'İ BOŞALT
+        // =====================================================
+
+        if (assignedDrinkPlacePoint != null)
+        {
+            assignedDrinkPlacePoint.SetCustomer(
+                null
+            );
+        }
+
+
+        // =====================================================
+        // DİKKAT:
+        // AGENT BURADA AÇILMIYOR!
+        // =====================================================
+
+        Debug.Log(
+            $"{gameObject.name} masadan kalkıyor."
+        );
+    }
+
+
+    // =========================================================
+    // KALKMA ANİMASYONU BİTTİ
+    // =========================================================
+    //
+    // BU METODU "StandingUp" ANİMASYONUNUN
+    // SONUNDAKİ ANIMATION EVENT ÇAĞIRACAK.
+    //
+    // =========================================================
+
+    public void StartLeavingWalk()
+    {
+        if (currentState !=
+            NPCState.StandingUpFromTable)
+        {
+            return;
+        }
+
+
+        if (agent == null)
+        {
+            Debug.LogError(
+                $"{gameObject.name}: NavMeshAgent bulunamadı!"
+            );
+
+            return;
+        }
+
+
+        if (cafeEntrancePoint == null)
+        {
+            Debug.LogError(
+                $"{gameObject.name}: CafeEntrancePoint atanmadı!"
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // NAV MESH AGENT'İ AÇ
+        // =====================================================
+
+        agent.enabled = true;
+
+
+        agent.Warp(
+            transform.position
+        );
+
+
+        agent.isStopped = false;
+
+
+        // =====================================================
+        // CAFE ENTRANCE'A YÜRÜ
+        // =====================================================
+
+        currentState =
+            NPCState.GoingToCafeEntranceExit;
+
+
+        agent.SetDestination(
+            cafeEntrancePoint.position
+        );
+
+
+        Debug.Log(
+            $"{gameObject.name} kalkma animasyonunu tamamladı. " +
+            "CafeEntrancePoint'e yürüyor."
+        );
+    }
+
+
+    // =========================================================
+    // RASTGELE ÇIKIŞ NOKTASI SEÇ
+    // =========================================================
+
+    private void GoToRandomExitPoint()
+    {
+        if (exitPoint1 == null ||
+            exitPoint2 == null)
+        {
+            Debug.LogError(
+                $"{gameObject.name}: " +
+                "ExitPoint1 veya ExitPoint2 atanmadı!"
+            );
+
+            return;
+        }
+
+
+        Transform selectedExit;
+
+
+        if (Random.value < 0.5f)
+        {
+            selectedExit =
+                exitPoint1;
+        }
+        else
+        {
+            selectedExit =
+                exitPoint2;
+        }
+
+
+        // =====================================================
+        // SEÇİLEN ÇIKIŞA GİT
+        // =====================================================
+
+        currentState =
+            NPCState.GoingToExit;
+
+
+        agent.SetDestination(
+            selectedExit.position
+        );
+
+
+        Debug.Log(
+            $"{gameObject.name} CafeEntrancePoint'e ulaştı. " +
+            $"Seçilen çıkış: {selectedExit.name}"
+        );
+    }
+
+
+    // =========================================================
     // ANİMASYON
     // =========================================================
 
@@ -725,10 +1328,16 @@ public class NPCController : MonoBehaviour
         }
 
 
+        // =====================================================
+        // OTURAN NPC
+        // =====================================================
+
         if (currentState ==
             NPCState.Waiting ||
             currentState ==
-            NPCState.AtTable)
+            NPCState.AtTable ||
+            currentState ==
+            NPCState.StandingUpFromTable)
         {
             animator.SetFloat(
                 "Speed",
@@ -739,12 +1348,15 @@ public class NPCController : MonoBehaviour
         }
 
 
+        // =====================================================
+        // YÜRÜYEN NPC
+        // =====================================================
+
         animator.SetFloat(
             "Speed",
-            agent.velocity.magnitude
+            agent.enabled
+                ? agent.velocity.magnitude
+                : 0f
         );
     }
-
-
-
-}
+}   

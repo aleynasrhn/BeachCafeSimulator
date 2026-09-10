@@ -12,7 +12,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
 
 
     // =========================================================
-    // MÜŞTERİ ATA
+    // CUSTOMER
     // =========================================================
 
     public void SetCustomer(NPCController npc)
@@ -22,7 +22,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
         if (customer != null)
         {
             Debug.Log(
-                $"{gameObject.name} → " +
+                $"{gameObject.name} -> " +
                 $"{customer.gameObject.name} müşterisine bağlandı."
             );
         }
@@ -35,10 +35,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
     }
 
 
-    // =========================================================
-    // MÜŞTERİYİ GETİR
-    // =========================================================
-
     public NPCController GetCustomer()
     {
         return customer;
@@ -46,7 +42,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
 
 
     // =========================================================
-    // PROMPT
+    // INTERACTION
     // =========================================================
 
     public string GetInteractPrompt()
@@ -55,10 +51,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
     }
 
 
-    // =========================================================
-    // INTERACT
-    // =========================================================
-
     public void Interact(PlayerInteraction player)
     {
         if (player == null)
@@ -66,7 +58,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // OYUNCUNUN ELİNDEKİ BARDAĞI BUL
+        // ELDEN KAHVEYİ AL
         // =====================================================
 
         PickupItem held =
@@ -89,7 +81,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // DRINK RECIPE KONTROL
+        // DRINK RECIPE KONTROLÜ
         // =====================================================
 
         DrinkRecipe recipe =
@@ -107,7 +99,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // KAHVE TÜRÜ KONTROL
+        // KAHVE TÜRÜ KONTROLÜ
         // =====================================================
 
         CoffeeType? coffeeType =
@@ -125,7 +117,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // MÜŞTERİ KONTROLÜ
+        // CUSTOMER KONTROLÜ
         // =====================================================
 
         if (customer == null)
@@ -141,8 +133,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
         if (customer.CustomerOrder == null)
         {
             Debug.LogWarning(
-                $"{customer.gameObject.name} " +
-                "için sipariş bulunamadı."
+                $"{customer.gameObject.name} için sipariş bulunamadı."
             );
 
             return;
@@ -161,12 +152,15 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             );
 
 
+        // =====================================================
+        // YANLIŞ KAHVE
+        // =====================================================
+
         if (!isCorrect)
         {
             Debug.Log(
                 $"Sipariş yanlış! " +
-                $"{customer.gameObject.name}: " +
-                $"{reason}"
+                $"{customer.gameObject.name}: {reason}"
             );
 
             return;
@@ -174,7 +168,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // DOĞRU SİPARİŞ
+        // DOĞRU KAHVE
         // =====================================================
 
         Debug.Log(
@@ -184,7 +178,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
 
 
         // =====================================================
-        // MASAYA BIRAK
+        // KAHVEYİ MASAYA KOY
         // =====================================================
 
         Vector3 placePosition =
@@ -200,7 +194,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
         );
 
 
-        // El durumunu temizle.
         if (fromLeftHand)
         {
             player.SetLeftHeldItem(null);
@@ -211,20 +204,24 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
         }
 
 
-        // =====================================================
-        // TESLİMAT DEBUG
-        // =====================================================
-
         Debug.Log(
             $"Kahve teslim edildi: " +
-            $"{coffeeType.Value} - " +
-            $"{recipe.Size}"
+            $"{coffeeType.Value} - {recipe.Size}"
+        );
+
+
+        // =====================================================
+        // NPC İÇME ANİMASYONUNU BAŞLAT
+        // =====================================================
+
+        customer.StartDrinkSequence(
+            held
         );
     }
 
 
     // =========================================================
-    // GİZMO
+    // GIZMO
     // =========================================================
 
     private void OnDrawGizmos()
