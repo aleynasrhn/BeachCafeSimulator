@@ -70,6 +70,17 @@ public class OrderScreenUI : MonoBehaviour
 
 
     // =========================================================
+    // BU SİPARİŞİN SAHİBİ OLAN NPC
+    // =========================================================
+    // NOT: Birden fazla NPC sahnede olabileceği için
+    // FindObjectOfType<NPCController>() KULLANILMAZ —
+    // hangi müşterinin siparişi kasada gösteriliyorsa
+    // o NPC referansı burada tutulur.
+
+    private NPCController currentCustomerNPC;
+
+
+    // =========================================================
     // AWAKE
     // =========================================================
 
@@ -102,7 +113,8 @@ public class OrderScreenUI : MonoBehaviour
     // =========================================================
 
     public void SetCustomerOrder(
-        Order order)
+        Order order,
+        NPCController npc)
     {
         if (order == null)
         {
@@ -117,6 +129,9 @@ public class OrderScreenUI : MonoBehaviour
         currentTargetOrder =
             order;
 
+        currentCustomerNPC =
+            npc;
+
 
         ResetBasket();
 
@@ -126,7 +141,10 @@ public class OrderScreenUI : MonoBehaviour
 
         Debug.Log(
             "Kasa ekranına NPC siparişi geldi: " +
-            order.coffeeType
+            order.coffeeType +
+            (npc != null
+                ? $" ({npc.gameObject.name})"
+                : " (NPC referansı yok!)")
         );
     }
 
@@ -908,19 +926,24 @@ public class OrderScreenUI : MonoBehaviour
         // =====================================================
         // NPC
         // =====================================================
+        // ÖNEMLİ: FindObjectOfType<NPCController>() ARTIK
+        // KULLANILMIYOR. Birden fazla NPC varken sahnedeki
+        // ilk/rastgele NPC'yi bulup yanlış müşteriyi
+        // onaylıyordu. Bunun yerine, siparişi kasaya kimin
+        // gönderdiği SetCustomerOrder() içinde saklanan
+        // currentCustomerNPC referansı kullanılıyor.
 
-        NPCController currentCustomer =
-            FindObjectOfType<NPCController>();
-
-
-        if (currentCustomer != null)
+        if (currentCustomerNPC != null)
         {
-            currentCustomer.ConfirmCustomerOrder();
+            currentCustomerNPC.ConfirmCustomerOrder();
         }
         else
         {
             Debug.LogWarning(
-                "NPCController bulunamadı!"
+                "Confirm edilecek NPC bulunamadı! " +
+                "(currentCustomerNPC null — " +
+                "SetCustomerOrder çağrılırken NPC referansı " +
+                "gönderilmemiş olabilir.)"
             );
         }
 
@@ -985,6 +1008,20 @@ public class OrderScreenUI : MonoBehaviour
             $"{selectedPaymentMethod} - " +
             $"{total:0.00}$"
         );
+
+
+        // =====================================================
+        // BU SİPARİŞ İŞLENDİ, REFERANSLARI TEMİZLE
+        // =====================================================
+        // Bir sonraki müşteri sırada olduğunda
+        // SetCustomerOrder() zaten yeniden dolduracak.
+        // Burada temizlememizin sebebi, kasa ekranı boşken
+        // yanlışlıkla eski NPC'ye tekrar Confirm çağrılmasını
+        // önlemek.
+
+        currentTargetOrder = null;
+
+        currentCustomerNPC = null;
 
 
         // =====================================================
