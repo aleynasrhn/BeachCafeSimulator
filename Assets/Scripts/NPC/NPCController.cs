@@ -68,6 +68,17 @@ public class NPCController : MonoBehaviour
     [SerializeField] private bool isMale = false;
 
     // =========================================================
+    // SPAWN GÖREVİ
+    // =========================================================
+
+    [Header("Spawn Görevi")]
+    [SerializeField] private bool isCafeCustomer = true;
+
+    private NPCSpawner npcSpawner;
+
+    private bool cafeCustomerRegistered = false;
+
+    // =========================================================
     // İÇME
     // =========================================================
 
@@ -182,8 +193,6 @@ public class NPCController : MonoBehaviour
         if (!ValidateScenePoints())
             return;
 
-        DetermineSpawnSide();
-
         if (animator != null)
         {
             animator.SetBool(
@@ -194,17 +203,59 @@ public class NPCController : MonoBehaviour
 
         agent.isStopped = false;
 
-        currentState =
-            NPCState.GoingToEntrance;
+        // =========================================================
+        // KAFE MÜŞTERİSİ
+        // =========================================================
 
-        agent.SetDestination(
-            cafeEntrancePoint.position
-        );
+        if (isCafeCustomer)
+        {
+            currentState =
+                NPCState.GoingToEntrance;
 
-        Debug.Log(
-            $"{gameObject.name} CafeEntrancePoint'e gidiyor."
-        );
+            agent.SetDestination(
+                cafeEntrancePoint.position
+            );
+
+            Debug.Log(
+                $"{gameObject.name} kafe müşterisi olarak " +
+                "CafeEntrancePoint'e gidiyor."
+            );
+        }
+
+        // =========================================================
+        // SOKAK NPC
+        // =========================================================
+
+        else
+        {
+            GoToSpawnSideExit();
+
+            Debug.Log(
+                $"{gameObject.name} sokak NPC'si olarak " +
+                "kendi tarafındaki çıkışa gidiyor."
+            );
+        }
     }
+
+    // =========================================================
+    // SPAWN BİLGİSİNİ AL
+    // =========================================================
+
+    public void InitializeSpawn(
+    bool cafeCustomer,
+    bool fromSpawnPoint1,
+    NPCSpawner spawner)
+    {
+        isCafeCustomer =
+            cafeCustomer;
+
+        spawnedFromPoint1 =
+            fromSpawnPoint1;
+
+        npcSpawner =
+            spawner;
+    }
+
 
     // =========================================================
     // SAHNE NOKTALARINI BUL
@@ -253,6 +304,7 @@ public class NPCController : MonoBehaviour
             spawnPoint1 =
                 FindTransform(
                     "SpawnPoint_1",
+                    "SpawnPoint1",
                     "SpawnPoint"
                 );
         }
@@ -334,47 +386,6 @@ public class NPCController : MonoBehaviour
         {
             queuePoints.Add(point);
         }
-    }
-
-    // =========================================================
-    // SPAWN TARAFINI BELİRLE
-    // =========================================================
-
-    private void DetermineSpawnSide()
-    {
-        if (spawnPoint1 == null &&
-            spawnPoint2 == null)
-        {
-            spawnedFromPoint1 = true;
-            return;
-        }
-
-        if (spawnPoint1 == null)
-        {
-            spawnedFromPoint1 = false;
-            return;
-        }
-
-        if (spawnPoint2 == null)
-        {
-            spawnedFromPoint1 = true;
-            return;
-        }
-
-        float distance1 =
-            Vector3.Distance(
-                transform.position,
-                spawnPoint1.position
-            );
-
-        float distance2 =
-            Vector3.Distance(
-                transform.position,
-                spawnPoint2.position
-            );
-
-        spawnedFromPoint1 =
-            distance1 <= distance2;
     }
 
     // =========================================================
@@ -521,7 +532,7 @@ public class NPCController : MonoBehaviour
                 if (HasReachedDestination())
                 {
                     Debug.Log(
-                        $"{gameObject.name} kafeden çıktı."
+                        $"{gameObject.name} çıkışa ulaştı ve yok oldu."
                     );
 
                     Destroy(gameObject);
@@ -541,29 +552,79 @@ public class NPCController : MonoBehaviour
 
     private void TryJoinQueue()
     {
-        // Zaten kuyruktaysa tekrar ekleme
+        Debug.Log(
+            $"{gameObject.name}: " +
+            $"Queue sayısı = {queuePoints.Count}"
+        );
+
+        // =========================================================
+        // ZATEN KUYRUKTAYSA
+        // =========================================================
+
         if (queuedNPCs.Contains(this))
             return;
 
-        // ---------------------------------------------------------
+        // =========================================================
+        // BU NPC ARTIK MÜŞTERİ OLAMAZSA
+        // =========================================================
+
+        if (!isCafeCustomer)
+        {
+            GoToSpawnSideExit();
+
+            return;
+        }
+
+        // =========================================================
         // KUYRUK DOLU
-        // ---------------------------------------------------------
+        // =========================================================
 
         if (queuedNPCs.Count >= queuePoints.Count)
         {
             Debug.Log(
                 $"{gameObject.name}: " +
-                "Kuyruk tamamen dolu!"
+                "Queue dolu. Bu NPC sokak NPC'sine dönüyor."
             );
 
-            GoToOppositeExit();
+            // Artık müşteri değil.
+            isCafeCustomer = false;
+
+            // Kendi tarafındaki çıkışa git.
+            GoToSpawnSideExit();
 
             return;
         }
 
-        // ---------------------------------------------------------
+        // =========================================================
+        // GÜNLÜK MÜŞTERİ HEDEFİNİ KONTROL ET
+        // =========================================================
+
+        if (npcSpawner != null)
+        {
+            bool registered =
+                npcSpawner.RegisterCafeCustomer();
+
+            if (!registered)
+            {
+                Debug.Log(
+                    $"{gameObject.name}: " +
+                    "Günlük müşteri limiti dolmuş. " +
+                    "Sokak NPC'sine dönüşüyor."
+                );
+
+                isCafeCustomer = false;
+
+                GoToSpawnSideExit();
+
+                return;
+            }
+
+            cafeCustomerRegistered = true;
+        }
+
+        // =========================================================
         // KUYRUĞA EKLE
-        // ---------------------------------------------------------
+        // =========================================================
 
         queuedNPCs.Add(
             this
@@ -586,7 +647,8 @@ public class NPCController : MonoBehaviour
 
         Debug.Log(
             $"{gameObject.name} → " +
-            $"{assignedQueuePoint.name}"
+            $"{assignedQueuePoint.name} | " +
+            "GERÇEK KAFE MÜŞTERİSİ"
         );
     }
 
@@ -636,9 +698,12 @@ public class NPCController : MonoBehaviour
             if (npc == null)
                 continue;
 
-            npc.MoveForwardInQueue(
-                queuePoints[i]
-            );
+            if (i < queuePoints.Count)
+            {
+                npc.MoveForwardInQueue(
+                    queuePoints[i]
+                );
+            }
         }
 
         Debug.Log(
@@ -702,7 +767,7 @@ public class NPCController : MonoBehaviour
         }
 
         // ---------------------------------------------------------
-        // BU NPC'NİN SİPARİŞİ DAHA ÖNCE OLUŞTURULMADIYSA OLUŞTUR
+        // SİPARİŞ OLUŞTUR
         // ---------------------------------------------------------
 
         if (customerOrder == null)
@@ -711,8 +776,7 @@ public class NPCController : MonoBehaviour
         }
 
         // ---------------------------------------------------------
-        // SADECE KUYRUĞUN EN ÖNÜNDEKİ NPC
-        // SİPARİŞİNİ KASAYA GÖSTERİR
+        // SADECE EN ÖNDEKİNİN SİPARİŞİ UI'YA GİTSİN
         // ---------------------------------------------------------
 
         if (IsFrontOfQueue())
@@ -740,31 +804,42 @@ public class NPCController : MonoBehaviour
     }
 
     // =========================================================
-    // KUYRUK DOLUYSA KARŞI ÇIKIŞ
+    // SPAWN OLDUĞU TARAFTAKİ ÇIKIŞA GİT
+    // =========================================================
+    //
+    // SpawnPoint1 → ExitPoint
+    // SpawnPoint2 → ExitPoint2
+    //
     // =========================================================
 
-    private void GoToOppositeExit()
+    private void GoToSpawnSideExit()
     {
         Transform selectedExit;
 
         if (spawnedFromPoint1)
         {
-            // SpawnPoint_1 → ExitPoint2
+            // -----------------------------------------------------
+            // SpawnPoint1 tarafı
+            // -----------------------------------------------------
+
             selectedExit =
-                exitPoint2;
+                exitPoint1;
         }
         else
         {
-            // SpawnPoint_2 → ExitPoint
+            // -----------------------------------------------------
+            // SpawnPoint2 tarafı
+            // -----------------------------------------------------
+
             selectedExit =
-                exitPoint1;
+                exitPoint2;
         }
 
         if (selectedExit == null)
         {
             Debug.LogError(
                 $"{gameObject.name}: " +
-                "Karşı çıkış bulunamadı!"
+                "Spawn tarafına ait ExitPoint bulunamadı!"
             );
 
             return;
@@ -781,8 +856,8 @@ public class NPCController : MonoBehaviour
 
         Debug.Log(
             $"{gameObject.name}: " +
-            "Kuyruk dolu olduğu için " +
-            $"{selectedExit.name} çıkışına gidiyor."
+            $"Spawn tarafına ait çıkışa gidiyor → " +
+            $"{selectedExit.name}"
         );
     }
 
@@ -955,15 +1030,6 @@ public class NPCController : MonoBehaviour
             $"{customerOrder.espressoShot} | " +
             $"Extra: {extraText}"
         );
-
-        // ---------------------------------------------------------
-        // DİKKAT:
-        // BURADA ORDER SCREEN'E GÖNDERME YOK.
-        //
-        // Sadece StopAtQueue() içinde,
-        // kuyrukta EN ÖNDE olan NPC'nin siparişi
-        // OrderScreenUI'ya gönderiliyor.
-        // ---------------------------------------------------------
     }
 
     // =========================================================
