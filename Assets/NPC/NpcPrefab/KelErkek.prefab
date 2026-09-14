@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &6150668251196735566
+--- !u!1 &4224699583139100877
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,7 +8,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1836338055265252202}
+  - component: {fileID: 622472014762589139}
   m_Layer: 0
   m_Name: CupHolder
   m_TagString: Untagged
@@ -16,22 +16,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1836338055265252202
+--- !u!4 &622472014762589139
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6150668251196735566}
+  m_GameObject: {fileID: 4224699583139100877}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0, y: 0.13, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1362492190124317887}
+  m_Father: {fileID: 8978789575225209585}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &523976379424098729
+--- !u!1001 &7581268309649729511
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -42,17 +42,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: e1bb5c44cafbf5047840dc260e41a361,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 142.63605
+      value: 140.46089
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e1bb5c44cafbf5047840dc260e41a361,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.0000014305115
+      value: 0.00000166893
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e1bb5c44cafbf5047840dc260e41a361,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 543.508
+      value: 751.81445
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e1bb5c44cafbf5047840dc260e41a361,
         type: 3}
@@ -92,7 +92,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: e1bb5c44cafbf5047840dc260e41a361,
         type: 3}
       propertyPath: m_Name
-      value: KelErkekPrefab
+      value: KelErkek
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: e1bb5c44cafbf5047840dc260e41a361,
         type: 3}
@@ -110,34 +110,38 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1561907739081200918, guid: e1bb5c44cafbf5047840dc260e41a361,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1836338055265252202}
+      addedObject: {fileID: 622472014762589139}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e1bb5c44cafbf5047840dc260e41a361,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: -217547081876303911}
+      addedObject: {fileID: 9069021590860945342}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e1bb5c44cafbf5047840dc260e41a361,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6151442204106348368}
+      addedObject: {fileID: 4676676645672638400}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e1bb5c44cafbf5047840dc260e41a361,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: -61912910002558029}
+      addedObject: {fileID: 3660605782879671504}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e1bb5c44cafbf5047840dc260e41a361,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6988647037521130108}
   m_SourcePrefab: {fileID: 100100000, guid: e1bb5c44cafbf5047840dc260e41a361, type: 3}
---- !u!1 &830034987050464504 stripped
+--- !u!1 &7347476066771147446 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e1bb5c44cafbf5047840dc260e41a361,
     type: 3}
-  m_PrefabInstance: {fileID: 523976379424098729}
+  m_PrefabInstance: {fileID: 7581268309649729511}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &-217547081876303911
+--- !u!114 &9069021590860945342
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 830034987050464504}
+  m_GameObject: {fileID: 7347476066771147446}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c76b25d4fff24b43a7823f13879ba31, type: 3}
@@ -150,33 +154,34 @@ MonoBehaviour:
   spawnPoint1: {fileID: 0}
   spawnPoint2: {fileID: 0}
   isMale: 1
-  drinkCupController: {fileID: 0}
+  isCafeCustomer: 1
+  drinkCupController: {fileID: 4676676645672638400}
   totalDrinkCycles: 3
   minWaitBetweenDrinks: 6
   maxWaitBetweenDrinks: 7
   minWaitBeforeLeaving: 4
   maxWaitBeforeLeaving: 5
---- !u!114 &6151442204106348368
+--- !u!114 &4676676645672638400
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 830034987050464504}
+  m_GameObject: {fileID: 7347476066771147446}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4320daea7c4c522448cf38426a48b67f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  drinkCupHolder: {fileID: 0}
+  drinkCupHolder: {fileID: 622472014762589139}
   handSettingsPerSize: []
---- !u!195 &-61912910002558029
+--- !u!195 &3660605782879671504
 NavMeshAgent:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 830034987050464504}
+  m_GameObject: {fileID: 7347476066771147446}
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
@@ -192,9 +197,31 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!4 &1362492190124317887 stripped
+--- !u!114 &6988647037521130108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7347476066771147446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e866c2368e764b24ea5bef0995b95051, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clothesMaterial: {fileID: 2100000, guid: ddf3a2ba948cd514a831627bf1e50478, type: 2}
+  hairMaterial: {fileID: 2100000, guid: a5c66bac9850c814693a33d6da6b63ab, type: 2}
+  clothesTextures:
+  - {fileID: 2800000, guid: 269caf23878c96e4f87d56c2bf7aee07, type: 3}
+  - {fileID: 2800000, guid: ea85e67c6db4c174aaa1448e60973da3, type: 3}
+  - {fileID: 2800000, guid: 202de88b61797664c8d0a749c560adbd, type: 3}
+  hairTextures:
+  - {fileID: 2800000, guid: 269caf23878c96e4f87d56c2bf7aee07, type: 3}
+  - {fileID: 2800000, guid: ea85e67c6db4c174aaa1448e60973da3, type: 3}
+  - {fileID: 2800000, guid: 202de88b61797664c8d0a749c560adbd, type: 3}
+--- !u!4 &8978789575225209585 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1561907739081200918, guid: e1bb5c44cafbf5047840dc260e41a361,
     type: 3}
-  m_PrefabInstance: {fileID: 523976379424098729}
+  m_PrefabInstance: {fileID: 7581268309649729511}
   m_PrefabAsset: {fileID: 0}

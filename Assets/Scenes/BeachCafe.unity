@@ -355,9 +355,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcPrefabs:
-  - {fileID: 4491644094417487196, guid: 507c5d2400c1a7748a9139b34fc9a800, type: 3}
-  - {fileID: 2647730465331778157, guid: f97f22cf0521c254eab904e9242eda8b, type: 3}
-  - {fileID: 830034987050464504, guid: 9f9c8950ba7fe214b8619d48cf66a3db, type: 3}
+  - {fileID: 7970674722556026901, guid: 915c13c262fcc1d47817e24cd7646133, type: 3}
+  - {fileID: 8417343132644187818, guid: e6e0379387a1f994c9577c4bc1cd171c, type: 3}
+  - {fileID: 7347476066771147446, guid: 66e278ef74bf3e14c831433fb2373e26, type: 3}
   - {fileID: 2203282028195441875, guid: ec358194b0f52b94fa6dc562ff1fc167, type: 3}
   - {fileID: 7298332962943144152, guid: 390058d735a0db84f8235e383d4f87b8, type: 3}
   - {fileID: 1396200664473342669, guid: 616289edd71bb56448d8e10d3d744d0c, type: 3}
@@ -6760,6 +6760,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &76113430
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8532,7 +8537,7 @@ Transform:
   m_GameObject: {fileID: 177562264}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 163.207, y: 1.79, z: 764.942}
+  m_LocalPosition: {x: 163.207, y: 1.92, z: 764.942}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8553,6 +8558,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &177562267
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11957,6 +11967,7 @@ MonoBehaviour:
     size: 0
     espressoShot: 0
     reward: 0
+    pricePaid: 0
     timeLimit: 0
     requestedExtras: []
     preferredPaymentMethod: 
@@ -24135,6 +24146,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &576340979
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -32505,6 +32521,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &709167730
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -33867,6 +33888,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &781072499
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -34264,6 +34290,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!1 &807262757
 GameObject:
   m_ObjectHideFlags: 0
@@ -36021,6 +36052,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &870913965
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -40044,6 +40080,142 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1007943648}
   m_Mesh: {fileID: -6679884002483717423, guid: 8d3ff8d983d735a4f959d5b1973aec16, type: 3}
+--- !u!1 &1008084733
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1008084734}
+  - component: {fileID: 1008084736}
+  - component: {fileID: 1008084735}
+  m_Layer: 5
+  m_Name: MoneyDeltaText
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1008084734
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1008084733}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2120777735}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 175, y: -4.6}
+  m_SizeDelta: {x: 100, y: 35}
+  m_Pivot: {x: 0, y: 0.5}
+--- !u!114 &1008084735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1008084733}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: 0$
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 26
+  m_fontSizeBase: 26
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1008084736
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1008084733}
+  m_CullTransparentMesh: 1
 --- !u!1001 &1009570930
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41862,6 +42034,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &1071880820
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -43258,6 +43435,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &1104234682
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -48031,6 +48213,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &1276997247
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -49464,6 +49651,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &1331043265
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -54397,6 +54589,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!1 &1378246004
 GameObject:
   m_ObjectHideFlags: 0
@@ -54597,6 +54794,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentMoney: 0
   moneyText: {fileID: 977066976}
+  moneyDeltaText: {fileID: 1008084735}
+  deltaDisplayDuration: 2
+  positiveColor: {r: 0.18140972, g: 0.5622641, b: 0.18140972, a: 1}
+  negativeColor: {r: 0.9245283, g: 0.12385191, b: 0.12385191, a: 1}
 --- !u!4 &1387234080
 Transform:
   m_ObjectHideFlags: 0
@@ -56147,7 +56348,7 @@ Transform:
   m_GameObject: {fileID: 1412107879}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 166.076, y: 1.79, z: 764.942}
+  m_LocalPosition: {x: 166.076, y: 1.92, z: 764.942}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -56168,6 +56369,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &1412107882
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -58529,7 +58735,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 88cf492995bbae3499c2d108e9dab668,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.877
+      value: 2.88
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 88cf492995bbae3499c2d108e9dab668,
         type: 3}
@@ -58539,7 +58745,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 88cf492995bbae3499c2d108e9dab668,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.983
+      value: 2.1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 88cf492995bbae3499c2d108e9dab668,
         type: 3}
@@ -62250,6 +62456,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &1618047930
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -62563,6 +62774,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &1636002297
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -66510,7 +66726,7 @@ Transform:
   m_GameObject: {fileID: 1813578958}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 167.794, y: 1.79, z: 764.942}
+  m_LocalPosition: {x: 167.794, y: 1.92, z: 764.942}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -66531,6 +66747,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &1813578961
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -67951,6 +68172,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &1863209473
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -72577,7 +72803,7 @@ Transform:
   m_GameObject: {fileID: 2056470379}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 164.533, y: 1.79, z: 764.942}
+  m_LocalPosition: {x: 164.533, y: 1.92, z: 764.942}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -72598,6 +72824,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &2056470382
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -73171,6 +73402,11 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0.12, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   customer: {fileID: 0}
+  tipPrefab: {fileID: 8707545124437580091, guid: 66fa30365bdc94f4b9edddd539b9c268,
+    type: 3}
+  tipPositionOffset: {x: 0.2, y: 0.1, z: 0.3}
+  tipMinAmount: 0.5
+  tipMaxAmount: 1
 --- !u!65 &2090812989
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -74143,6 +74379,7 @@ RectTransform:
   m_Children:
   - {fileID: 650820783}
   - {fileID: 977066975}
+  - {fileID: 1008084734}
   m_Father: {fileID: 1907094870}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}

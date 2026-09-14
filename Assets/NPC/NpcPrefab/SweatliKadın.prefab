@@ -135,6 +135,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -8485399323711419056}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b3a5fb0a80655d643beeb761b56f169c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4524029479935043456}
   m_SourcePrefab: {fileID: 100100000, guid: b3a5fb0a80655d643beeb761b56f169c, type: 3}
 --- !u!1 &6978229106433323629 stripped
 GameObject:
@@ -161,6 +165,7 @@ MonoBehaviour:
   spawnPoint1: {fileID: 0}
   spawnPoint2: {fileID: 0}
   isMale: 0
+  isCafeCustomer: 1
   drinkCupController: {fileID: 0}
   totalDrinkCycles: 3
   minWaitBetweenDrinks: 6
@@ -203,6 +208,30 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &4524029479935043456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6978229106433323629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e866c2368e764b24ea5bef0995b95051, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clothesMaterial: {fileID: 2100000, guid: c8830bed12163c3478ac0f0abdc5446b, type: 2}
+  hairMaterial: {fileID: 2100000, guid: a602a36426529024492490a6d6d89026, type: 2}
+  clothesTextures:
+  - {fileID: 2800000, guid: ff6c06c119e0c7b46a6dc33b9c26c6c6, type: 3}
+  - {fileID: 2800000, guid: 7d27b81fba636f44cb8934068f83f7d1, type: 3}
+  - {fileID: 2800000, guid: 07550175f84dacf4ebab3b99db134ce1, type: 3}
+  - {fileID: 2800000, guid: dec966a9c7b0e7c498e345b83229b27a, type: 3}
+  - {fileID: 2800000, guid: c88bc86038e709e4b941a73864180e18, type: 3}
+  hairTextures:
+  - {fileID: 2800000, guid: 203d42f460500a743a5ccbe08dbc28ab, type: 3}
+  - {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
+  - {fileID: 2800000, guid: 429956489d9ab3e458b110b790e966e0, type: 3}
 --- !u!4 &8476728315507978484 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: b3a5fb0a80655d643beeb761b56f169c,

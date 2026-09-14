@@ -110,6 +110,10 @@ public class NPCController : MonoBehaviour
 
     private Coroutine waitBeforeLeaveCoroutine;
 
+    // Bu ziyarette sipariş doğru mu teslim edildi?
+    // Sadece doğruysa masadan kalkarken bahşiş bırakılır.
+    private bool wasOrderCorrect = true;
+
     // =========================================================
     // SİPARİŞ
     // =========================================================
@@ -152,10 +156,6 @@ public class NPCController : MonoBehaviour
         animator =
             GetComponent<Animator>();
 
-        // ---------------------------------------------------------
-        // KADIN / ERKEK ANİMASYONU
-        // ---------------------------------------------------------
-
         if (animator != null)
         {
             animator.SetBool(
@@ -163,10 +163,6 @@ public class NPCController : MonoBehaviour
                 isMale
             );
         }
-
-        // ---------------------------------------------------------
-        // DRINK CONTROLLER
-        // ---------------------------------------------------------
 
         if (drinkCupController == null)
         {
@@ -203,10 +199,6 @@ public class NPCController : MonoBehaviour
 
         agent.isStopped = false;
 
-        // =========================================================
-        // KAFE MÜŞTERİSİ
-        // =========================================================
-
         if (isCafeCustomer)
         {
             currentState =
@@ -221,11 +213,6 @@ public class NPCController : MonoBehaviour
                 "CafeEntrancePoint'e gidiyor."
             );
         }
-
-        // =========================================================
-        // SOKAK NPC
-        // =========================================================
-
         else
         {
             GoToSpawnSideExit();
@@ -263,10 +250,6 @@ public class NPCController : MonoBehaviour
 
     private void FindScenePoints()
     {
-        // ---------------------------------------------------------
-        // CAFE ENTRANCE
-        // ---------------------------------------------------------
-
         if (cafeEntrancePoint == null)
         {
             cafeEntrancePoint =
@@ -274,10 +257,6 @@ public class NPCController : MonoBehaviour
                     "CafeEntrancePoint"
                 );
         }
-
-        // ---------------------------------------------------------
-        // EXITLER
-        // ---------------------------------------------------------
 
         if (exitPoint1 == null)
         {
@@ -294,10 +273,6 @@ public class NPCController : MonoBehaviour
                     "ExitPoint2"
                 );
         }
-
-        // ---------------------------------------------------------
-        // SPAWN
-        // ---------------------------------------------------------
 
         if (spawnPoint1 == null)
         {
@@ -317,10 +292,6 @@ public class NPCController : MonoBehaviour
                     "SpawnPoint2"
                 );
         }
-
-        // ---------------------------------------------------------
-        // QUEUE NOKTALARI
-        // ---------------------------------------------------------
 
         if (!queuePointsInitialized)
         {
@@ -447,10 +418,6 @@ public class NPCController : MonoBehaviour
     {
         switch (currentState)
         {
-            // =================================================
-            // CAFE ENTRANCE
-            // =================================================
-
             case NPCState.GoingToEntrance:
 
                 if (HasReachedDestination())
@@ -459,10 +426,6 @@ public class NPCController : MonoBehaviour
                 }
 
                 break;
-
-            // =================================================
-            // QUEUE
-            // =================================================
 
             case NPCState.GoingToQueue:
 
@@ -473,17 +436,9 @@ public class NPCController : MonoBehaviour
 
                 break;
 
-            // =================================================
-            // SİPARİŞ BEKLİYOR
-            // =================================================
-
             case NPCState.Waiting:
 
                 break;
-
-            // =================================================
-            // MASAYA GİDİYOR
-            // =================================================
 
             case NPCState.GoingToTable:
 
@@ -494,25 +449,13 @@ public class NPCController : MonoBehaviour
 
                 break;
 
-            // =================================================
-            // MASADA
-            // =================================================
-
             case NPCState.AtTable:
 
                 break;
 
-            // =================================================
-            // KALKMA ANİMASYONU
-            // =================================================
-
             case NPCState.StandingUpFromTable:
 
                 break;
-
-            // =================================================
-            // CAFE ENTRANCE'A ÇIKIYOR
-            // =================================================
 
             case NPCState.GoingToCafeEntranceExit:
 
@@ -522,10 +465,6 @@ public class NPCController : MonoBehaviour
                 }
 
                 break;
-
-            // =================================================
-            // ÇIKIŞ
-            // =================================================
 
             case NPCState.GoingToExit:
 
@@ -557,16 +496,8 @@ public class NPCController : MonoBehaviour
             $"Queue sayısı = {queuePoints.Count}"
         );
 
-        // =========================================================
-        // ZATEN KUYRUKTAYSA
-        // =========================================================
-
         if (queuedNPCs.Contains(this))
             return;
-
-        // =========================================================
-        // BU NPC ARTIK MÜŞTERİ OLAMAZSA
-        // =========================================================
 
         if (!isCafeCustomer)
         {
@@ -575,10 +506,6 @@ public class NPCController : MonoBehaviour
             return;
         }
 
-        // =========================================================
-        // KUYRUK DOLU
-        // =========================================================
-
         if (queuedNPCs.Count >= queuePoints.Count)
         {
             Debug.Log(
@@ -586,18 +513,12 @@ public class NPCController : MonoBehaviour
                 "Queue dolu. Bu NPC sokak NPC'sine dönüyor."
             );
 
-            // Artık müşteri değil.
             isCafeCustomer = false;
 
-            // Kendi tarafındaki çıkışa git.
             GoToSpawnSideExit();
 
             return;
         }
-
-        // =========================================================
-        // GÜNLÜK MÜŞTERİ HEDEFİNİ KONTROL ET
-        // =========================================================
 
         if (npcSpawner != null)
         {
@@ -621,10 +542,6 @@ public class NPCController : MonoBehaviour
 
             cafeCustomerRegistered = true;
         }
-
-        // =========================================================
-        // KUYRUĞA EKLE
-        // =========================================================
 
         queuedNPCs.Add(
             this
@@ -681,10 +598,6 @@ public class NPCController : MonoBehaviour
         );
 
         assignedQueuePoint = null;
-
-        // ---------------------------------------------------------
-        // ARKADAKİLERİ ÖNE KAYDIR
-        // ---------------------------------------------------------
 
         for (
             int i = index;
@@ -766,18 +679,10 @@ public class NPCController : MonoBehaviour
             );
         }
 
-        // ---------------------------------------------------------
-        // SİPARİŞ OLUŞTUR
-        // ---------------------------------------------------------
-
         if (customerOrder == null)
         {
             CreateCustomerOrder();
         }
-
-        // ---------------------------------------------------------
-        // SADECE EN ÖNDEKİNİN SİPARİŞİ UI'YA GİTSİN
-        // ---------------------------------------------------------
 
         if (IsFrontOfQueue())
         {
@@ -806,11 +711,6 @@ public class NPCController : MonoBehaviour
     // =========================================================
     // SPAWN OLDUĞU TARAFTAKİ ÇIKIŞA GİT
     // =========================================================
-    //
-    // SpawnPoint1 → ExitPoint
-    // SpawnPoint2 → ExitPoint2
-    //
-    // =========================================================
 
     private void GoToSpawnSideExit()
     {
@@ -818,19 +718,11 @@ public class NPCController : MonoBehaviour
 
         if (spawnedFromPoint1)
         {
-            // -----------------------------------------------------
-            // SpawnPoint1 tarafı
-            // -----------------------------------------------------
-
             selectedExit =
                 exitPoint1;
         }
         else
         {
-            // -----------------------------------------------------
-            // SpawnPoint2 tarafı
-            // -----------------------------------------------------
-
             selectedExit =
                 exitPoint2;
         }
@@ -892,10 +784,6 @@ public class NPCController : MonoBehaviour
         customerOrder =
             new Order();
 
-        // =====================================================
-        // AÇIK KAHVELER
-        // =====================================================
-
         List<CoffeeType> unlockedCoffees =
             GetUnlockedCoffeeTypes();
 
@@ -909,10 +797,6 @@ public class NPCController : MonoBehaviour
             return;
         }
 
-        // =====================================================
-        // RASTGELE KAHVE
-        // =====================================================
-
         customerOrder.coffeeType =
             unlockedCoffees[
                 Random.Range(
@@ -920,10 +804,6 @@ public class NPCController : MonoBehaviour
                     unlockedCoffees.Count
                 )
             ];
-
-        // =====================================================
-        // BOYUT
-        // =====================================================
 
         if (customerOrder.coffeeType ==
             CoffeeType.Espresso)
@@ -940,23 +820,11 @@ public class NPCController : MonoBehaviour
                 );
         }
 
-        // =====================================================
-        // ÖDÜL
-        // =====================================================
-
         customerOrder.reward =
             0;
 
-        // =====================================================
-        // SİPARİŞ SÜRESİ
-        // =====================================================
-
         customerOrder.timeLimit =
             90f;
-
-        // =====================================================
-        // ÖDEME YÖNTEMİ
-        // =====================================================
 
         string[] paymentMethods =
         {
@@ -972,10 +840,6 @@ public class NPCController : MonoBehaviour
                 )
             ];
 
-        // =====================================================
-        // ESPRESSO SHOT
-        // =====================================================
-
         if (customerOrder.coffeeType ==
             CoffeeType.Espresso)
         {
@@ -990,15 +854,7 @@ public class NPCController : MonoBehaviour
                 EspressoShotButtonUI.ShotType.Single;
         }
 
-        // =====================================================
-        // EKSTRA
-        // =====================================================
-
         CreateRandomExtra();
-
-        // =====================================================
-        // EKSTRA ESPRESSO
-        // =====================================================
 
         if (customerOrder.coffeeType !=
             CoffeeType.Espresso)
@@ -1010,10 +866,6 @@ public class NPCController : MonoBehaviour
                     EspressoShotButtonUI.ShotType.Double;
             }
         }
-
-        // =====================================================
-        // DEBUG
-        // =====================================================
 
         string extraText =
             customerOrder.requestedExtras.Count > 0
@@ -1174,10 +1026,6 @@ public class NPCController : MonoBehaviour
             return;
         }
 
-        // =====================================================
-        // BOŞ SANDALYE
-        // =====================================================
-
         assignedSeat =
             SeatManager.Instance.GetFreeSeat();
 
@@ -1189,10 +1037,6 @@ public class NPCController : MonoBehaviour
 
             return;
         }
-
-        // =====================================================
-        // DRINK PLACE POINT
-        // =====================================================
 
         assignedDrinkPlacePoint =
             SeatManager.Instance.GetDrinkPlacePoint(
@@ -1216,10 +1060,6 @@ public class NPCController : MonoBehaviour
             return;
         }
 
-        // =====================================================
-        // KUYRUKTAN ÇIK
-        // =====================================================
-
         RemoveFromQueue();
 
         assignedDrinkPlacePoint.SetCustomer(
@@ -1231,10 +1071,6 @@ public class NPCController : MonoBehaviour
             $"{assignedSeat.name} → " +
             $"{assignedDrinkPlacePoint.gameObject.name}"
         );
-
-        // =====================================================
-        // MASAYA GİT
-        // =====================================================
 
         currentState =
             NPCState.GoingToTable;
@@ -1288,6 +1124,90 @@ public class NPCController : MonoBehaviour
         Debug.Log(
             $"{gameObject.name} masaya ulaştı."
         );
+    }
+
+    // =========================================================
+    // SİPARİŞ TESLİM EDİLDİ (DOĞRU YA DA YANLIŞ)
+    // =========================================================
+    //
+    // DrinkPlacePoint, kahveyi masaya koyduktan sonra bu metodu
+    // çağırır. Doğruysa içme döngüsü başlar. Yanlışsa müşteri
+    // içmeden bir süre sonra kalkıp gider.
+    //
+    // =========================================================
+
+    public void ServeOrder(bool isCorrect, PickupItem cup)
+    {
+        if (currentState != NPCState.AtTable)
+            return;
+
+        wasOrderCorrect = isCorrect;
+
+        if (isCorrect)
+        {
+            StartDrinkSequence(cup);
+        }
+        else
+        {
+            Debug.Log(
+                $"{gameObject.name}: Yanlış sipariş teslim edildi. " +
+                "Müşterinin gerçek sipariş fiyatı kadar para kesiliyor."
+            );
+
+            // =====================================================
+            // YANLIŞ SİPARİŞ CEZASI
+            // =====================================================
+
+            float wrongOrderPenalty =
+                customerOrder != null
+                    ? customerOrder.pricePaid
+                    : 0f;
+
+            if (wrongOrderPenalty > 0f)
+            {
+                if (MoneyManager.Instance != null)
+                {
+                    MoneyManager.Instance.SubtractMoneyWithFeedback(
+                        wrongOrderPenalty
+                    );
+
+                    Debug.Log(
+                        $"Yanlış sipariş cezası: " +
+                        $"-{wrongOrderPenalty:0.00}$"
+                    );
+                }
+                else
+                {
+                    Debug.LogWarning(
+                        "MoneyManager.Instance bulunamadı! " +
+                        "Yanlış sipariş cezası uygulanamadı."
+                    );
+                }
+            }
+            else
+            {
+                Debug.LogWarning(
+                    $"{gameObject.name}: " +
+                    "Müşteri sipariş fiyatı 0 olduğu için ceza uygulanmadı."
+                );
+            }
+
+            // =====================================================
+            // MÜŞTERİ BEKLEMEDEN KALKACAK
+            // =====================================================
+
+            if (waitBeforeLeaveCoroutine != null)
+            {
+                StopCoroutine(
+                    waitBeforeLeaveCoroutine
+                );
+            }
+
+            waitBeforeLeaveCoroutine =
+                StartCoroutine(
+                    WaitThenLeaveTable()
+                );
+        }
     }
 
     // =========================================================
@@ -1531,6 +1451,13 @@ public class NPCController : MonoBehaviour
 
         if (assignedDrinkPlacePoint != null)
         {
+            // Sadece doğru sipariş teslim edildiyse
+            // masada bahşiş bırakılır.
+            if (wasOrderCorrect)
+            {
+                assignedDrinkPlacePoint.SpawnTip();
+            }
+
             assignedDrinkPlacePoint.SetCustomer(
                 null
             );

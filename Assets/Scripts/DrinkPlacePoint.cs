@@ -10,14 +10,49 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
     [Header("Müşteri")]
     [SerializeField] private NPCController customer;
 
+    [Header("Bahşiş")]
+    [SerializeField] private TipPickup tipPrefab;
+    [SerializeField]
+    private Vector3 tipPositionOffset =
+        new Vector3(0.15f, 0f, 0f);
+
+    [SerializeField] private float tipMinAmount = 0.5f;
+    [SerializeField] private float tipMaxAmount = 1f;
+
+    // =========================================================
+    // MASADAKİ EŞYA TAKİBİ
+    // =========================================================
+
+    private PickupItem currentCupOnTable;
+
+    private TipPickup currentTip;
+
+    private Collider ownCollider;
+
+    // Masada bardak veya bahşiş varsa true.
+    public bool IsOccupiedByItem =>
+        currentCupOnTable != null ||
+        currentTip != null;
+
+    // =========================================================
+    // AWAKE
+    // =========================================================
+
+    private void Awake()
+    {
+        ownCollider =
+            GetComponent<Collider>();
+    }
 
     // =========================================================
     // CUSTOMER
     // =========================================================
 
-    public void SetCustomer(NPCController npc)
+    public void SetCustomer(
+        NPCController npc)
     {
-        customer = npc;
+        customer =
+            npc;
 
         if (customer != null)
         {
@@ -34,15 +69,94 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
         }
     }
 
-
     public NPCController GetCustomer()
     {
         return customer;
     }
 
+    // =========================================================
+    // BAHŞİŞ OLUŞTUR
+    // =========================================================
+
+    public void SpawnTip()
+    {
+        if (tipPrefab == null)
+        {
+            Debug.LogWarning(
+                $"{gameObject.name}: " +
+                "Tip Prefab atanmamış, bahşiş oluşturulamadı!"
+            );
+
+            return;
+        }
+
+        if (currentTip != null)
+        {
+            return;
+        }
+
+        float amount =
+            Random.Range(
+                tipMinAmount,
+                tipMaxAmount
+            );
+
+        Vector3 spawnPosition =
+            transform.position +
+            transform.TransformDirection(
+                tipPositionOffset
+            );
+
+        TipPickup tip =
+            Instantiate(
+                tipPrefab,
+                spawnPosition,
+                transform.rotation
+            );
+
+        tip.Initialize(
+            amount,
+            this
+        );
+
+        currentTip =
+            tip;
+
+        // ---------------------------------------------------------
+        // ÖNEMLİ:
+        // DrinkPlacePoint collider'ı Coin'in önüne geçmesin.
+        // ---------------------------------------------------------
+
+        if (ownCollider != null)
+        {
+            ownCollider.enabled = false;
+        }
+
+        Debug.Log(
+            $"{gameObject.name}: " +
+            $"Bahşiş oluştu ({amount:0.00}$)."
+        );
+    }
 
     // =========================================================
-    // INTERACTION
+    // BAHŞİŞ TEMİZLENDİ
+    // =========================================================
+
+    public void ClearTip()
+    {
+        currentTip =
+            null;
+
+        // Bahşiş alındıktan sonra
+        // DrinkPlacePoint tekrar kullanılabilir.
+        if (ownCollider != null)
+        {
+            ownCollider.enabled = true;
+        }
+    }
+
+    // =========================================================
+    // INTERACTION PROMPT
     // =========================================================
 
     public string GetInteractPrompt()
@@ -50,12 +164,15 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
         return "E - Kahveyi masaya bırak";
     }
 
+    // =========================================================
+    // INTERACT
+    // =========================================================
 
-    public void Interact(PlayerInteraction player)
+    public void Interact(
+        PlayerInteraction player)
     {
         if (player == null)
             return;
-
 
         // =====================================================
         // ELDEN KAHVEYİ AL
@@ -66,7 +183,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
 
         bool fromLeftHand = false;
 
-
         if (held == null)
         {
             held =
@@ -75,18 +191,15 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             fromLeftHand = true;
         }
 
-
         if (held == null)
             return;
 
-
         // =====================================================
-        // DRINK RECIPE KONTROLÜ
+        // DRINK RECIPE
         // =====================================================
 
         DrinkRecipe recipe =
             held.GetComponent<DrinkRecipe>();
-
 
         if (recipe == null)
         {
@@ -97,14 +210,12 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             return;
         }
 
-
         // =====================================================
-        // KAHVE TÜRÜ KONTROLÜ
+        // KAHVE TÜRÜ
         // =====================================================
 
         CoffeeType? coffeeType =
             recipe.DetermineCoffeeType();
-
 
         if (!coffeeType.HasValue)
         {
@@ -115,9 +226,8 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             return;
         }
 
-
         // =====================================================
-        // CUSTOMER KONTROLÜ
+        // CUSTOMER
         // =====================================================
 
         if (customer == null)
@@ -129,16 +239,29 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             return;
         }
 
-
         if (customer.CustomerOrder == null)
         {
             Debug.LogWarning(
-                $"{customer.gameObject.name} için sipariş bulunamadı."
+                $"{customer.gameObject.name} " +
+                "için sipariş bulunamadı."
             );
 
             return;
         }
 
+        // =====================================================
+        // MASADA ZATEN BARDAK VAR MI?
+        // =====================================================
+
+        if (currentCupOnTable != null)
+        {
+            Debug.Log(
+                $"{gameObject.name}: " +
+                "Masada zaten bir bardak var."
+            );
+
+            return;
+        }
 
         // =====================================================
         // SİPARİŞ DOĞRULAMA
@@ -151,34 +274,9 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
                 out string reason
             );
 
-
-        // =====================================================
-        // YANLIŞ KAHVE
-        // =====================================================
-
-        if (!isCorrect)
-        {
-            Debug.Log(
-                $"Sipariş yanlış! " +
-                $"{customer.gameObject.name}: {reason}"
-            );
-
-            return;
-        }
-
-
-        // =====================================================
-        // DOĞRU KAHVE
-        // =====================================================
-
-        Debug.Log(
-            $"Sipariş doğru! " +
-            $"{customer.gameObject.name} kahveyi kabul etti."
-        );
-
-
         // =====================================================
         // KAHVEYİ MASAYA KOY
+        // DOĞRU / YANLIŞ FARK ETMEZ
         // =====================================================
 
         Vector3 placePosition =
@@ -187,12 +285,14 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
                 positionOffset
             );
 
-
         held.DockAt(
             placePosition,
             rotationOffset
         );
 
+        // =====================================================
+        // OYUNCUNUN ELİNİ TEMİZLE
+        // =====================================================
 
         if (fromLeftHand)
         {
@@ -203,22 +303,85 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             player.SetHeldItem(null);
         }
 
+        // =====================================================
+        // MASADAKİ BARDAĞI KAYDET
+        // =====================================================
+
+        currentCupOnTable =
+            held;
+
+        held.OnPickedUp +=
+            HandleTableCupPickedUp;
+
+        // =====================================================
+        // DOĞRU KAHVE
+        // =====================================================
+
+        if (isCorrect)
+        {
+            Debug.Log(
+                $"Sipariş doğru! " +
+                $"{customer.gameObject.name} " +
+                "kahveyi kabul etti."
+            );
+
+            customer.ServeOrder(
+                true,
+                held
+            );
+
+            return;
+        }
+
+        // =====================================================
+        // YANLIŞ KAHVE
+        // =====================================================
 
         Debug.Log(
-            $"Kahve teslim edildi: " +
-            $"{coffeeType.Value} - {recipe.Size}"
+            $"Sipariş yanlış! " +
+            $"{customer.gameObject.name}: " +
+            $"{reason}"
         );
 
+        // Para cezasını burada vermiyoruz.
+        // NPC önce kahveyi içecek.
+        // Sonuç daha sonra NPC tarafından yönetilecek.
 
-        // =====================================================
-        // NPC İÇME ANİMASYONUNU BAŞLAT
-        // =====================================================
-
-        customer.StartDrinkSequence(
+        customer.ServeOrder(
+            false,
             held
         );
     }
 
+    // =========================================================
+    // MASADAKİ BARDAK GERİ ALINDI
+    // =========================================================
+
+    private void HandleTableCupPickedUp(
+        PickupItem cup)
+    {
+        if (cup != currentCupOnTable)
+            return;
+
+        currentCupOnTable.OnPickedUp -=
+            HandleTableCupPickedUp;
+
+        currentCupOnTable =
+            null;
+    }
+
+    // =========================================================
+    // DESTROY
+    // =========================================================
+
+    private void OnDestroy()
+    {
+        if (currentCupOnTable != null)
+        {
+            currentCupOnTable.OnPickedUp -=
+                HandleTableCupPickedUp;
+        }
+    }
 
     // =========================================================
     // GIZMO

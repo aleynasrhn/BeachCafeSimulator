@@ -124,6 +124,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -3947118205086072149}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cd0c5182d777cc74293bae2c25b2f52e,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1800955737834164777}
   m_SourcePrefab: {fileID: 100100000, guid: cd0c5182d777cc74293bae2c25b2f52e, type: 3}
 --- !u!1 &2203282028195441875 stripped
 GameObject:
@@ -150,6 +154,7 @@ MonoBehaviour:
   spawnPoint1: {fileID: 0}
   spawnPoint2: {fileID: 0}
   isMale: 1
+  isCafeCustomer: 1
   drinkCupController: {fileID: 0}
   totalDrinkCycles: 3
   minWaitBetweenDrinks: 6
@@ -192,6 +197,29 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &1800955737834164777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2203282028195441875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e866c2368e764b24ea5bef0995b95051, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clothesMaterial: {fileID: 2100000, guid: ca423c12f91d86a499607386edb3199e, type: 2}
+  hairMaterial: {fileID: 2100000, guid: 1b54156096d9b0041ba128043f0d3c06, type: 2}
+  clothesTextures:
+  - {fileID: 2800000, guid: 5b7a0abf74f66cb4aa08697d49f503ee, type: 3}
+  - {fileID: 2800000, guid: 633354fe87d70cf4d8e623739f3d83be, type: 3}
+  - {fileID: 2800000, guid: 398f3b134e93bc441b0d29c33b12d283, type: 3}
+  - {fileID: 2800000, guid: f51f02630f9400c4ba61ed67b57ab0d6, type: 3}
+  hairTextures:
+  - {fileID: 2800000, guid: a438b6127bab1954fbd9d5dd1273dfad, type: 3}
+  - {fileID: 2800000, guid: 4f7e566055daa054c8c66f04bd557f5c, type: 3}
+  - {fileID: 2800000, guid: 07ae7c7a1256fff45baf89c334eb2754, type: 3}
 --- !u!4 &2265067598251845639 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8269195505564239483, guid: cd0c5182d777cc74293bae2c25b2f52e,

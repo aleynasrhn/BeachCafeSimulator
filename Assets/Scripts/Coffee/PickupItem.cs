@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -83,6 +84,19 @@ public class PickupItem : MonoBehaviour, IInteractable
 
 
     // =========================================================
+    // OYUNCU BU ITEM'I ELİNE ALDIĞINDA TETİKLENİR
+    // =========================================================
+    //
+    // Masaya bırakılmış bir bardağın oyuncu tarafından geri
+    // alındığını (DrinkPlacePoint gibi dış sistemlerin haberdar
+    // olması için) bildirmek amacıyla eklendi.
+    //
+    // =========================================================
+
+    public event Action<PickupItem> OnPickedUp;
+
+
+    // =========================================================
     // POZİSYON
     // =========================================================
 
@@ -160,12 +174,6 @@ public class PickupItem : MonoBehaviour, IInteractable
     // KAHVE
     // =========================================================
 
-    /// <summary>
-    /// Portafilter içine yeni kahve doldurur.
-    /// Yeni kahve geldiğinde:
-    /// - Used Coffee sıfırlanır.
-    /// - Tamp sıfırlanır.
-    /// </summary>
     public void FillWithGroundCoffee()
     {
         hasUsedCoffee = false;
@@ -182,11 +190,6 @@ public class PickupItem : MonoBehaviour, IInteractable
     }
 
 
-    /// <summary>
-    /// Portafilter içindeki kahveyi tamamen boşaltır.
-    ///
-    /// Çöp kovası bu metodu kullanabilir.
-    /// </summary>
     public void EmptyGroundCoffee()
     {
         if (groundCoffeeVisual != null)
@@ -203,19 +206,11 @@ public class PickupItem : MonoBehaviour, IInteractable
     }
 
 
-    /// <summary>
-    /// Portafilter içinde kahve var mı?
-    ///
-    /// Kullanılmış kahve de hâlâ kahve olarak kabul edilir.
-    /// </summary>
     public bool HasGroundCoffee =>
         groundCoffeeVisual != null &&
         groundCoffeeVisual.activeSelf;
 
 
-    /// <summary>
-    /// Portafilter içindeki kahve kullanılmış mı?
-    /// </summary>
     public bool HasUsedCoffee =>
         hasUsedCoffee;
 
@@ -255,16 +250,10 @@ public class PickupItem : MonoBehaviour, IInteractable
     // USED COFFEE
     // =========================================================
 
-    /// <summary>
-    /// Espresso hazırlandıktan sonra
-    /// portafilter içindeki kahveyi kullanılmış
-    /// kahve durumuna geçirir.
-    /// </summary>
     public void MarkCoffeeAsUsed()
     {
         hasUsedCoffee = true;
 
-        // Kullanılmış kahve artık tamp edilmemiş kabul edilir.
         isTamped = false;
     }
 
@@ -314,7 +303,6 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     public void Interact(PlayerInteraction player)
     {
-        // Kilitliyse hiçbir pickup işlemi yapma.
         if (isInteractionLocked)
             return;
 
@@ -334,19 +322,12 @@ public class PickupItem : MonoBehaviour, IInteractable
     // ETKİLEŞİM KİLİDİ
     // =========================================================
 
-    /// <summary>
-    /// Item'ın oyuncu tarafından alınmasını/bırakılmasını
-    /// geçici olarak kilitler veya açar.
-    /// </summary>
     public void SetInteractionLocked(bool locked)
     {
         isInteractionLocked = locked;
     }
 
 
-    /// <summary>
-    /// Item şu anda etkileşim kilidinde mi?
-    /// </summary>
     public bool IsInteractionLocked =>
         isInteractionLocked;
 
@@ -357,14 +338,9 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     private void PickUp(PlayerInteraction player)
     {
-        // Kilitli item alınamaz.
         if (isInteractionLocked)
             return;
 
-
-        // =====================================================
-        // KETTLE ISINIYORSA ALINAMAZ
-        // =====================================================
 
         KettleHeatController kettleHeat =
             GetComponent<KettleHeatController>();
@@ -380,10 +356,6 @@ public class PickupItem : MonoBehaviour, IInteractable
             return;
         }
 
-
-        // =====================================================
-        // BAĞLI OBJE VARSA AYIR
-        // =====================================================
 
         if (isAttachedToObject)
         {
@@ -413,6 +385,8 @@ public class PickupItem : MonoBehaviour, IInteractable
         {
             player.SetHeldItem(this);
         }
+
+        OnPickedUp?.Invoke(this);
     }
 
 
@@ -422,7 +396,6 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     public void Drop(PlayerInteraction player)
     {
-        // Kilitliyken bırakma da yapılmasın.
         if (isInteractionLocked)
             return;
 
@@ -512,12 +485,10 @@ public class PickupItem : MonoBehaviour, IInteractable
     public void ForcePickUp(
         PlayerInteraction player)
     {
-        // Kilitliyken zorla bile alınamasın.
         if (isInteractionLocked)
             return;
 
 
-        // Kettle ısınıyorsa alınamaz.
         KettleHeatController kettleHeat =
             GetComponent<KettleHeatController>();
 
@@ -533,7 +504,6 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
 
 
-        // Bağlıysa ayır.
         if (isAttachedToObject)
         {
             DetachFromObject();
@@ -562,6 +532,8 @@ public class PickupItem : MonoBehaviour, IInteractable
         {
             player.SetHeldItem(this);
         }
+
+        OnPickedUp?.Invoke(this);
     }
 
 
@@ -654,17 +626,9 @@ public class PickupItem : MonoBehaviour, IInteractable
             return;
 
 
-        // =====================================================
-        // ESKİ PARENT'I KAYDET
-        // =====================================================
-
         Transform oldParent =
             attachedParent;
 
-
-        // =====================================================
-        // CUP KAPAĞIYSA CUP'A HABER VER
-        // =====================================================
 
         if (oldParent != null)
         {
@@ -679,10 +643,6 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
 
 
-        // =====================================================
-        // DÜNYA POZİSYONUNU KORU
-        // =====================================================
-
         Vector3 worldPosition =
             transform.position;
 
@@ -690,16 +650,8 @@ public class PickupItem : MonoBehaviour, IInteractable
             transform.rotation;
 
 
-        // =====================================================
-        // PARENT'TAN AYIR
-        // =====================================================
-
         transform.SetParent(null);
 
-
-        // =====================================================
-        // DÜNYA POZİSYONUNU GERİ YAZ
-        // =====================================================
 
         transform.position =
             worldPosition;
@@ -707,10 +659,6 @@ public class PickupItem : MonoBehaviour, IInteractable
         transform.rotation =
             worldRotation;
 
-
-        // =====================================================
-        // BAĞLANTI DURUMUNU TEMİZLE
-        // =====================================================
 
         attachedParent = null;
 

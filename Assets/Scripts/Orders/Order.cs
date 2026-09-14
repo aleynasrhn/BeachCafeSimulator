@@ -12,6 +12,10 @@ public class Order
 
     public int reward;
 
+    // Oyuncunun kasada bu sipariş için ödediği tam tutar.
+    // Kahve yanlış teslim edilirse bu tutar geri kesilir.
+    public float pricePaid;
+
     public float timeLimit;
 
     // Müşteri talebindeki ekstralar

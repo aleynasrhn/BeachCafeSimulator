@@ -124,6 +124,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5271073095516896878}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 175c8d9f539ac534a84ec6fd360625fd,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6927546922933145026}
   m_SourcePrefab: {fileID: 100100000, guid: 175c8d9f539ac534a84ec6fd360625fd, type: 3}
 --- !u!4 &8377088034493040336 stripped
 Transform:
@@ -156,6 +160,7 @@ MonoBehaviour:
   spawnPoint1: {fileID: 0}
   spawnPoint2: {fileID: 0}
   isMale: 1
+  isCafeCustomer: 1
   drinkCupController: {fileID: 0}
   totalDrinkCycles: 3
   minWaitBetweenDrinks: 6
@@ -198,3 +203,26 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &6927546922933145026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8536273708844623130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e866c2368e764b24ea5bef0995b95051, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clothesMaterial: {fileID: 2100000, guid: d6f2e201480cf9545b98ad531a49d81f, type: 2}
+  hairMaterial: {fileID: 2100000, guid: 7dbef2a9942569d47816b10c475c6480, type: 2}
+  clothesTextures:
+  - {fileID: 2800000, guid: 1b5ed11505bac1246a74d7c005cfc577, type: 3}
+  - {fileID: 2800000, guid: 78fb7f61ab512ea4c890d5dd6bdf862c, type: 3}
+  - {fileID: 2800000, guid: 66618f0cbad57d14ab09cb75df4a8c5f, type: 3}
+  - {fileID: 2800000, guid: 4e4239a3cc9f6e04a92980edee54b3e4, type: 3}
+  hairTextures:
+  - {fileID: 2800000, guid: 9b12652cdd5e83b4681cf14931712cd9, type: 3}
+  - {fileID: 2800000, guid: ac6acdcf1cb13cc4cbf50cfdfc60f6d6, type: 3}
+  - {fileID: 2800000, guid: a60334ab3425e5f4b9125783b9ffec8a, type: 3}
