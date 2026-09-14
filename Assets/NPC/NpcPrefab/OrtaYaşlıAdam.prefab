@@ -1,0 +1,228 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8967243210354039356
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4837746123785170404}
+  m_Layer: 0
+  m_Name: CupHolder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4837746123785170404
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8967243210354039356}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0.128, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6086972978083109561}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &7239621087115495584
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 149.14888
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.00000023841858
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 544.8905
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_Name
+      value: "OrtaYa\u015Fl\u0131Adam"
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 999c153f3fd88954d832e8ed0f777b81, type: 2}
+    - target: {fileID: 5866666021909216657, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -5764316522323783143, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4837746123785170404}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -4661751654684482510}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2272063097035820516}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -5905998241594445769}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c22c0cfe3ded7c248b6849b32087a203,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -4082538710274096924}
+  m_SourcePrefab: {fileID: 100100000, guid: c22c0cfe3ded7c248b6849b32087a203, type: 3}
+--- !u!4 &6086972978083109561 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -5764316522323783143, guid: c22c0cfe3ded7c248b6849b32087a203,
+    type: 3}
+  m_PrefabInstance: {fileID: 7239621087115495584}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &7546103145231775217 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: c22c0cfe3ded7c248b6849b32087a203,
+    type: 3}
+  m_PrefabInstance: {fileID: 7239621087115495584}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-4661751654684482510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7546103145231775217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c76b25d4fff24b43a7823f13879ba31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cafeEntrancePoint: {fileID: 0}
+  assignedQueuePoint: {fileID: 0}
+  exitPoint1: {fileID: 0}
+  exitPoint2: {fileID: 0}
+  spawnPoint1: {fileID: 0}
+  spawnPoint2: {fileID: 0}
+  isMale: 1
+  isCafeCustomer: 1
+  drinkCupController: {fileID: 0}
+  totalDrinkCycles: 3
+  minWaitBetweenDrinks: 6
+  maxWaitBetweenDrinks: 7
+  minWaitBeforeLeaving: 4
+  maxWaitBeforeLeaving: 5
+--- !u!114 &2272063097035820516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7546103145231775217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4320daea7c4c522448cf38426a48b67f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  drinkCupHolder: {fileID: 4837746123785170404}
+  handSettingsPerSize: []
+--- !u!195 &-5905998241594445769
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7546103145231775217}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0.3
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &-4082538710274096924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7546103145231775217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e866c2368e764b24ea5bef0995b95051, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clothesMaterial: {fileID: 2100000, guid: 5a6b18e454b058b42ae95634afb600c3, type: 2}
+  hairMaterial: {fileID: 2100000, guid: 57926241eb678794f9df1ef753b63ff9, type: 2}
+  clothesTextures:
+  - {fileID: 2800000, guid: 66af27a90b3df294f9a143265f524423, type: 3}
+  - {fileID: 2800000, guid: e00c7401677c04f4f9d4234a738331a6, type: 3}
+  - {fileID: 2800000, guid: 15546513e28209e4d8fcbf59b8113589, type: 3}
+  - {fileID: 2800000, guid: 46c46188db465484e8d64fd61fd479f6, type: 3}
+  hairTextures:
+  - {fileID: 2800000, guid: 1e4c089523bb8f740b9cd8f4325f736f, type: 3}
+  - {fileID: 2800000, guid: 526027881e7266042bf699d8413176b7, type: 3}
+  - {fileID: 2800000, guid: f64e8f5c6fab93b43b8467e71fc9ef7a, type: 3}
