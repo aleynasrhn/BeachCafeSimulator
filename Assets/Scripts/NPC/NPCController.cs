@@ -100,6 +100,24 @@ public class NPCController : MonoBehaviour
     private Coroutine waitBeforeNextDrinkCoroutine;
 
     // =========================================================
+    // SİPARİŞ BEKLEME (MASADA)
+    // =========================================================
+    //
+    // Müşteri masaya oturduktan sonra kahve gelene kadar
+    // belirli bir süre bekler. Bu süre dolana kadar kahve
+    // gelmezse (ServeOrder çağrılmazsa) müşteri siparişsiz
+    // kalkıp gider ve sipariş fiyatı kadar para cezası uygulanır.
+    //
+    // =========================================================
+
+    [Header("Sipariş Bekleme (Masada)")]
+    [SerializeField] private float minOrderWaitTime = 60f;
+
+    [SerializeField] private float maxOrderWaitTime = 70f;
+
+    private Coroutine orderWaitCoroutine;
+
+    // =========================================================
     // KAFEDEN AYRILMA
     // =========================================================
 
@@ -1121,9 +1139,100 @@ public class NPCController : MonoBehaviour
             );
         }
 
+        // =====================================================
+        // SİPARİŞ BEKLEME ZAMANLAYICISINI BAŞLAT
+        // =====================================================
+
+        if (orderWaitCoroutine != null)
+        {
+            StopCoroutine(
+                orderWaitCoroutine
+            );
+        }
+
+        orderWaitCoroutine =
+            StartCoroutine(
+                WaitForOrderTimeout()
+            );
+
         Debug.Log(
             $"{gameObject.name} masaya ulaştı."
         );
+    }
+
+    // =========================================================
+    // SİPARİŞ ZAMAN AŞIMI BEKLEME DÖNGÜSÜ
+    // =========================================================
+
+    private IEnumerator WaitForOrderTimeout()
+    {
+        float waitTime =
+            Random.Range(
+                minOrderWaitTime,
+                maxOrderWaitTime
+            );
+
+        yield return new WaitForSeconds(
+            waitTime
+        );
+
+        orderWaitCoroutine = null;
+
+        HandleOrderTimeout();
+    }
+
+    // =========================================================
+    // SİPARİŞ ZAMANI DOLDU, KAHVE GELMEDİ
+    // =========================================================
+
+    private void HandleOrderTimeout()
+    {
+        if (currentState !=
+            NPCState.AtTable)
+        {
+            return;
+        }
+
+        Debug.Log(
+            $"{gameObject.name}: Sipariş süresi doldu, " +
+            "kahve gelmediği için müşteri kalkıp gidiyor."
+        );
+
+        // Kahve gelmediği için bahşiş bırakılmayacak.
+        wasOrderCorrect = false;
+
+        // =====================================================
+        // SİPARİŞ FİYATI KADAR CEZA
+        // =====================================================
+
+        float penalty =
+            customerOrder != null
+                ? customerOrder.pricePaid
+                : 0f;
+
+        if (penalty > 0f)
+        {
+            if (MoneyManager.Instance != null)
+            {
+                MoneyManager.Instance.SubtractMoneyWithFeedback(
+                    penalty
+                );
+
+                Debug.Log(
+                    $"Sipariş zaman aşımı cezası: " +
+                    $"-{penalty:0.00}$"
+                );
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "MoneyManager.Instance bulunamadı! " +
+                    "Zaman aşımı cezası uygulanamadı."
+                );
+            }
+        }
+
+        LeaveTable();
     }
 
     // =========================================================
@@ -1140,6 +1249,19 @@ public class NPCController : MonoBehaviour
     {
         if (currentState != NPCState.AtTable)
             return;
+
+        // =====================================================
+        // KAHVE GELDİ, SİPARİŞ ZAMAN AŞIMINI İPTAL ET
+        // =====================================================
+
+        if (orderWaitCoroutine != null)
+        {
+            StopCoroutine(
+                orderWaitCoroutine
+            );
+
+            orderWaitCoroutine = null;
+        }
 
         wasOrderCorrect = isCorrect;
 
@@ -1605,6 +1727,15 @@ public class NPCController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (orderWaitCoroutine != null)
+        {
+            StopCoroutine(
+                orderWaitCoroutine
+            );
+
+            orderWaitCoroutine = null;
+        }
+
         int index =
             queuedNPCs.IndexOf(
                 this

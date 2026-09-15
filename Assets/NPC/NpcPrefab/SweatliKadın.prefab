@@ -139,6 +139,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 4524029479935043456}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b3a5fb0a80655d643beeb761b56f169c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 752620303663076619}
   m_SourcePrefab: {fileID: 100100000, guid: b3a5fb0a80655d643beeb761b56f169c, type: 3}
 --- !u!1 &6978229106433323629 stripped
 GameObject:
@@ -170,6 +174,8 @@ MonoBehaviour:
   totalDrinkCycles: 3
   minWaitBetweenDrinks: 6
   maxWaitBetweenDrinks: 7
+  minOrderWaitTime: 60
+  maxOrderWaitTime: 70
   minWaitBeforeLeaving: 4
   maxWaitBeforeLeaving: 5
 --- !u!114 &2148923466749390182
@@ -232,6 +238,27 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 203d42f460500a743a5ccbe08dbc28ab, type: 3}
   - {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
   - {fileID: 2800000, guid: 429956489d9ab3e458b110b790e966e0, type: 3}
+--- !u!65 &752620303663076619
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6978229106433323629}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &8476728315507978484 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: b3a5fb0a80655d643beeb761b56f169c,
