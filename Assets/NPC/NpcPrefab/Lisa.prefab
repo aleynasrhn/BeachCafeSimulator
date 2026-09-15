@@ -235,15 +235,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clothesMaterial: {fileID: 2100000, guid: 8bbdd29213204b2418c09754067bc0c1, type: 2}
   hairMaterial: {fileID: 2100000, guid: ec14892854196e6439d8e29aba79ce74, type: 2}
-  clothesTextures:
-  - {fileID: 2800000, guid: a3b4304e5fc4f2c4f8fccf8d6e2652bb, type: 3}
-  - {fileID: 2800000, guid: 799619ec92259dd4489a8731bdc998a9, type: 3}
-  - {fileID: 2800000, guid: d9a9f51df14b5d8439ad3eec589a8d33, type: 3}
-  - {fileID: 2800000, guid: 22261b853807959489002622846cbaec, type: 3}
-  hairTextures:
-  - {fileID: 2800000, guid: 51f7e122b39132c4fbe6b5d70b54e41e, type: 3}
-  - {fileID: 2800000, guid: 06362aeb28490df4e8b28523d525a3a6, type: 3}
-  - {fileID: 2800000, guid: f7d81dae76826ae4d80a87a9815ab665, type: 3}
+  outfitCombos: []
 --- !u!65 &8891460190721313313
 BoxCollider:
   m_ObjectHideFlags: 0

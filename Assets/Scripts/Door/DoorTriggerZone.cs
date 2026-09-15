@@ -13,12 +13,7 @@ public class DoorTriggerZone : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"[DoorTrigger] Bir şey girdi: {other.gameObject.name}");
-
-        NPCController npc =
-            other.GetComponentInParent<NPCController>();
-
-        if (npc == null)
+        if (!IsRelevant(other))
             return;
 
         if (doorController != null)
@@ -29,15 +24,27 @@ public class DoorTriggerZone : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        NPCController npc =
-            other.GetComponentInParent<NPCController>();
-
-        if (npc == null)
+        if (!IsRelevant(other))
             return;
 
         if (doorController != null)
         {
             doorController.NotifyCustomerExited();
         }
+    }
+
+    // =========================================================
+    // NPC YA DA PLAYER MI?
+    // =========================================================
+
+    private bool IsRelevant(Collider other)
+    {
+        if (other.GetComponentInParent<NPCController>() != null)
+            return true;
+
+        if (other.GetComponentInParent<PlayerMovement>() != null)
+            return true;
+
+        return false;
     }
 }

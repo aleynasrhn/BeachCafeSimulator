@@ -191,7 +191,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   drinkCupHolder: {fileID: 192226598968472445}
-  handSettingsPerSize: []
+  handSettingsPerSize:
+  - size: 0
+    handPosition: {x: 0.015, y: 0.085, z: 0.082}
+    handRotation: {x: 0, y: -84.667, z: 0}
+    handScaleMultiplier: 1
+  - size: 1
+    handPosition: {x: -0.0099499, y: 0.06516108, z: 0.07742}
+    handRotation: {x: 0, y: -90.684, z: 78.996}
+    handScaleMultiplier: 0.75
+  - size: 2
+    handPosition: {x: -0.085, y: 0.067, z: 0.093}
+    handRotation: {x: -1.794, y: -66.731, z: 37.265}
+    handScaleMultiplier: 0.72
 --- !u!195 &-8485399323711419056
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -228,16 +240,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clothesMaterial: {fileID: 2100000, guid: c8830bed12163c3478ac0f0abdc5446b, type: 2}
   hairMaterial: {fileID: 2100000, guid: a602a36426529024492490a6d6d89026, type: 2}
-  clothesTextures:
-  - {fileID: 2800000, guid: ff6c06c119e0c7b46a6dc33b9c26c6c6, type: 3}
-  - {fileID: 2800000, guid: 7d27b81fba636f44cb8934068f83f7d1, type: 3}
-  - {fileID: 2800000, guid: 07550175f84dacf4ebab3b99db134ce1, type: 3}
-  - {fileID: 2800000, guid: dec966a9c7b0e7c498e345b83229b27a, type: 3}
-  - {fileID: 2800000, guid: c88bc86038e709e4b941a73864180e18, type: 3}
-  hairTextures:
-  - {fileID: 2800000, guid: 203d42f460500a743a5ccbe08dbc28ab, type: 3}
-  - {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
-  - {fileID: 2800000, guid: 429956489d9ab3e458b110b790e966e0, type: 3}
+  outfitCombos: []
 --- !u!65 &752620303663076619
 BoxCollider:
   m_ObjectHideFlags: 0

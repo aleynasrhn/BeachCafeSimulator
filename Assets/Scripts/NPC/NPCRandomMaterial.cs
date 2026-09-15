@@ -1,23 +1,34 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class NPCRandomMaterial : MonoBehaviour
 {
+    // =========================================================
+    // KOMBİN (KIYAFET + SAÇ EŞLEŞMESİ)
+    // =========================================================
+
+    [Serializable]
+    public class OutfitCombo
+    {
+        [Tooltip("Bu kombinin adı (sadece Inspector'da tanımak için)")]
+        public string comboName;
+
+        public Texture2D clothesTexture;
+
+        public Texture2D hairTexture;
+    }
+
     [Header("Kıyafet Materyali")]
     [SerializeField] private Material clothesMaterial;
 
     [Header("Saç Materyali")]
     [SerializeField] private Material hairMaterial;
 
-    [Header("Kıyafet Textureleri")]
+    [Header("Kombinler (Kıyafet + Saç Eşleşmeli)")]
     [SerializeField]
-    private List<Texture2D> clothesTextures =
-        new List<Texture2D>();
-
-    [Header("Saç Textureleri")]
-    [SerializeField]
-    private List<Texture2D> hairTextures =
-        new List<Texture2D>();
+    private List<OutfitCombo> outfitCombos =
+        new List<OutfitCombo>();
 
 
     private void Awake()
@@ -28,45 +39,62 @@ public class NPCRandomMaterial : MonoBehaviour
 
     public void RandomizeTextures()
     {
-        // Kıyafet texture seç
-        if (clothesMaterial != null &&
-            clothesTextures.Count > 0)
+        if (outfitCombos == null ||
+            outfitCombos.Count == 0)
         {
-            Texture2D randomClothes =
-                clothesTextures[
-                    Random.Range(0, clothesTextures.Count)
-                ];
+            Debug.LogWarning(
+                $"{gameObject.name}: Hiç kombin tanımlanmamış!"
+            );
 
+            return;
+        }
+
+        OutfitCombo selectedCombo =
+            outfitCombos[
+                UnityEngine.Random.Range(0, outfitCombos.Count)
+            ];
+
+        // =====================================================
+        // KIYAFET
+        // =====================================================
+
+        if (clothesMaterial != null &&
+            selectedCombo.clothesTexture != null)
+        {
             clothesMaterial.SetTexture(
                 "_BaseMap",
-                randomClothes
+                selectedCombo.clothesTexture
             );
 
             Debug.Log(
                 $"{gameObject.name} kıyafet texture: " +
-                randomClothes.name
+                selectedCombo.clothesTexture.name
             );
         }
 
+        // =====================================================
+        // SAÇ
+        // =====================================================
 
-        // Saç texture seç
         if (hairMaterial != null &&
-            hairTextures.Count > 0)
+            selectedCombo.hairTexture != null)
         {
-            Texture2D randomHair =
-                hairTextures[
-                    Random.Range(0, hairTextures.Count)
-                ];
-
             hairMaterial.SetTexture(
                 "_BaseMap",
-                randomHair
+                selectedCombo.hairTexture
             );
 
             Debug.Log(
                 $"{gameObject.name} saç texture: " +
-                randomHair.name
+                selectedCombo.hairTexture.name
             );
         }
+
+        Debug.Log(
+            $"{gameObject.name} kombin seçildi: " +
+            (string.IsNullOrEmpty(selectedCombo.comboName)
+                ? "(isimsiz)"
+                : selectedCombo.comboName)
+        );
     }
 }

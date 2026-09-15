@@ -219,6 +219,24 @@ public class NPCController : MonoBehaviour
 
         if (isCafeCustomer)
         {
+            // =====================================================
+            // KUYRUK ZATEN DOLUYSA HİÇ GİRİŞE GİTMEDEN ÇIKIŞA GİT
+            // =====================================================
+
+            if (queuedNPCs.Count >= queuePoints.Count)
+            {
+                Debug.Log(
+                    $"{gameObject.name}: Kuyruk zaten dolu, " +
+                    "kafeye girmeden direkt çıkışa gidiyor."
+                );
+
+                isCafeCustomer = false;
+
+                GoToSpawnSideExit();
+
+                return;
+            }
+
             currentState =
                 NPCState.GoingToEntrance;
 
@@ -1764,10 +1782,10 @@ public class NPCController : MonoBehaviour
             }
         }
 
-        if (queuedNPCs.Count == 0)
-        {
-            queuePoints.Clear();
-            queuePointsInitialized = false;
-        }
+        // NOT: queuePoints artık burada temizlenmiyor.
+        // Bu noktalar sabit sahne objeleri, bir kere bulunduktan
+        // sonra kalıcı olarak saklanmaları gerekiyor. Temizlemek
+        // yarış durumuna (race condition) yol açıp, kuyruk
+        // boşken bile dolu sanılmasına neden oluyordu.
     }
 }
