@@ -100,20 +100,32 @@ public class NPCController : MonoBehaviour
     private Coroutine waitBeforeNextDrinkCoroutine;
 
     // =========================================================
-    // SİPARİŞ BEKLEME (MASADA)
-    // =========================================================
-    //
-    // Müşteri masaya oturduktan sonra kahve gelene kadar
-    // belirli bir süre bekler. Bu süre dolana kadar kahve
-    // gelmezse (ServeOrder çağrılmazsa) müşteri siparişsiz
-    // kalkıp gider ve sipariş fiyatı kadar para cezası uygulanır.
-    //
+    // SİPARİŞ BEKLEME (MASADA) - KAHVE TÜRÜNE GÖRE
     // =========================================================
 
-    [Header("Sipariş Bekleme (Masada)")]
-    [SerializeField] private float minOrderWaitTime = 60f;
+    [System.Serializable]
+    public class CoffeeWaitTime
+    {
+        public CoffeeType coffeeType;
 
-    [SerializeField] private float maxOrderWaitTime = 70f;
+        public float minWaitTime = 60f;
+
+        public float maxWaitTime = 70f;
+    }
+
+    [Header("Sipariş Bekleme - Kahve Türüne Göre Süreler")]
+    [SerializeField]
+    private List<CoffeeWaitTime> coffeeWaitTimes =
+        new List<CoffeeWaitTime>();
+
+    [Header("Sipariş Bekleme - Varsayılan Süre")]
+    [Tooltip("Listede kahve türü için özel süre tanımlanmamışsa bu kullanılır.")]
+    [SerializeField] private float defaultMinOrderWaitTime = 60f;
+
+    [SerializeField] private float defaultMaxOrderWaitTime = 70f;
+
+    [Header("Sipariş Bekleme - Bar UI")]
+    [SerializeField] private NPCOrderWaitUI orderWaitUI;
 
     private Coroutine orderWaitCoroutine;
 
@@ -1158,6 +1170,32 @@ public class NPCController : MonoBehaviour
         }
 
         // =====================================================
+        // SİPARİŞ ÖZETİNİ UI'A YAZ
+        // =====================================================
+
+        string orderSummary =
+            BuildOrderSummaryText();
+
+        Debug.Log(
+            $"{gameObject.name}: Sipariş özeti UI'a yazılıyor → " +
+            $"'{orderSummary}'"
+        );
+
+        if (orderWaitUI != null)
+        {
+            orderWaitUI.SetOrderText(
+                orderSummary
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                $"{gameObject.name}: orderWaitUI atanmamış, " +
+                "sipariş yazısı gösterilemiyor!"
+            );
+        }
+
+        // =====================================================
         // SİPARİŞ BEKLEME ZAMANLAYICISINI BAŞLAT
         // =====================================================
 
@@ -1179,20 +1217,135 @@ public class NPCController : MonoBehaviour
     }
 
     // =========================================================
-    // SİPARİŞ ZAMAN AŞIMI BEKLEME DÖNGÜSÜ
+    // SİPARİŞ ÖZET YAZISI OLUŞTUR (BARIN ALTINDA GÖRÜNÜR)
+    // =========================================================
+
+    private string BuildOrderSummaryText()
+    {
+        if (customerOrder == null)
+        {
+            Debug.LogWarning(
+                $"{gameObject.name}: BuildOrderSummaryText çağrıldı " +
+                "ama customerOrder null!"
+            );
+
+            return "";
+        }
+
+        string coffeePart;
+
+        if (customerOrder.coffeeType ==
+            CoffeeType.Espresso)
+        {
+            string shotName =
+                customerOrder.espressoShot ==
+                EspressoShotButtonUI.ShotType.Single
+                    ? "Tek Shot"
+                    : "Double Shot";
+
+            coffeePart =
+                $"Espresso ({shotName})";
+        }
+        else
+        {
+            string sizeName =
+                customerOrder.size switch
+                {
+                    CupSize.Small => "Küçük",
+                    CupSize.Medium => "Orta",
+                    CupSize.Large => "Büyük",
+                    _ => ""
+                };
+
+            coffeePart =
+                $"{sizeName} {customerOrder.coffeeType}";
+        }
+
+        if (customerOrder.requestedExtras != null &&
+            customerOrder.requestedExtras.Count > 0)
+        {
+            coffeePart +=
+                " + " +
+                string.Join(
+                    ", ",
+                    customerOrder.requestedExtras
+                );
+        }
+
+        return coffeePart;
+    }
+
+    // =========================================================
+    // KAHVE TÜRÜNE GÖRE BEKLEME SÜRESİNİ BUL
+    // =========================================================
+
+    private float GetWaitTimeForOrder()
+    {
+        if (customerOrder != null &&
+            coffeeWaitTimes != null)
+        {
+            CoffeeWaitTime match =
+                coffeeWaitTimes.Find(
+                    c => c.coffeeType ==
+                         customerOrder.coffeeType
+                );
+
+            if (match != null)
+            {
+                return Random.Range(
+                    match.minWaitTime,
+                    match.maxWaitTime
+                );
+            }
+        }
+
+        return Random.Range(
+            defaultMinOrderWaitTime,
+            defaultMaxOrderWaitTime
+        );
+    }
+
+    // =========================================================
+    // SİPARİŞ ZAMAN AŞIMI BEKLEME DÖNGÜSÜ (BAR GÜNCELLEMELİ)
     // =========================================================
 
     private IEnumerator WaitForOrderTimeout()
     {
         float waitTime =
-            Random.Range(
-                minOrderWaitTime,
-                maxOrderWaitTime
-            );
+            GetWaitTimeForOrder();
 
-        yield return new WaitForSeconds(
-            waitTime
-        );
+        float elapsed = 0f;
+
+        if (orderWaitUI != null)
+        {
+            orderWaitUI.Show();
+
+            orderWaitUI.UpdateProgress(
+                0f,
+                waitTime
+            );
+        }
+
+        while (elapsed < waitTime)
+        {
+            elapsed += Time.deltaTime;
+
+            float progress =
+                elapsed / waitTime;
+
+            float remaining =
+                waitTime - elapsed;
+
+            if (orderWaitUI != null)
+            {
+                orderWaitUI.UpdateProgress(
+                    progress,
+                    remaining
+                );
+            }
+
+            yield return null;
+        }
 
         orderWaitCoroutine = null;
 
@@ -1209,6 +1362,11 @@ public class NPCController : MonoBehaviour
             NPCState.AtTable)
         {
             return;
+        }
+
+        if (orderWaitUI != null)
+        {
+            orderWaitUI.Hide();
         }
 
         Debug.Log(
@@ -1279,6 +1437,11 @@ public class NPCController : MonoBehaviour
             );
 
             orderWaitCoroutine = null;
+        }
+
+        if (orderWaitUI != null)
+        {
+            orderWaitUI.Hide();
         }
 
         wasOrderCorrect = isCorrect;
@@ -1783,9 +1946,5 @@ public class NPCController : MonoBehaviour
         }
 
         // NOT: queuePoints artık burada temizlenmiyor.
-        // Bu noktalar sabit sahne objeleri, bir kere bulunduktan
-        // sonra kalıcı olarak saklanmaları gerekiyor. Temizlemek
-        // yarış durumuna (race condition) yol açıp, kuyruk
-        // boşken bile dolu sanılmasına neden oluyordu.
     }
 }
