@@ -811,6 +811,12 @@ public class OrderScreenUI : MonoBehaviour
         // OYUNCUNUN HAZIRLADIĞI SİPARİŞ
         // =====================================================
 
+        // =====================================================
+        // BİLET SÜRESİNİ NPC'NİN KAHVE TÜRÜNE ÖZEL AYARINDAN AL
+        // =====================================================
+
+        
+
         Order finalOrder =
             new Order
             {
@@ -853,9 +859,9 @@ public class OrderScreenUI : MonoBehaviour
         }
 
 
-        if (OrderUI.Instance != null)
+        if (currentCustomerNPC != null)
         {
-            OrderUI.Instance.AddOrder(
+            currentCustomerNPC.SetPendingTicketOrder(
                 finalOrder
             );
         }

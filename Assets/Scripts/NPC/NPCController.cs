@@ -100,7 +100,13 @@ public class NPCController : MonoBehaviour
     private Coroutine waitBeforeNextDrinkCoroutine;
 
     // =========================================================
-    // SİPARİŞ BEKLEME (MASADA) - KAHVE TÜRÜNE GÖRE
+    // SİPARİŞ BEKLEME (MASADA) - KAHVE TÜRÜNE GÖRE SABİT SÜRE
+    // =========================================================
+    //
+    // Artık min/max aralığı yok. Her kahve türü için TEK bir
+    // sabit süre giriliyor (örn. Espresso = 65 sn). Listede
+    // o tür için tanım yoksa Default Order Wait Time kullanılır.
+    //
     // =========================================================
 
     [System.Serializable]
@@ -108,26 +114,33 @@ public class NPCController : MonoBehaviour
     {
         public CoffeeType coffeeType;
 
-        public float minWaitTime = 60f;
-
-        public float maxWaitTime = 70f;
+        public float waitTime = 60f;
     }
 
-    [Header("Sipariş Bekleme - Kahve Türüne Göre Süreler")]
+    [Header("Sipariş Bekleme - Kahve Türüne Göre Sabit Süreler")]
     [SerializeField]
     private List<CoffeeWaitTime> coffeeWaitTimes =
         new List<CoffeeWaitTime>();
 
     [Header("Sipariş Bekleme - Varsayılan Süre")]
     [Tooltip("Listede kahve türü için özel süre tanımlanmamışsa bu kullanılır.")]
-    [SerializeField] private float defaultMinOrderWaitTime = 60f;
-
-    [SerializeField] private float defaultMaxOrderWaitTime = 70f;
+    [SerializeField] private float defaultOrderWaitTime = 60f;
 
     [Header("Sipariş Bekleme - Bar UI")]
     [SerializeField] private NPCOrderWaitUI orderWaitUI;
 
     private Coroutine orderWaitCoroutine;
+
+    // Bu ziyaret için hesaplanan sabit bekleme süresi.
+    // Hem kafadaki bar hem de sağ üst paneldeki bilet
+    // TAM OLARAK bu değeri ve TAM OLARAK aynı başlangıç
+    // anını (ArriveAtTable) kullanır.
+    private float currentOrderWaitTime;
+
+    // OrderScreenUI'da kasada hazırlanan sipariş (finalOrder).
+    // Kasada oluşturulur ama panele hemen eklenmez — NPC
+    // masaya oturana kadar burada bekletilir.
+    private Order pendingTicketOrder;
 
     // =========================================================
     // KAFEDEN AYRILMA
@@ -1050,6 +1063,23 @@ public class NPCController : MonoBehaviour
     }
 
     // =========================================================
+    // KASADA HAZIRLANAN SİPARİŞİ SAKLA (PANELE HENÜZ EKLEME)
+    // =========================================================
+    //
+    // OrderScreenUI, kasada "Siparişi Onayla" butonuna basıldığında
+    // oluşturduğu finalOrder'ı buraya kaydeder. Bu sipariş henüz
+    // sağ üstteki panele EKLENMEZ — NPC fiziksel olarak masaya
+    // oturup ArriveAtTable() çalışana kadar bekletilir. Böylece
+    // panel bileti ile kafadaki bar TAM OLARAK aynı anda başlar.
+    //
+    // =========================================================
+
+    public void SetPendingTicketOrder(Order order)
+    {
+        pendingTicketOrder = order;
+    }
+
+    // =========================================================
     // SİPARİŞ ONAYLANDI
     // =========================================================
 
@@ -1170,29 +1200,46 @@ public class NPCController : MonoBehaviour
         }
 
         // =====================================================
-        // SİPARİŞ ÖZETİNİ UI'A YAZ
+        // SÜREYİ BURADA TEK SEFER HESAPLA
+        // =====================================================
+        //
+        // Hem kafadaki bar hem sağ üst paneldeki bilet bu tek
+        // değeri kullanacak, ve ikisi de TAM ŞİMDİ başlayacak.
+        //
         // =====================================================
 
-        string orderSummary =
-            BuildOrderSummaryText();
+        currentOrderWaitTime =
+            customerOrder != null
+                ? GetConfiguredWaitTime(customerOrder.coffeeType)
+                : defaultOrderWaitTime;
 
-        Debug.Log(
-            $"{gameObject.name}: Sipariş özeti UI'a yazılıyor → " +
-            $"'{orderSummary}'"
-        );
+        // =====================================================
+        // SİPARİŞ ÖZETİNİ UI'A YAZ
+        // =====================================================
 
         if (orderWaitUI != null)
         {
             orderWaitUI.SetOrderText(
-                orderSummary
+                BuildOrderSummaryText()
             );
         }
-        else
+
+        // =====================================================
+        // SAĞ ÜST PANELE BİLETİ ŞİMDİ EKLE
+        // =====================================================
+
+        if (pendingTicketOrder != null &&
+            OrderUI.Instance != null)
         {
-            Debug.LogWarning(
-                $"{gameObject.name}: orderWaitUI atanmamış, " +
-                "sipariş yazısı gösterilemiyor!"
+            pendingTicketOrder.timeLimit =
+                currentOrderWaitTime;
+
+            OrderUI.Instance.AddOrder(
+                pendingTicketOrder,
+                this
             );
+
+            pendingTicketOrder = null;
         }
 
         // =====================================================
@@ -1212,7 +1259,8 @@ public class NPCController : MonoBehaviour
             );
 
         Debug.Log(
-            $"{gameObject.name} masaya ulaştı."
+            $"{gameObject.name} masaya ulaştı. " +
+            $"Sipariş süresi: {currentOrderWaitTime:0.0} sn"
         );
     }
 
@@ -1223,14 +1271,7 @@ public class NPCController : MonoBehaviour
     private string BuildOrderSummaryText()
     {
         if (customerOrder == null)
-        {
-            Debug.LogWarning(
-                $"{gameObject.name}: BuildOrderSummaryText çağrıldı " +
-                "ama customerOrder null!"
-            );
-
             return "";
-        }
 
         string coffeePart;
 
@@ -1276,33 +1317,30 @@ public class NPCController : MonoBehaviour
     }
 
     // =========================================================
-    // KAHVE TÜRÜNE GÖRE BEKLEME SÜRESİNİ BUL
+    // KAHVE TÜRÜNE GÖRE SABİT BEKLEME SÜRESİ
+    // =========================================================
+    //
+    // Artık rastgelelik yok. Listede kahve türü bulunursa onun
+    // sabit süresi, bulunmazsa defaultOrderWaitTime döner.
+    //
     // =========================================================
 
-    private float GetWaitTimeForOrder()
+    public float GetConfiguredWaitTime(CoffeeType type)
     {
-        if (customerOrder != null &&
-            coffeeWaitTimes != null)
+        if (coffeeWaitTimes != null)
         {
             CoffeeWaitTime match =
                 coffeeWaitTimes.Find(
-                    c => c.coffeeType ==
-                         customerOrder.coffeeType
+                    c => c.coffeeType == type
                 );
 
             if (match != null)
             {
-                return Random.Range(
-                    match.minWaitTime,
-                    match.maxWaitTime
-                );
+                return match.waitTime;
             }
         }
 
-        return Random.Range(
-            defaultMinOrderWaitTime,
-            defaultMaxOrderWaitTime
-        );
+        return defaultOrderWaitTime;
     }
 
     // =========================================================
@@ -1312,7 +1350,7 @@ public class NPCController : MonoBehaviour
     private IEnumerator WaitForOrderTimeout()
     {
         float waitTime =
-            GetWaitTimeForOrder();
+            currentOrderWaitTime;
 
         float elapsed = 0f;
 
@@ -1367,6 +1405,15 @@ public class NPCController : MonoBehaviour
         if (orderWaitUI != null)
         {
             orderWaitUI.Hide();
+        }
+
+        // =====================================================
+        // SİPARİŞ LİSTESİNDEN (SAĞ ÜST PANEL) BİLETİ KALDIR
+        // =====================================================
+
+        if (OrderUI.Instance != null)
+        {
+            OrderUI.Instance.CompleteOrderForNPC(this);
         }
 
         Debug.Log(
@@ -1442,6 +1489,15 @@ public class NPCController : MonoBehaviour
         if (orderWaitUI != null)
         {
             orderWaitUI.Hide();
+        }
+
+        // =====================================================
+        // SİPARİŞ LİSTESİNDEN (SAĞ ÜST PANEL) BİLETİ KALDIR
+        // =====================================================
+
+        if (OrderUI.Instance != null)
+        {
+            OrderUI.Instance.CompleteOrderForNPC(this);
         }
 
         wasOrderCorrect = isCorrect;

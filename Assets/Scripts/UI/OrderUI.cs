@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,59 +19,238 @@ public class OrderUI : MonoBehaviour
     public GameObject orderState;
     public GameObject emptyState;
 
-    private int activeOrderCount = 0;
-    private const int maxOrders = 3;
+    private const int maxVisibleOrders = 3;
+
+    // =========================================================
+    // BİLET (TICKET) VERİSİ
+    // =========================================================
+    //
+    // Hem ekranda görünen hem sırada bekleyen tüm siparişler
+    // burada tutulur. Süre, görünür olsun olmasın her frame'de
+    // azalır — yani sırada bekleyen bir sipariş de arka planda
+    // saymaya devam eder.
+    //
+    // =========================================================
+
+    private class TicketData
+    {
+        public Order order;
+        public NPCController ownerNPC;
+        public float remainingTime;
+        public OrderItemUI displayedUI;
+    }
+
+    private readonly List<TicketData> allTickets =
+        new List<TicketData>();
+
+
+    // =========================================================
+    // AWAKE
+    // =========================================================
 
     private void Awake()
     {
         Instance = this;
     }
 
+    // =========================================================
+    // START
+    // =========================================================
+
     private void Start()
     {
-        UpdateUI();
+        UpdateSummaryUI();
     }
 
-    public void AddOrder(Order order)
+    // =========================================================
+    // UPDATE
+    // =========================================================
+
+    private void Update()
     {
-        if (activeOrderCount >= maxOrders)
+        UpdateAllTimers();
+    }
+
+    // =========================================================
+    // YENİ SİPARİŞ EKLE
+    // =========================================================
+
+    public void AddOrder(Order order, NPCController ownerNPC)
+    {
+        TicketData ticket = new TicketData
         {
-            Debug.Log("Maksimum sipariş sayısına ulaşıldı.");
+            order = order,
+            ownerNPC = ownerNPC,
+            remainingTime = order.timeLimit,
+            displayedUI = null
+        };
+
+        allTickets.Add(ticket);
+
+        Debug.Log(
+            $"Yeni sipariş bilete eklendi: {order.coffeeType} | " +
+            $"Süre: {order.timeLimit:0.0} sn | " +
+            $"Toplam bekleyen: {allTickets.Count}"
+        );
+
+        TryFillVisibleSlots();
+
+        UpdateSummaryUI();
+    }
+
+    // =========================================================
+    // BELİRLİ NPC'NİN SİPARİŞİNİ TAMAMLANMIŞ SAY
+    // =========================================================
+    //
+    // Kahve teslim edildiğinde (doğru/yanlış) ya da müşteri
+    // süresi dolup kalktığında NPCController bu metodu çağırır.
+    // Bilet, görünür olsun olmasın hemen listeden kaldırılır.
+    //
+    // =========================================================
+
+    public void CompleteOrderForNPC(NPCController npc)
+    {
+        if (npc == null)
             return;
-        }
 
-        GameObject newItem = Instantiate(orderItemPrefab, orderContainer);
+        TicketData ticket =
+            allTickets.Find(t => t.ownerNPC == npc);
 
-        OrderItemUI itemUI = newItem.GetComponent<OrderItemUI>();
-        itemUI.Setup(order);
+        if (ticket == null)
+            return;
 
-        activeOrderCount++;
-
-        UpdateUI();
+        RemoveTicket(ticket);
     }
 
-    public void RemoveOrder()
+    // =========================================================
+    // HER FRAME SÜRELERİ GÜNCELLE
+    // =========================================================
+
+    private void UpdateAllTimers()
     {
-        if (activeOrderCount > 0)
+        for (int i = allTickets.Count - 1; i >= 0; i--)
         {
-            activeOrderCount--;
-        }
+            TicketData ticket = allTickets[i];
 
-        UpdateUI();
+            ticket.remainingTime -= Time.deltaTime;
+
+            if (ticket.displayedUI != null)
+            {
+                ticket.displayedUI.UpdateTimerDisplay(
+                    Mathf.Max(0f, ticket.remainingTime)
+                );
+            }
+
+            if (ticket.remainingTime <= 0f)
+            {
+                RemoveTicket(ticket);
+            }
+        }
     }
 
-    private void UpdateUI()
+    // =========================================================
+    // BİLETİ SİL (TESLİM EDİLDİ YA DA SÜRESİ DOLDU)
+    // =========================================================
+
+    private void RemoveTicket(TicketData ticket)
     {
-        // Alttaki sayaç
-        orderCountText.text = "BEKLEYEN SİPARİŞLER: " + activeOrderCount;
+        if (!allTickets.Contains(ticket))
+            return;
 
-        // Bar
-        progressFill.fillAmount = (float)activeOrderCount / maxOrders;
+        bool wasVisible =
+            ticket.displayedUI != null;
 
-        // 0 sipariş = boş ekran
-        bool hasOrders = activeOrderCount > 0;
+        if (ticket.displayedUI != null)
+        {
+            Destroy(ticket.displayedUI.gameObject);
+            ticket.displayedUI = null;
+        }
 
-        orderState.SetActive(hasOrders);
-        emptyState.SetActive(!hasOrders);
+        allTickets.Remove(ticket);
+
+        if (wasVisible)
+        {
+            // Görünür bir slot boşaldı, sıradaki siparişi getir.
+            TryFillVisibleSlots();
+        }
+
+        UpdateSummaryUI();
+    }
+
+    // =========================================================
+    // BOŞ SLOT VARSA SIRADAKİ SİPARİŞİ GÖSTER
+    // =========================================================
+
+    private void TryFillVisibleSlots()
+    {
+        int visibleCount = 0;
+
+        foreach (TicketData t in allTickets)
+        {
+            if (t.displayedUI != null)
+            {
+                visibleCount++;
+            }
+        }
+
+        foreach (TicketData ticket in allTickets)
+        {
+            if (visibleCount >= maxVisibleOrders)
+                break;
+
+            if (ticket.displayedUI != null)
+                continue;
+
+            GameObject newItem =
+                Instantiate(orderItemPrefab, orderContainer);
+
+            OrderItemUI itemUI =
+                newItem.GetComponent<OrderItemUI>();
+
+            itemUI.Setup(ticket.order);
+
+            itemUI.UpdateTimerDisplay(
+                Mathf.Max(0f, ticket.remainingTime)
+            );
+
+            ticket.displayedUI = itemUI;
+
+            visibleCount++;
+        }
+    }
+
+    // =========================================================
+    // ÖZET UI (ALTTAKİ SAYAÇ + BAR)
+    // =========================================================
+
+    private void UpdateSummaryUI()
+    {
+        int totalCount = allTickets.Count;
+
+        if (orderCountText != null)
+        {
+            orderCountText.text =
+                "BEKLEYEN SİPARİŞLER: " + totalCount;
+        }
+
+        if (progressFill != null)
+        {
+            progressFill.fillAmount =
+                Mathf.Clamp01(
+                    (float)totalCount / maxVisibleOrders
+                );
+        }
+
+        bool hasOrders = totalCount > 0;
+
+        if (orderState != null)
+        {
+            orderState.SetActive(hasOrders);
+        }
+
+        if (emptyState != null)
+        {
+            emptyState.SetActive(!hasOrders);
+        }
     }
 }

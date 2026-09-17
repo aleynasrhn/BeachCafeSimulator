@@ -9,9 +9,16 @@ public class DoorController : MonoBehaviour
     [Header("Kapanma Gecikmesi")]
     [SerializeField] private float closeDelay = 4f;
 
+    [Header("Kapı Sesi")]
+    [SerializeField] private AudioSource doorAudioSource;
+    [SerializeField] private AudioClip doorSound;
+    [SerializeField] private float doorSoundVolume = 1f;
+
     private int customersInZone = 0;
 
     private Coroutine closeCoroutine;
+
+    private bool doorsAreOpen = false;
 
     // =========================================================
     // MÜŞTERİ BÖLGEYE GİRDİ
@@ -76,7 +83,7 @@ public class DoorController : MonoBehaviour
     }
 
     // =========================================================
-    // AÇ / KAPA
+    // KAPILARI AÇ
     // =========================================================
 
     private void OpenDoors()
@@ -88,7 +95,18 @@ public class DoorController : MonoBehaviour
                 panel.MoveToOpen();
             }
         }
+
+        // Kapı zaten açıksa tekrar ses çalma
+        if (!doorsAreOpen)
+        {
+            PlayDoorSound();
+            doorsAreOpen = true;
+        }
     }
+
+    // =========================================================
+    // KAPILARI KAPAT
+    // =========================================================
 
     private void CloseDoors()
     {
@@ -99,5 +117,27 @@ public class DoorController : MonoBehaviour
                 panel.MoveToClosed();
             }
         }
+
+        // Kapı zaten kapalıysa tekrar ses çalma
+        if (doorsAreOpen)
+        {
+            PlayDoorSound();
+            doorsAreOpen = false;
+        }
+    }
+
+    // =========================================================
+    // KAPI SESİNİ ÇAL
+    // =========================================================
+
+    private void PlayDoorSound()
+    {
+        if (doorAudioSource == null || doorSound == null)
+        {
+            Debug.LogWarning("Kapı AudioSource veya Door Sound atanmadı!");
+            return;
+        }
+
+        doorAudioSource.PlayOneShot(doorSound, doorSoundVolume);
     }
 }
