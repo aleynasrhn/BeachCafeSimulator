@@ -1,26 +1,25 @@
 using UnityEngine;
+using System.Collections;
 
 public class KettlePowerButton : MonoBehaviour, IInteractable
 {
     [Header("Kettle")]
     [SerializeField] private KettleHeatController kettleHeat;
 
+    [Header("Power Tuşu Sesi")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip powerSound;
+    [SerializeField] private float soundDelay = 3.5f;
+
     private bool isOn = false;
+    private Coroutine soundCoroutine;
 
-
-    // =========================================================
-    // PROMPT
-    // =========================================================
 
     public string GetInteractPrompt()
     {
         return "";
     }
 
-
-    // =========================================================
-    // ETKİLEŞİM
-    // =========================================================
 
     public void Interact(PlayerInteraction player)
     {
@@ -35,10 +34,6 @@ public class KettlePowerButton : MonoBehaviour, IInteractable
         }
 
 
-        // =====================================================
-        // AÇIKSA → KAPAT
-        // =====================================================
-
         if (isOn)
         {
             isOn = false;
@@ -49,18 +44,30 @@ public class KettlePowerButton : MonoBehaviour, IInteractable
         }
 
 
-        // =====================================================
-        // KAPALIYSA → BAŞLATMAYI DENE
-        // =====================================================
-
-        bool started =
-            kettleHeat.StartHeating();
+        bool started = kettleHeat.StartHeating();
 
 
-        // Gerçekten başladıysa ON
         if (started)
         {
             isOn = true;
+
+            soundCoroutine = StartCoroutine(
+                PlaySoundAfterDelay()
+            );
         }
+    }
+
+
+    private IEnumerator PlaySoundAfterDelay()
+    {
+        yield return new WaitForSeconds(soundDelay);
+
+        if (audioSource != null && powerSound != null)
+        {
+            audioSource.loop = false;
+            audioSource.PlayOneShot(powerSound);
+        }
+
+        soundCoroutine = null;
     }
 }

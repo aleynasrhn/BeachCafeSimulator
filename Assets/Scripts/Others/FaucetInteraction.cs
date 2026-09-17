@@ -14,26 +14,19 @@ public class FaucetInteraction : MonoBehaviour, IInteractable
     [Header("Su")]
     [SerializeField] private GameObject waterVisual;
 
+    [Header("Musluk Sesi")]
+    [SerializeField] private AudioSource faucetAudioSource;
+
     private bool isOpen = false;
 
-    // KettleWaterFillPoint bunu okuyacak
     public bool IsOpen => isOpen;
 
 
-    // =========================================================
-    // PROMPT
-    // =========================================================
-
     public string GetInteractPrompt()
     {
-        // Prompt göstermiyoruz.
         return "";
     }
 
-
-    // =========================================================
-    // ETKİLEŞİM
-    // =========================================================
 
     public void Interact(PlayerInteraction player)
     {
@@ -47,67 +40,60 @@ public class FaucetInteraction : MonoBehaviour, IInteractable
             return;
         }
 
-        // Açık ↔ kapalı
         isOpen = !isOpen;
 
         UpdateFaucet();
     }
 
 
-    // =========================================================
-    // MUSLUĞU GÜNCELLE
-    // =========================================================
-
     private void UpdateFaucet()
     {
         if (isOpen)
         {
-            // Kolu açık pozisyona döndür
             handle.localRotation =
-                Quaternion.Euler(
-                    openRotation
-                );
+                Quaternion.Euler(openRotation);
 
-            // Suyu göster
             if (waterVisual != null)
             {
                 waterVisual.SetActive(true);
             }
+
+            // Musluk sesi başlar
+            if (faucetAudioSource != null &&
+                !faucetAudioSource.isPlaying)
+            {
+                faucetAudioSource.loop = true;
+                faucetAudioSource.Play();
+            }
         }
         else
         {
-            // Kolu kapalı pozisyona döndür
             handle.localRotation =
-                Quaternion.Euler(
-                    closedRotation
-                );
+                Quaternion.Euler(closedRotation);
 
-            // Suyu gizle
             if (waterVisual != null)
             {
                 waterVisual.SetActive(false);
+            }
+
+            // Musluk sesi durur
+            if (faucetAudioSource != null)
+            {
+                faucetAudioSource.Stop();
             }
         }
     }
 
 
-    // =========================================================
-    // BAŞLANGIÇ
-    // =========================================================
-
     private void Start()
     {
         if (handle != null)
         {
-            // Sahnedeki mevcut kapalı rotasyonu başlangıç değeri yap
             closedRotation =
                 handle.localEulerAngles;
 
-            // Başlangıçta kapalı
             handle.localRotation =
-                Quaternion.Euler(
-                    closedRotation
-                );
+                Quaternion.Euler(closedRotation);
         }
 
         isOpen = false;
@@ -115,6 +101,12 @@ public class FaucetInteraction : MonoBehaviour, IInteractable
         if (waterVisual != null)
         {
             waterVisual.SetActive(false);
+        }
+
+        if (faucetAudioSource != null)
+        {
+            faucetAudioSource.loop = true;
+            faucetAudioSource.Stop();
         }
     }
 }
