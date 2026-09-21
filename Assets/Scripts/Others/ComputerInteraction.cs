@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class ComputerInteraction : MonoBehaviour
 {
+    public static ComputerInteraction Instance;
+
     [Header("Kamera")]
     public Transform cameraHolder;
     public Transform computerCameraPoint;
@@ -19,6 +21,16 @@ public class ComputerInteraction : MonoBehaviour
     private Quaternion originalCameraRotation;
 
     public bool IsUsingComputer => isUsingComputer;
+
+
+    // =========================================================
+    // AWAKE
+    // =========================================================
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
 
     // =========================================================
@@ -62,6 +74,33 @@ public class ComputerInteraction : MonoBehaviour
 
         // Kamera geri dönerken oyuncu hareket edemesin
         playerMovement.canMove = false;
+    }
+
+
+    // =========================================================
+    // KAMERA KONTROLÜNÜ POS AKIŞINA DEVRET
+    // =========================================================
+    //
+    // Kasada "Siparişi Onayla" (kart ödemesi) ile POS cihazına
+    // geçilirken çağrılır. ComputerInteraction, kameranın
+    // computerCameraPoint'e geri çekilmesini HEMEN bırakır
+    // (isUsingComputer = false, isReturning = false), böylece
+    // PosMachineController kamerayı çatışmadan kendi POS
+    // noktasına götürebilir. Oyuncunun kasaya girmeden ÖNCEKİ
+    // gerçek kamera konumunu da PosMachineController'a verir,
+    // ki POS işlemi bitince kamera oraya geri dönsün.
+    //
+    // =========================================================
+
+    public void HandOffCameraControl(
+        out Vector3 originalPos,
+        out Quaternion originalRot)
+    {
+        originalPos = originalCameraPosition;
+        originalRot = originalCameraRotation;
+
+        isUsingComputer = false;
+        isReturning = false;
     }
 
 

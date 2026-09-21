@@ -811,12 +811,6 @@ public class OrderScreenUI : MonoBehaviour
         // OYUNCUNUN HAZIRLADIĞI SİPARİŞ
         // =====================================================
 
-        // =====================================================
-        // BİLET SÜRESİNİ NPC'NİN KAHVE TÜRÜNE ÖZEL AYARINDAN AL
-        // =====================================================
-
-        
-
         Order finalOrder =
             new Order
             {
@@ -859,6 +853,15 @@ public class OrderScreenUI : MonoBehaviour
         }
 
 
+        // =====================================================
+        // BİLETİ NPC'YE TESLİM ET (PANELE HENÜZ EKLENMEZ)
+        // =====================================================
+        //
+        // NPCController.ArriveAtTable(), masaya oturulduğu
+        // an bu bileti sağ üst panele ekleyip süreyi başlatır.
+        //
+        // =====================================================
+
         if (currentCustomerNPC != null)
         {
             currentCustomerNPC.SetPendingTicketOrder(
@@ -867,40 +870,13 @@ public class OrderScreenUI : MonoBehaviour
         }
 
 
-        if (MoneyManager.Instance != null)
-        {
-            MoneyManager.Instance.AddMoney(
-                total
-            );
+        NPCController npcToConfirm =
+            currentCustomerNPC;
 
 
-            Debug.Log(
-                $"Sipariş parası eklendi: " +
-                $"{total:0.00}$"
-            );
-        }
-        else
-        {
-            Debug.LogWarning(
-                "MoneyManager.Instance bulunamadı!"
-            );
-        }
-
-
-        if (currentCustomerNPC != null)
-        {
-            currentCustomerNPC.ConfirmCustomerOrder();
-        }
-        else
-        {
-            Debug.LogWarning(
-                "Confirm edilecek NPC bulunamadı! " +
-                "(currentCustomerNPC null — " +
-                "SetCustomerOrder çağrılırken NPC referansı " +
-                "gönderilmemiş olabilir.)"
-            );
-        }
-
+        // =====================================================
+        // ÖZET LOG YAZISI (HER İKİ ÖDEME YÖNTEMİNDE DE AYNI)
+        // =====================================================
 
         string summary =
             selectedCoffee.CoffeeName;
@@ -938,20 +914,144 @@ public class OrderScreenUI : MonoBehaviour
         }
 
 
-        Debug.Log(
-            $"Sipariş onaylandı: " +
-            $"{summary} - " +
-            $"{selectedPaymentMethod} - " +
-            $"{total:0.00}$"
-        );
+        // =====================================================
+        // ÖDEME YÖNTEMİNE GÖRE AYRIL: NAKİT / KART
+        // =====================================================
+        //
+        // NAKİT: POS cihazına hiç gidilmez. Para anında eklenir,
+        // müşteri hemen masaya yönlendirilir, sipariş verisi
+        // hemen sıfırlanır (eski davranış, sorunsuz).
+        //
+        // KART: PosMachineController devreye girer. Kamera POS
+        // cihazına yaklaşır, oyuncu tutarı girer.
+        //
+        // ÖNEMLİ: Kart ödemesinde currentTargetOrder ve
+        // currentCustomerNPC BURADA SIFIRLANMAZ. Sadece ödeme
+        // BAŞARIYLA tamamlanınca (onSuccess callback'i içinde)
+        // sıfırlanır. Böylece oyuncu POS'ta ESC ile iptal ederse
+        // sipariş verisi kaybolmaz — kasaya geri dönüp aynı
+        // siparişi tekrar hazırlayıp onaylayabilir.
+        //
+        // =====================================================
 
+        bool isCashPayment =
+            !string.IsNullOrEmpty(selectedPaymentMethod) &&
+            selectedPaymentMethod.Contains("Nakit");
 
-        currentTargetOrder = null;
+        if (isCashPayment)
+        {
+            if (MoneyManager.Instance != null)
+            {
+                MoneyManager.Instance.AddMoney(total);
 
-        currentCustomerNPC = null;
+                Debug.Log(
+                    $"Nakit ödeme alındı: {total:0.00}$"
+                );
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "MoneyManager.Instance bulunamadı! " +
+                    "Nakit ödeme eklenemedi."
+                );
+            }
 
+            if (npcToConfirm != null)
+            {
+                npcToConfirm.ConfirmCustomerOrder();
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "Confirm edilecek NPC bulunamadı! " +
+                    "(currentCustomerNPC null — " +
+                    "SetCustomerOrder çağrılırken NPC " +
+                    "referansı gönderilmemiş olabilir.)"
+                );
+            }
 
-        ResetBasket();
+            Debug.Log(
+                $"Sipariş onaylandı: " +
+                $"{summary} - " +
+                $"{selectedPaymentMethod} - " +
+                $"{total:0.00}$"
+            );
+
+            // Nakitte işlem anında tamamlandığı için hemen sıfırla.
+            currentTargetOrder = null;
+            currentCustomerNPC = null;
+
+            ResetBasket();
+        }
+        else
+        {
+            if (PosMachineController.Instance != null)
+            {
+                PosMachineController.Instance.BeginTransaction(
+                    total,
+                    () =>
+                    {
+                        // ================================
+                        // ÖDEME BAŞARIYLA TAMAMLANDI
+                        // ================================
+
+                        if (npcToConfirm != null)
+                        {
+                            npcToConfirm.ConfirmCustomerOrder();
+                        }
+                        else
+                        {
+                            Debug.LogWarning(
+                                "Confirm edilecek NPC bulunamadı! " +
+                                "(currentCustomerNPC null — " +
+                                "SetCustomerOrder çağrılırken NPC " +
+                                "referansı gönderilmemiş olabilir.)"
+                            );
+                        }
+
+                        // Ödeme başarıyla bittiği için ARTIK sıfırla.
+                        currentTargetOrder = null;
+                        currentCustomerNPC = null;
+
+                        ResetBasket();
+                    }
+                );
+
+                Debug.Log(
+                    $"Sipariş POS'a gönderildi (kart): " +
+                    $"{summary} - " +
+                    $"{selectedPaymentMethod} - " +
+                    $"{total:0.00}$"
+                );
+
+                // NOT: currentTargetOrder / currentCustomerNPC
+                // BURADA SIFIRLANMIYOR. Oyuncu ESC ile POS'u
+                // iptal ederse bu veriler olduğu gibi kalır,
+                // kasaya dönüp tekrar deneyebilir.
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "PosMachineController.Instance bulunamadı! " +
+                    "Ödeme ekranı olmadan sipariş direkt onaylanıyor."
+                );
+
+                if (MoneyManager.Instance != null)
+                {
+                    MoneyManager.Instance.AddMoney(total);
+                }
+
+                if (npcToConfirm != null)
+                {
+                    npcToConfirm.ConfirmCustomerOrder();
+                }
+
+                currentTargetOrder = null;
+                currentCustomerNPC = null;
+
+                ResetBasket();
+            }
+        }
     }
 
 
