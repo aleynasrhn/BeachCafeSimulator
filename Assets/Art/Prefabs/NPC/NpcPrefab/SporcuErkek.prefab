@@ -878,9 +878,51 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 8882478010948902536}
   m_SourcePrefab: {fileID: 100100000, guid: 175c8d9f539ac534a84ec6fd360625fd, type: 3}
+--- !u!137 &280254710345402141 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -480710557608370346, guid: 175c8d9f539ac534a84ec6fd360625fd,
+    type: 3}
+  m_PrefabInstance: {fileID: 8842684174285248587}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &865754582357062546 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -669838618672321575, guid: 175c8d9f539ac534a84ec6fd360625fd,
+    type: 3}
+  m_PrefabInstance: {fileID: 8842684174285248587}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &965669420230835120 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8633745042012201979, guid: 175c8d9f539ac534a84ec6fd360625fd,
+    type: 3}
+  m_PrefabInstance: {fileID: 8842684174285248587}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &1584851578281418956 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8018941139725056135, guid: 175c8d9f539ac534a84ec6fd360625fd,
+    type: 3}
+  m_PrefabInstance: {fileID: 8842684174285248587}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &2231572894972398796 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -1995193734550662009, guid: 175c8d9f539ac534a84ec6fd360625fd,
+    type: 3}
+  m_PrefabInstance: {fileID: 8842684174285248587}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &3084696654163433933 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 5798539708581724550, guid: 175c8d9f539ac534a84ec6fd360625fd,
+    type: 3}
+  m_PrefabInstance: {fileID: 8842684174285248587}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &3230414733296119246 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 6224884472688424325, guid: 175c8d9f539ac534a84ec6fd360625fd,
+    type: 3}
+  m_PrefabInstance: {fileID: 8842684174285248587}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &4012241649673211319 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 5555716678201972220, guid: 175c8d9f539ac534a84ec6fd360625fd,
     type: 3}
   m_PrefabInstance: {fileID: 8842684174285248587}
   m_PrefabAsset: {fileID: 0}
@@ -922,19 +964,14 @@ MonoBehaviour:
   maxWaitBetweenDrinks: 7
   coffeeWaitTimes:
   - coffeeType: 0
-    minWaitTime: 45
-    maxWaitTime: 45
+    waitTime: 60
   - coffeeType: 1
-    minWaitTime: 50
-    maxWaitTime: 50
+    waitTime: 60
   - coffeeType: 3
-    minWaitTime: 60
-    maxWaitTime: 60
+    waitTime: 60
   - coffeeType: 2
-    minWaitTime: 75
-    maxWaitTime: 75
-  defaultMinOrderWaitTime: 60
-  defaultMaxOrderWaitTime: 70
+    waitTime: 60
+  defaultOrderWaitTime: 60
   orderWaitUI: {fileID: 6442045469251090997}
   minWaitBeforeLeaving: 4
   maxWaitBeforeLeaving: 5
@@ -998,36 +1035,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e866c2368e764b24ea5bef0995b95051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clothesMaterial: {fileID: 2100000, guid: d6f2e201480cf9545b98ad531a49d81f, type: 2}
-  hairMaterial: {fileID: 2100000, guid: 7dbef2a9942569d47816b10c475c6480, type: 2}
+  clothesRenderers:
+  - {fileID: 2231572894972398796}
+  - {fileID: 3084696654163433933}
+  - {fileID: 965669420230835120}
+  - {fileID: 4012241649673211319}
+  - {fileID: 280254710345402141}
+  bodyRenderers: []
+  hairRenderers:
+  - {fileID: 3230414733296119246}
+  - {fileID: 1584851578281418956}
   outfitCombos:
-  - comboName: 
+  - comboName: sporcu1
     clothesTexture: {fileID: 2800000, guid: 05db43a1bdb83b84391a565fce2f7005, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: ad157b5cba673654ba9116633a543736, type: 3}
-  - comboName: 
+  - comboName: sporcu2
     clothesTexture: {fileID: 2800000, guid: 0b2ae273c9798694b98571535c9058ee, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 37aa6e25930f3d74184cdd0e5a97cdfa, type: 3}
-  - comboName: 
+  - comboName: sporcu3
     clothesTexture: {fileID: 2800000, guid: 69913e7b5e08a8e46866ca0fa85eae21, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 493a15818617eab4f8a67ed18633a8e1, type: 3}
-  - comboName: 
+  - comboName: sporcu4
     clothesTexture: {fileID: 2800000, guid: d0f89a5ab3ac05f4e968a5485aed1e7f, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: ad157b5cba673654ba9116633a543736, type: 3}
-  - comboName: 
+  - comboName: sporcu5
     clothesTexture: {fileID: 2800000, guid: 777720c6a07e92f4ebaf8123524e2d1a, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 493a15818617eab4f8a67ed18633a8e1, type: 3}
-  - comboName: 
+  - comboName: sporcu6
     clothesTexture: {fileID: 2800000, guid: 8a7a8dcb95de9c44b9aa8f6f54ce2915, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: a60334ab3425e5f4b9125783b9ffec8a, type: 3}
-  - comboName: 
+  - comboName: sporcu7
     clothesTexture: {fileID: 2800000, guid: 78fb7f61ab512ea4c890d5dd6bdf862c, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: a60334ab3425e5f4b9125783b9ffec8a, type: 3}
-  - comboName: 
+  - comboName: sporcu8
     clothesTexture: {fileID: 2800000, guid: 0ed4f83524e77cf48a1a3c6b0579c9f3, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: ad157b5cba673654ba9116633a543736, type: 3}
-  - comboName: 
+  - comboName: sporcu9
     clothesTexture: {fileID: 2800000, guid: 656c5250a54c29147ae646f80cc8df2c, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: ad157b5cba673654ba9116633a543736, type: 3}
+  comboCooldownCount: 3
 --- !u!65 &8882478010948902536
 BoxCollider:
   m_ObjectHideFlags: 0

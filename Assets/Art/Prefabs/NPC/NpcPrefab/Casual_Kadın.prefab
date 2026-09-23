@@ -878,15 +878,51 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1155667062168493000}
   m_SourcePrefab: {fileID: 100100000, guid: f9306b2edbf3e844fbc495f0ed64a999, type: 3}
+--- !u!137 &2285557728814649518 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 9073347089702538730, guid: f9306b2edbf3e844fbc495f0ed64a999,
+    type: 3}
+  m_PrefabInstance: {fileID: 7087803521053891908}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &2569116387237712173 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 4754598349001084009, guid: f9306b2edbf3e844fbc495f0ed64a999,
+    type: 3}
+  m_PrefabInstance: {fileID: 7087803521053891908}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2670643743133867230 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5137736268359336346, guid: f9306b2edbf3e844fbc495f0ed64a999,
     type: 3}
   m_PrefabInstance: {fileID: 7087803521053891908}
   m_PrefabAsset: {fileID: 0}
+--- !u!137 &4006492135089233280 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 6180351430152274116, guid: f9306b2edbf3e844fbc495f0ed64a999,
+    type: 3}
+  m_PrefabInstance: {fileID: 7087803521053891908}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4830533216303039531 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2401948993117084015, guid: f9306b2edbf3e844fbc495f0ed64a999,
+    type: 3}
+  m_PrefabInstance: {fileID: 7087803521053891908}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &5194770387695327590 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -6175728549020679134, guid: f9306b2edbf3e844fbc495f0ed64a999,
+    type: 3}
+  m_PrefabInstance: {fileID: 7087803521053891908}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &6835291021329331656 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 4361519944168269964, guid: f9306b2edbf3e844fbc495f0ed64a999,
+    type: 3}
+  m_PrefabInstance: {fileID: 7087803521053891908}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &6835713769522364778 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 4359971296060021806, guid: f9306b2edbf3e844fbc495f0ed64a999,
     type: 3}
   m_PrefabInstance: {fileID: 7087803521053891908}
   m_PrefabAsset: {fileID: 0}
@@ -928,19 +964,14 @@ MonoBehaviour:
   maxWaitBetweenDrinks: 7
   coffeeWaitTimes:
   - coffeeType: 0
-    minWaitTime: 45
-    maxWaitTime: 45
+    waitTime: 60
   - coffeeType: 1
-    minWaitTime: 50
-    maxWaitTime: 50
+    waitTime: 60
   - coffeeType: 3
-    minWaitTime: 60
-    maxWaitTime: 60
+    waitTime: 60
   - coffeeType: 2
-    minWaitTime: 75
-    maxWaitTime: 75
-  defaultMinOrderWaitTime: 60
-  defaultMaxOrderWaitTime: 70
+    waitTime: 60
+  defaultOrderWaitTime: 60
   orderWaitUI: {fileID: 8939205885074201386}
   minWaitBeforeLeaving: 4
   maxWaitBeforeLeaving: 5
@@ -1004,30 +1035,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e866c2368e764b24ea5bef0995b95051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clothesMaterial: {fileID: 2100000, guid: 0d0197857e6244e488e9167c0d4eb76f, type: 2}
-  hairMaterial: {fileID: 2100000, guid: 0dd8535c443808b43b95017bc12e5ed0, type: 2}
+  clothesRenderers:
+  - {fileID: 6835291021329331656}
+  - {fileID: 2285557728814649518}
+  - {fileID: 5194770387695327590}
+  - {fileID: 2569116387237712173}
+  - {fileID: 6835713769522364778}
+  hairRenderers:
+  - {fileID: 9003798324385919078}
+  - {fileID: 4006492135089233280}
   outfitCombos:
-  - comboName: 
+  - comboName: casual1
     clothesTexture: {fileID: 2800000, guid: f3302b16d702f2c4c8c72e04f2167b43, type: 3}
     hairTexture: {fileID: 2800000, guid: 5c24e701dacd1974aa76c7de7f6928b9, type: 3}
-  - comboName: 
+  - comboName: casual2
     clothesTexture: {fileID: 2800000, guid: fd8a55c0c19435a429f46953fec4e272, type: 3}
     hairTexture: {fileID: 2800000, guid: 4ad87bb38a655564a83e98e96569d474, type: 3}
-  - comboName: 
+  - comboName: casual3
     clothesTexture: {fileID: 2800000, guid: 6378e584f7135244ca81f4b07579aeb2, type: 3}
     hairTexture: {fileID: 2800000, guid: 858699d2ad5471445889f0456c3eff60, type: 3}
-  - comboName: 
+  - comboName: casual4
     clothesTexture: {fileID: 2800000, guid: 6378e584f7135244ca81f4b07579aeb2, type: 3}
     hairTexture: {fileID: 2800000, guid: 5c24e701dacd1974aa76c7de7f6928b9, type: 3}
   - comboName: 
     clothesTexture: {fileID: 2800000, guid: 0fa53189180734e47b83be8cd08ab3a6, type: 3}
     hairTexture: {fileID: 2800000, guid: 2cfe634d88cc8204689cb698e4cd9230, type: 3}
-  - comboName: 
+  - comboName: casual5
     clothesTexture: {fileID: 2800000, guid: 7b0fb8c0b9203ca4c98243d3a9f98f4e, type: 3}
     hairTexture: {fileID: 2800000, guid: 4ad87bb38a655564a83e98e96569d474, type: 3}
-  - comboName: 
+  - comboName: casual6
     clothesTexture: {fileID: 2800000, guid: 5dc405509b23cbf499c7298817cdb36c, type: 3}
     hairTexture: {fileID: 2800000, guid: 152c8af73dfeefe47b12ca5172ea979e, type: 3}
+  comboCooldownCount: 3
 --- !u!65 &1155667062168493000
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1049,3 +1088,9 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!137 &9003798324385919078 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7012380181353878238, guid: f9306b2edbf3e844fbc495f0ed64a999,
+    type: 3}
+  m_PrefabInstance: {fileID: 7087803521053891908}
+  m_PrefabAsset: {fileID: 0}

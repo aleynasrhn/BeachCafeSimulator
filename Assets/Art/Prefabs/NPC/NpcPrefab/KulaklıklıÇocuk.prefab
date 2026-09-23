@@ -916,19 +916,14 @@ MonoBehaviour:
   maxWaitBetweenDrinks: 7
   coffeeWaitTimes:
   - coffeeType: 0
-    minWaitTime: 45
-    maxWaitTime: 45
+    waitTime: 60
   - coffeeType: 1
-    minWaitTime: 50
-    maxWaitTime: 50
+    waitTime: 60
   - coffeeType: 3
-    minWaitTime: 60
-    maxWaitTime: 60
+    waitTime: 60
   - coffeeType: 2
-    minWaitTime: 75
-    maxWaitTime: 75
-  defaultMinOrderWaitTime: 60
-  defaultMaxOrderWaitTime: 70
+    waitTime: 60
+  defaultOrderWaitTime: 60
   orderWaitUI: {fileID: 8206406539371122000}
   minWaitBeforeLeaving: 4
   maxWaitBeforeLeaving: 5
@@ -992,12 +987,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e866c2368e764b24ea5bef0995b95051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clothesMaterial: {fileID: 2100000, guid: ca423c12f91d86a499607386edb3199e, type: 2}
-  hairMaterial: {fileID: 2100000, guid: 1b54156096d9b0041ba128043f0d3c06, type: 2}
+  clothesRenderers:
+  - {fileID: 3118112386761231200}
+  bodyRenderers: []
+  hairRenderers:
+  - {fileID: 3118112386761231200}
   outfitCombos:
-  - comboName: 
+  - comboName: "kulakl\u0131kl\u01311"
     clothesTexture: {fileID: 2800000, guid: f51f02630f9400c4ba61ed67b57ab0d6, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: a438b6127bab1954fbd9d5dd1273dfad, type: 3}
+  - comboName: "kulakl\u0131kl\u01311"
+    clothesTexture: {fileID: 2800000, guid: f51f02630f9400c4ba61ed67b57ab0d6, type: 3}
+    bodyTexture: {fileID: 0}
+    hairTexture: {fileID: 2800000, guid: a438b6127bab1954fbd9d5dd1273dfad, type: 3}
+  - comboName: "kulakl\u0131kl\u01311"
+    clothesTexture: {fileID: 2800000, guid: f51f02630f9400c4ba61ed67b57ab0d6, type: 3}
+    bodyTexture: {fileID: 0}
+    hairTexture: {fileID: 2800000, guid: a438b6127bab1954fbd9d5dd1273dfad, type: 3}
+  comboCooldownCount: 0
 --- !u!65 &4994704365388993642
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1022,6 +1030,12 @@ BoxCollider:
 --- !u!4 &2265067598251845639 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8269195505564239483, guid: cd0c5182d777cc74293bae2c25b2f52e,
+    type: 3}
+  m_PrefabInstance: {fileID: 1320338114909720962}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &3118112386761231200 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -5109604030079018270, guid: cd0c5182d777cc74293bae2c25b2f52e,
     type: 3}
   m_PrefabInstance: {fileID: 1320338114909720962}
   m_PrefabAsset: {fileID: 0}

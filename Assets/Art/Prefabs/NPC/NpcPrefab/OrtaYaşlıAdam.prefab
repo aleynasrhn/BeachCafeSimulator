@@ -878,15 +878,51 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 134242712821315532}
   m_SourcePrefab: {fileID: 100100000, guid: c22c0cfe3ded7c248b6849b32087a203, type: 3}
+--- !u!137 &1761995396981091079 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8938396764358845351, guid: c22c0cfe3ded7c248b6849b32087a203,
+    type: 3}
+  m_PrefabInstance: {fileID: 7239621087115495584}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &2030354604753544256 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8670847399244836064, guid: c22c0cfe3ded7c248b6849b32087a203,
+    type: 3}
+  m_PrefabInstance: {fileID: 7239621087115495584}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &2647576453833915678 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -4555855273154628162, guid: c22c0cfe3ded7c248b6849b32087a203,
+    type: 3}
+  m_PrefabInstance: {fileID: 7239621087115495584}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4494047669561434916 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6495982377097227140, guid: c22c0cfe3ded7c248b6849b32087a203,
     type: 3}
   m_PrefabInstance: {fileID: 7239621087115495584}
   m_PrefabAsset: {fileID: 0}
+--- !u!137 &4818785216625172148 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -6438020349821282796, guid: c22c0cfe3ded7c248b6849b32087a203,
+    type: 3}
+  m_PrefabInstance: {fileID: 7239621087115495584}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &4899086214548148780 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -6375617193528943988, guid: c22c0cfe3ded7c248b6849b32087a203,
+    type: 3}
+  m_PrefabInstance: {fileID: 7239621087115495584}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6086972978083109561 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -5764316522323783143, guid: c22c0cfe3ded7c248b6849b32087a203,
+    type: 3}
+  m_PrefabInstance: {fileID: 7239621087115495584}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &6813934668326010800 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -4974304407241345264, guid: c22c0cfe3ded7c248b6849b32087a203,
     type: 3}
   m_PrefabInstance: {fileID: 7239621087115495584}
   m_PrefabAsset: {fileID: 0}
@@ -928,19 +964,14 @@ MonoBehaviour:
   maxWaitBetweenDrinks: 7
   coffeeWaitTimes:
   - coffeeType: 0
-    minWaitTime: 45
-    maxWaitTime: 45
+    waitTime: 60
   - coffeeType: 1
-    minWaitTime: 50
-    maxWaitTime: 50
+    waitTime: 60
   - coffeeType: 3
-    minWaitTime: 60
-    maxWaitTime: 60
+    waitTime: 60
   - coffeeType: 2
-    minWaitTime: 75
-    maxWaitTime: 75
-  defaultMinOrderWaitTime: 60
-  defaultMaxOrderWaitTime: 70
+    waitTime: 60
+  defaultOrderWaitTime: 60
   orderWaitUI: {fileID: 7823879975863328721}
   minWaitBeforeLeaving: 4
   maxWaitBeforeLeaving: 5
@@ -1004,30 +1035,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e866c2368e764b24ea5bef0995b95051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clothesMaterial: {fileID: 2100000, guid: 5a6b18e454b058b42ae95634afb600c3, type: 2}
-  hairMaterial: {fileID: 2100000, guid: 57926241eb678794f9df1ef753b63ff9, type: 2}
+  clothesRenderers:
+  - {fileID: 6813934668326010800}
+  - {fileID: 4818785216625172148}
+  - {fileID: 8525270197536331050}
+  bodyRenderers:
+  - {fileID: 1761995396981091079}
+  hairRenderers:
+  - {fileID: 4899086214548148780}
+  - {fileID: 2647576453833915678}
+  - {fileID: 2030354604753544256}
   outfitCombos:
-  - comboName: 
+  - comboName: "OrtaYa\u015F7"
     clothesTexture: {fileID: 2800000, guid: 519b0b30d9630274db6c745027357493, type: 3}
+    bodyTexture: {fileID: 2800000, guid: 2d36f047d72809b4684b70f7e2bef2fb, type: 3}
     hairTexture: {fileID: 2800000, guid: 357bf15bc2b4af0418f6c065ec9a8769, type: 3}
-  - comboName: 
+  - comboName: "OrtaYa\u015F1"
     clothesTexture: {fileID: 2800000, guid: df05e921da42ad6458e41655625d9afe, type: 3}
+    bodyTexture: {fileID: 2800000, guid: 2d36f047d72809b4684b70f7e2bef2fb, type: 3}
     hairTexture: {fileID: 2800000, guid: f64e8f5c6fab93b43b8467e71fc9ef7a, type: 3}
-  - comboName: 
+  - comboName: "OrtaYa\u015F2"
     clothesTexture: {fileID: 2800000, guid: 5ec8766c10e3cee4dbab2610d9fee143, type: 3}
+    bodyTexture: {fileID: 2800000, guid: 2d36f047d72809b4684b70f7e2bef2fb, type: 3}
     hairTexture: {fileID: 2800000, guid: 357bf15bc2b4af0418f6c065ec9a8769, type: 3}
-  - comboName: 
+  - comboName: "OrtaYa\u015F3"
     clothesTexture: {fileID: 2800000, guid: b77bc635f1d012649bb5c20a49ec1ec1, type: 3}
-    hairTexture: {fileID: 0}
-  - comboName: 
-    clothesTexture: {fileID: 2800000, guid: bc685f74cb0402045a0df1b0a7397167, type: 3}
+    bodyTexture: {fileID: 2800000, guid: 2d36f047d72809b4684b70f7e2bef2fb, type: 3}
     hairTexture: {fileID: 2800000, guid: efae82c07a5f0f4409ab069a32cc0890, type: 3}
-  - comboName: 
+  - comboName: "OrtaYa\u015F4"
+    clothesTexture: {fileID: 2800000, guid: bc685f74cb0402045a0df1b0a7397167, type: 3}
+    bodyTexture: {fileID: 2800000, guid: 2d36f047d72809b4684b70f7e2bef2fb, type: 3}
+    hairTexture: {fileID: 2800000, guid: efae82c07a5f0f4409ab069a32cc0890, type: 3}
+  - comboName: "OrtaYa\u015F5"
     clothesTexture: {fileID: 2800000, guid: 46c46188db465484e8d64fd61fd479f6, type: 3}
+    bodyTexture: {fileID: 2800000, guid: 2d36f047d72809b4684b70f7e2bef2fb, type: 3}
     hairTexture: {fileID: 2800000, guid: f64e8f5c6fab93b43b8467e71fc9ef7a, type: 3}
-  - comboName: 
+  - comboName: "OrtaYa\u015F6"
     clothesTexture: {fileID: 2800000, guid: 60da9ebc0aedfa343832f6700094c031, type: 3}
+    bodyTexture: {fileID: 2800000, guid: 2d36f047d72809b4684b70f7e2bef2fb, type: 3}
     hairTexture: {fileID: 2800000, guid: f64e8f5c6fab93b43b8467e71fc9ef7a, type: 3}
+  comboCooldownCount: 3
 --- !u!65 &134242712821315532
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1049,3 +1096,9 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!137 &8525270197536331050 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 1312681742142987658, guid: c22c0cfe3ded7c248b6849b32087a203,
+    type: 3}
+  m_PrefabInstance: {fileID: 7239621087115495584}
+  m_PrefabAsset: {fileID: 0}

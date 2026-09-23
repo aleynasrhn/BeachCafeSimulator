@@ -32,6 +32,11 @@ public class NPCSpawner : MonoBehaviour
     [SerializeField]
     private float streetPedestrianChance = 0.40f;
 
+    [Header("Aynı Prefabın Tekrar Spawn Olmama Ayarı")]
+    [Tooltip("Aynı prefab tekrar spawn olabilmeden önce en az bu kadar FARKLI prefab spawn olmalı.")]
+    [SerializeField]
+    private int prefabCooldownCount = 5;
+
     private int activeNPCCount = 0;
 
     // SADECE GERÇEKTEN KUYRUĞA GİREN
@@ -41,6 +46,13 @@ public class NPCSpawner : MonoBehaviour
     private float spawnTimer;
 
     private bool spawningEnabled = true;
+
+    // =========================================================
+    // SON SPAWN EDİLEN PREFAB GEÇMİŞİ (TEKRAR ENGELİ İÇİN)
+    // =========================================================
+
+    private readonly List<GameObject> recentlySpawnedPrefabs =
+        new List<GameObject>();
 
     // =========================================================
     // PUBLIC BİLGİLER
@@ -97,6 +109,61 @@ public class NPCSpawner : MonoBehaviour
     }
 
     // =========================================================
+    // TEKRAR ETMEYEN RASTGELE PREFAB SEÇ
+    // =========================================================
+    //
+    // Son "prefabCooldownCount" kadar spawn edilen prefab
+    // hariç tutulup, kalan uygun prefablardan rastgele biri
+    // seçilir. Böylece aynı karakter (örn. Lisa) art arda ya
+    // da çok kısa aralıklarla tekrar spawn olamaz.
+    //
+    // =========================================================
+
+    private GameObject SelectRandomPrefab()
+    {
+        // Prefab sayısından fazla cooldown istenirse, listeyi
+        // tamamen boşaltmamak için sınırla.
+        int effectiveCooldown =
+            Mathf.Clamp(
+                prefabCooldownCount,
+                0,
+                Mathf.Max(0, npcPrefabs.Count - 1)
+            );
+
+        List<GameObject> candidates =
+            new List<GameObject>();
+
+        foreach (GameObject prefab in npcPrefabs)
+        {
+            if (!recentlySpawnedPrefabs.Contains(prefab))
+            {
+                candidates.Add(prefab);
+            }
+        }
+
+        // Güvenlik: hiç uygun aday kalmadıysa (olmaması gerekir
+        // ama olursa) tüm listeyi kullan.
+        if (candidates.Count == 0)
+        {
+            candidates = new List<GameObject>(npcPrefabs);
+        }
+
+        GameObject selected =
+            candidates[
+                Random.Range(0, candidates.Count)
+            ];
+
+        recentlySpawnedPrefabs.Add(selected);
+
+        while (recentlySpawnedPrefabs.Count > effectiveCooldown)
+        {
+            recentlySpawnedPrefabs.RemoveAt(0);
+        }
+
+        return selected;
+    }
+
+    // =========================================================
     // NPC SPAWN
     // =========================================================
 
@@ -140,16 +207,11 @@ public class NPCSpawner : MonoBehaviour
         }
 
         // ---------------------------------------------------------
-        // RASTGELE NPC PREFAB
+        // TEKRAR ETMEYEN RASTGELE NPC PREFAB
         // ---------------------------------------------------------
 
         GameObject selectedPrefab =
-            npcPrefabs[
-                Random.Range(
-                    0,
-                    npcPrefabs.Count
-                )
-            ];
+            SelectRandomPrefab();
 
         // ---------------------------------------------------------
         // RASTGELE SPAWN POINT

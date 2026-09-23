@@ -883,6 +883,36 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 752620303663076619}
   m_SourcePrefab: {fileID: 100100000, guid: b3a5fb0a80655d643beeb761b56f169c, type: 3}
+--- !u!137 &297779858108042776 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -1713863184840326876, guid: b3a5fb0a80655d643beeb761b56f169c,
+    type: 3}
+  m_PrefabInstance: {fileID: 7788640992855510844}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &3337358866672469556 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -4447760368756750072, guid: b3a5fb0a80655d643beeb761b56f169c,
+    type: 3}
+  m_PrefabInstance: {fileID: 7788640992855510844}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &3587326571248280830 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -2459403873603802174, guid: b3a5fb0a80655d643beeb761b56f169c,
+    type: 3}
+  m_PrefabInstance: {fileID: 7788640992855510844}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &5938261678865574249 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -4720266917285583275, guid: b3a5fb0a80655d643beeb761b56f169c,
+    type: 3}
+  m_PrefabInstance: {fileID: 7788640992855510844}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &6105923772119479343 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 4083171560036875027, guid: b3a5fb0a80655d643beeb761b56f169c,
+    type: 3}
+  m_PrefabInstance: {fileID: 7788640992855510844}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &6978229106433323629 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b3a5fb0a80655d643beeb761b56f169c,
@@ -915,19 +945,14 @@ MonoBehaviour:
   maxWaitBetweenDrinks: 7
   coffeeWaitTimes:
   - coffeeType: 0
-    minWaitTime: 45
-    maxWaitTime: 45
+    waitTime: 60
   - coffeeType: 1
-    minWaitTime: 50
-    maxWaitTime: 50
+    waitTime: 60
   - coffeeType: 3
-    minWaitTime: 60
-    maxWaitTime: 60
+    waitTime: 60
   - coffeeType: 2
-    minWaitTime: 75
-    maxWaitTime: 75
-  defaultMinOrderWaitTime: 60
-  defaultMaxOrderWaitTime: 70
+    waitTime: 60
+  defaultOrderWaitTime: 60
   orderWaitUI: {fileID: 1424469621971610840}
   minWaitBeforeLeaving: 4
   maxWaitBeforeLeaving: 5
@@ -991,36 +1016,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e866c2368e764b24ea5bef0995b95051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clothesMaterial: {fileID: 2100000, guid: c8830bed12163c3478ac0f0abdc5446b, type: 2}
-  hairMaterial: {fileID: 2100000, guid: a602a36426529024492490a6d6d89026, type: 2}
+  clothesRenderers:
+  - {fileID: 3337358866672469556}
+  - {fileID: 7510337570476972824}
+  - {fileID: 3587326571248280830}
+  - {fileID: 297779858108042776}
+  - {fileID: 6105923772119479343}
+  bodyRenderers: []
+  hairRenderers:
+  - {fileID: 6105923772119479343}
+  - {fileID: 5938261678865574249}
   outfitCombos:
-  - comboName: 
+  - comboName: sweatli1
     clothesTexture: {fileID: 2800000, guid: e99535cf455e2174e962897ee7850e18, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
-  - comboName: 
+  - comboName: sweatli2
     clothesTexture: {fileID: 2800000, guid: 16e16c59462091543b3479ed4368c139, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
-  - comboName: 
+  - comboName: sweatli3
     clothesTexture: {fileID: 2800000, guid: 51927b592e5cbb44898c199e2c18839d, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
-  - comboName: 
+  - comboName: sweatli4
     clothesTexture: {fileID: 2800000, guid: 6f3ec3e35488bca48a1c54772b5b654f, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
-  - comboName: 
+  - comboName: sweatli5
     clothesTexture: {fileID: 2800000, guid: fec37314f5ddbbc4187bd2b7597288d8, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
-  - comboName: 
+  - comboName: sweatli6
     clothesTexture: {fileID: 2800000, guid: b2a7a56d9c5f15c4fa757daf404534e2, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
-  - comboName: 
+  - comboName: sweatli7
     clothesTexture: {fileID: 2800000, guid: 7d27b81fba636f44cb8934068f83f7d1, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
-  - comboName: 
+  - comboName: sweatli8
     clothesTexture: {fileID: 2800000, guid: 4e7e78888fc88424cb36d037a73df8f6, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
-  - comboName: 
+  - comboName: sweatli9
     clothesTexture: {fileID: 2800000, guid: 27d79a386f14b7b43a5c2870c18a2708, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 009e4eee6eb57c949a0aac0d23cdcb21, type: 3}
+  comboCooldownCount: 3
 --- !u!65 &752620303663076619
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1042,6 +1085,12 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!137 &7510337570476972824 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 300856674195739684, guid: b3a5fb0a80655d643beeb761b56f169c,
+    type: 3}
+  m_PrefabInstance: {fileID: 7788640992855510844}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7754203272416569559 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b3a5fb0a80655d643beeb761b56f169c,
