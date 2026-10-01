@@ -877,6 +877,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2339637476664918740}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e1bb5c44cafbf5047840dc260e41a361,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -1391137670506824716}
   m_SourcePrefab: {fileID: 100100000, guid: e1bb5c44cafbf5047840dc260e41a361, type: 3}
 --- !u!137 &757141638261677003 stripped
 SkinnedMeshRenderer:
@@ -1016,29 +1020,37 @@ MonoBehaviour:
   - {fileID: 7566638866841747070}
   - {fileID: 757141638261677003}
   - {fileID: 3200524481261449277}
+  bodyRenderers: []
   hairRenderers:
   - {fileID: 5311372460916067774}
   outfitCombos:
   - comboName: kel1
     clothesTexture: {fileID: 2800000, guid: c186a7bb868832643bd6294e2f00fe6b, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: c186a7bb868832643bd6294e2f00fe6b, type: 3}
   - comboName: kel2
     clothesTexture: {fileID: 2800000, guid: 772cf0090a029fc4090a0100edb34d95, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 772cf0090a029fc4090a0100edb34d95, type: 3}
   - comboName: kel3
     clothesTexture: {fileID: 2800000, guid: e92d52fc2e15fbe438a5feae9e2e5f0c, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: e92d52fc2e15fbe438a5feae9e2e5f0c, type: 3}
   - comboName: kel4
     clothesTexture: {fileID: 2800000, guid: 165c21f8bdd50ab43a4c731c0c38bc1f, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 165c21f8bdd50ab43a4c731c0c38bc1f, type: 3}
   - comboName: kel5
     clothesTexture: {fileID: 2800000, guid: 48251150497c07e4cb0a507a31b085d6, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 48251150497c07e4cb0a507a31b085d6, type: 3}
   - comboName: kel6
     clothesTexture: {fileID: 2800000, guid: ddc08d2faddcaa74c866e6ec018196c4, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: ddc08d2faddcaa74c866e6ec018196c4, type: 3}
   - comboName: 
     clothesTexture: {fileID: 2800000, guid: 202de88b61797664c8d0a749c560adbd, type: 3}
+    bodyTexture: {fileID: 0}
     hairTexture: {fileID: 2800000, guid: 202de88b61797664c8d0a749c560adbd, type: 3}
   comboCooldownCount: 2
 --- !u!65 &2339637476664918740
@@ -1062,6 +1074,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-1391137670506824716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7347476066771147446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98893aad45be87a43a050601a1c337fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toiletVisitChance: 1
+  minToiletTime: 10
+  maxToiletTime: 15
+  openDoorTrigger: OpenDoor
+  openDoorAnimDuration: 1.5
+  doorOpenDelay: 0.6
 --- !u!137 &7566638866841747070 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: -9208723614577387111, guid: e1bb5c44cafbf5047840dc260e41a361,

@@ -60,6 +60,8 @@ public class NPCController : MonoBehaviour
 
     private Animator animator;
 
+    private NPCToiletVisitor toiletVisitor;
+
     // =========================================================
     // KARAKTER TÜRÜ
     // =========================================================
@@ -102,12 +104,6 @@ public class NPCController : MonoBehaviour
     // =========================================================
     // SİPARİŞ BEKLEME (MASADA) - KAHVE TÜRÜNE GÖRE SABİT SÜRE
     // =========================================================
-    //
-    // Artık min/max aralığı yok. Her kahve türü için TEK bir
-    // sabit süre giriliyor (örn. Espresso = 65 sn). Listede
-    // o tür için tanım yoksa Default Order Wait Time kullanılır.
-    //
-    // =========================================================
 
     [System.Serializable]
     public class CoffeeWaitTime
@@ -123,7 +119,6 @@ public class NPCController : MonoBehaviour
         new List<CoffeeWaitTime>();
 
     [Header("Sipariş Bekleme - Varsayılan Süre")]
-    [Tooltip("Listede kahve türü için özel süre tanımlanmamışsa bu kullanılır.")]
     [SerializeField] private float defaultOrderWaitTime = 60f;
 
     [Header("Sipariş Bekleme - Bar UI")]
@@ -131,15 +126,8 @@ public class NPCController : MonoBehaviour
 
     private Coroutine orderWaitCoroutine;
 
-    // Bu ziyaret için hesaplanan sabit bekleme süresi.
-    // Hem kafadaki bar hem de sağ üst paneldeki bilet
-    // TAM OLARAK bu değeri ve TAM OLARAK aynı başlangıç
-    // anını (ArriveAtTable) kullanır.
     private float currentOrderWaitTime;
 
-    // OrderScreenUI'da kasada hazırlanan sipariş (finalOrder).
-    // Kasada oluşturulur ama panele hemen eklenmez — NPC
-    // masaya oturana kadar burada bekletilir.
     private Order pendingTicketOrder;
 
     // =========================================================
@@ -153,9 +141,9 @@ public class NPCController : MonoBehaviour
 
     private Coroutine waitBeforeLeaveCoroutine;
 
-    // Bu ziyarette sipariş doğru mu teslim edildi?
-    // Sadece doğruysa masadan kalkarken bahşiş bırakılır.
     private bool wasOrderCorrect = true;
+
+    public bool WasOrderCorrect => wasOrderCorrect;
 
     // =========================================================
     // SİPARİŞ
@@ -182,7 +170,9 @@ public class NPCController : MonoBehaviour
 
         GoingToCafeEntranceExit,
 
-        GoingToExit
+        GoingToExit,
+
+        InToiletSequence
     }
 
     private NPCState currentState;
@@ -198,6 +188,9 @@ public class NPCController : MonoBehaviour
 
         animator =
             GetComponent<Animator>();
+
+        toiletVisitor =
+            GetComponent<NPCToiletVisitor>();
 
         if (animator != null)
         {
@@ -244,10 +237,6 @@ public class NPCController : MonoBehaviour
 
         if (isCafeCustomer)
         {
-            // =====================================================
-            // KUYRUK ZATEN DOLUYSA HİÇ GİRİŞE GİTMEDEN ÇIKIŞA GİT
-            // =====================================================
-
             if (queuedNPCs.Count >= queuePoints.Count)
             {
                 Debug.Log(
@@ -538,6 +527,11 @@ public class NPCController : MonoBehaviour
                     Destroy(gameObject);
                 }
 
+                break;
+
+            case NPCState.InToiletSequence:
+
+                // Bu state'in tüm mantığı NPCToiletVisitor'da.
                 break;
         }
 
@@ -1063,15 +1057,7 @@ public class NPCController : MonoBehaviour
     }
 
     // =========================================================
-    // KASADA HAZIRLANAN SİPARİŞİ SAKLA (PANELE HENÜZ EKLEME)
-    // =========================================================
-    //
-    // OrderScreenUI, kasada "Siparişi Onayla" butonuna basıldığında
-    // oluşturduğu finalOrder'ı buraya kaydeder. Bu sipariş henüz
-    // sağ üstteki panele EKLENMEZ — NPC fiziksel olarak masaya
-    // oturup ArriveAtTable() çalışana kadar bekletilir. Böylece
-    // panel bileti ile kafadaki bar TAM OLARAK aynı anda başlar.
-    //
+    // KASADA HAZIRLANAN SİPARİŞİ SAKLA
     // =========================================================
 
     public void SetPendingTicketOrder(Order order)
@@ -1199,23 +1185,10 @@ public class NPCController : MonoBehaviour
             );
         }
 
-        // =====================================================
-        // SÜREYİ BURADA TEK SEFER HESAPLA
-        // =====================================================
-        //
-        // Hem kafadaki bar hem sağ üst paneldeki bilet bu tek
-        // değeri kullanacak, ve ikisi de TAM ŞİMDİ başlayacak.
-        //
-        // =====================================================
-
         currentOrderWaitTime =
             customerOrder != null
                 ? GetConfiguredWaitTime(customerOrder.coffeeType)
                 : defaultOrderWaitTime;
-
-        // =====================================================
-        // SİPARİŞ ÖZETİNİ UI'A YAZ
-        // =====================================================
 
         if (orderWaitUI != null)
         {
@@ -1223,10 +1196,6 @@ public class NPCController : MonoBehaviour
                 BuildOrderSummaryText()
             );
         }
-
-        // =====================================================
-        // SAĞ ÜST PANELE BİLETİ ŞİMDİ EKLE
-        // =====================================================
 
         if (pendingTicketOrder != null &&
             OrderUI.Instance != null)
@@ -1241,10 +1210,6 @@ public class NPCController : MonoBehaviour
 
             pendingTicketOrder = null;
         }
-
-        // =====================================================
-        // SİPARİŞ BEKLEME ZAMANLAYICISINI BAŞLAT
-        // =====================================================
 
         if (orderWaitCoroutine != null)
         {
@@ -1265,7 +1230,7 @@ public class NPCController : MonoBehaviour
     }
 
     // =========================================================
-    // SİPARİŞ ÖZET YAZISI OLUŞTUR (BARIN ALTINDA GÖRÜNÜR)
+    // SİPARİŞ ÖZET YAZISI OLUŞTUR
     // =========================================================
 
     private string BuildOrderSummaryText()
@@ -1319,11 +1284,6 @@ public class NPCController : MonoBehaviour
     // =========================================================
     // KAHVE TÜRÜNE GÖRE SABİT BEKLEME SÜRESİ
     // =========================================================
-    //
-    // Artık rastgelelik yok. Listede kahve türü bulunursa onun
-    // sabit süresi, bulunmazsa defaultOrderWaitTime döner.
-    //
-    // =========================================================
 
     public float GetConfiguredWaitTime(CoffeeType type)
     {
@@ -1344,7 +1304,7 @@ public class NPCController : MonoBehaviour
     }
 
     // =========================================================
-    // SİPARİŞ ZAMAN AŞIMI BEKLEME DÖNGÜSÜ (BAR GÜNCELLEMELİ)
+    // SİPARİŞ ZAMAN AŞIMI BEKLEME DÖNGÜSÜ
     // =========================================================
 
     private IEnumerator WaitForOrderTimeout()
@@ -1391,7 +1351,7 @@ public class NPCController : MonoBehaviour
     }
 
     // =========================================================
-    // SİPARİŞ ZAMANI DOLDU, KAHVE GELMEDİ
+    // SİPARİŞ ZAMANI DOLDU
     // =========================================================
 
     private void HandleOrderTimeout()
@@ -1407,10 +1367,6 @@ public class NPCController : MonoBehaviour
             orderWaitUI.Hide();
         }
 
-        // =====================================================
-        // SİPARİŞ LİSTESİNDEN (SAĞ ÜST PANEL) BİLETİ KALDIR
-        // =====================================================
-
         if (OrderUI.Instance != null)
         {
             OrderUI.Instance.CompleteOrderForNPC(this);
@@ -1421,12 +1377,7 @@ public class NPCController : MonoBehaviour
             "kahve gelmediği için müşteri kalkıp gidiyor."
         );
 
-        // Kahve gelmediği için bahşiş bırakılmayacak.
         wasOrderCorrect = false;
-
-        // =====================================================
-        // SİPARİŞ FİYATI KADAR CEZA
-        // =====================================================
 
         float penalty =
             customerOrder != null
@@ -1459,23 +1410,13 @@ public class NPCController : MonoBehaviour
     }
 
     // =========================================================
-    // SİPARİŞ TESLİM EDİLDİ (DOĞRU YA DA YANLIŞ)
-    // =========================================================
-    //
-    // DrinkPlacePoint, kahveyi masaya koyduktan sonra bu metodu
-    // çağırır. Doğruysa içme döngüsü başlar. Yanlışsa müşteri
-    // içmeden bir süre sonra kalkıp gider.
-    //
+    // SİPARİŞ TESLİM EDİLDİ
     // =========================================================
 
     public void ServeOrder(bool isCorrect, PickupItem cup)
     {
         if (currentState != NPCState.AtTable)
             return;
-
-        // =====================================================
-        // KAHVE GELDİ, SİPARİŞ ZAMAN AŞIMINI İPTAL ET
-        // =====================================================
 
         if (orderWaitCoroutine != null)
         {
@@ -1490,10 +1431,6 @@ public class NPCController : MonoBehaviour
         {
             orderWaitUI.Hide();
         }
-
-        // =====================================================
-        // SİPARİŞ LİSTESİNDEN (SAĞ ÜST PANEL) BİLETİ KALDIR
-        // =====================================================
 
         if (OrderUI.Instance != null)
         {
@@ -1512,10 +1449,6 @@ public class NPCController : MonoBehaviour
                 $"{gameObject.name}: Yanlış sipariş teslim edildi. " +
                 "Müşterinin gerçek sipariş fiyatı kadar para kesiliyor."
             );
-
-            // =====================================================
-            // YANLIŞ SİPARİŞ CEZASI
-            // =====================================================
 
             float wrongOrderPenalty =
                 customerOrder != null
@@ -1550,10 +1483,6 @@ public class NPCController : MonoBehaviour
                     "Müşteri sipariş fiyatı 0 olduğu için ceza uygulanmadı."
                 );
             }
-
-            // =====================================================
-            // MÜŞTERİ BEKLEMEDEN KALKACAK
-            // =====================================================
 
             if (waitBeforeLeaveCoroutine != null)
             {
@@ -1810,8 +1739,6 @@ public class NPCController : MonoBehaviour
 
         if (assignedDrinkPlacePoint != null)
         {
-            // Sadece doğru sipariş teslim edildiyse
-            // masada bahşiş bırakılır.
             if (wasOrderCorrect)
             {
                 assignedDrinkPlacePoint.SpawnTip();
@@ -1867,6 +1794,12 @@ public class NPCController : MonoBehaviour
 
         agent.isStopped = false;
 
+        if (toiletVisitor != null &&
+            toiletVisitor.TryStartVisit())
+        {
+            return;
+        }
+
         currentState =
             NPCState.GoingToCafeEntranceExit;
 
@@ -1877,6 +1810,32 @@ public class NPCController : MonoBehaviour
         Debug.Log(
             $"{gameObject.name} kalkma animasyonunu tamamladı. " +
             "CafeEntrancePoint'e yürüyor."
+        );
+    }
+
+    // =========================================================
+    // TUVALET SEKANSI - GİRİŞ/ÇIKIŞ
+    // =========================================================
+    //
+    // NPCToiletVisitor bu iki metodu çağırır.
+    //
+    // =========================================================
+
+    public void EnterToiletSequence()
+    {
+        currentState =
+            NPCState.InToiletSequence;
+    }
+
+    public void FinishToiletSequence()
+    {
+        currentState =
+            NPCState.GoingToCafeEntranceExit;
+
+        agent.isStopped = false;
+
+        agent.SetDestination(
+            cafeEntrancePoint.position
         );
     }
 
@@ -1932,6 +1891,13 @@ public class NPCController : MonoBehaviour
         if (animator == null ||
             agent == null)
         {
+            return;
+        }
+
+        if (currentState ==
+            NPCState.InToiletSequence)
+        {
+            // Animasyonu bu süreçte NPCToiletVisitor yönetiyor.
             return;
         }
 
@@ -2000,7 +1966,5 @@ public class NPCController : MonoBehaviour
                 }
             }
         }
-
-        // NOT: queuePoints artık burada temizlenmiyor.
     }
 }

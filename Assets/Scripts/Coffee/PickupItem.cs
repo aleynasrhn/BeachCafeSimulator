@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -114,6 +115,13 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     // Tamper, başka bir işlem vb. sırasında item alınamasın.
     private bool isInteractionLocked = false;
+
+
+    // =========================================================
+    // SMOOTH DOCK (ANİMASYONLU YERLEŞTİRME)
+    // =========================================================
+
+    private Coroutine smoothDockCoroutine;
 
 
     // =========================================================
@@ -510,6 +518,13 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
 
 
+        if (smoothDockCoroutine != null)
+        {
+            StopCoroutine(smoothDockCoroutine);
+            smoothDockCoroutine = null;
+        }
+
+
         holdPoint =
             isLeftHandOnly
                 ? player.LeftHoldPoint
@@ -565,6 +580,123 @@ public class PickupItem : MonoBehaviour, IInteractable
 
         holdPoint = null;
         hasPositionOverride = false;
+    }
+
+
+    // =========================================================
+    // SMOOTH DOCK (ANİMASYONLU YERLEŞTİRME)
+    // =========================================================
+    //
+    // DockAt() ile aynı işi yapar ama pozisyon/rotasyonu anında
+    // değil, "duration" saniyede yumuşak geçişle (SmoothStep)
+    // uygular. Animasyon bitene kadar item'ın etkileşimi kilitli
+    // ve collider'ı kapalı kalır (havada süzülürken tekrar
+    // alınamasın diye). Animasyon bitince onComplete çağrılır.
+    //
+    // =========================================================
+
+    public void SmoothDockAt(
+        Vector3 worldPosition,
+        Vector3 extraRotationEuler,
+        float duration,
+        Action onComplete = null)
+    {
+        if (isAttachedToObject)
+        {
+            DetachFromObject();
+        }
+
+        if (smoothDockCoroutine != null)
+        {
+            StopCoroutine(smoothDockCoroutine);
+        }
+
+        isHeld = false;
+        holdPoint = null;
+        hasPositionOverride = false;
+
+        rb.isKinematic = true;
+        rb.useGravity = false;
+
+        col.enabled = false;
+
+        isInteractionLocked = true;
+
+        smoothDockCoroutine =
+            StartCoroutine(
+                SmoothDockRoutine(
+                    worldPosition,
+                    extraRotationEuler,
+                    duration,
+                    onComplete
+                )
+            );
+    }
+
+
+    private IEnumerator SmoothDockRoutine(
+        Vector3 worldPosition,
+        Vector3 extraRotationEuler,
+        float duration,
+        Action onComplete)
+    {
+        Vector3 startPos =
+            transform.position;
+
+        Quaternion startRot =
+            transform.rotation;
+
+        Quaternion targetRot =
+            uprightRotation *
+            Quaternion.Euler(
+                extraRotationEuler
+            );
+
+        float t = 0f;
+
+        // duration 0 ya da negatifse tek karede tamamla.
+        float safeDuration =
+            Mathf.Max(0.01f, duration);
+
+        while (t < 1f)
+        {
+            t += Time.deltaTime / safeDuration;
+
+            float eased =
+                Mathf.SmoothStep(
+                    0f,
+                    1f,
+                    Mathf.Clamp01(t)
+                );
+
+            transform.position =
+                Vector3.Lerp(
+                    startPos,
+                    worldPosition,
+                    eased
+                );
+
+            transform.rotation =
+                Quaternion.Slerp(
+                    startRot,
+                    targetRot,
+                    eased
+                );
+
+            yield return null;
+        }
+
+        transform.position = worldPosition;
+        transform.rotation = targetRot;
+
+        col.enabled = true;
+        isHeld = false;
+        holdPoint = null;
+        isInteractionLocked = false;
+
+        smoothDockCoroutine = null;
+
+        onComplete?.Invoke();
     }
 
 

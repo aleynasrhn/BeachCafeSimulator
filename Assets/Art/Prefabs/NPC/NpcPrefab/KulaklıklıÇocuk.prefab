@@ -877,6 +877,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 4994704365388993642}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cd0c5182d777cc74293bae2c25b2f52e,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3052374328967010586}
   m_SourcePrefab: {fileID: 100100000, guid: cd0c5182d777cc74293bae2c25b2f52e, type: 3}
 --- !u!4 &1574133381277890153 stripped
 Transform:
@@ -1027,6 +1031,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3052374328967010586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2203282028195441875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98893aad45be87a43a050601a1c337fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toiletVisitChance: 1
+  minToiletTime: 10
+  maxToiletTime: 15
+  openDoorTrigger: OpenDoor
+  openDoorAnimDuration: 1.5
+  doorOpenDelay: 0.6
 --- !u!4 &2265067598251845639 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8269195505564239483, guid: cd0c5182d777cc74293bae2c25b2f52e,
