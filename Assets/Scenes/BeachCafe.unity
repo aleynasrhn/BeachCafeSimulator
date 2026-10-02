@@ -73941,7 +73941,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   openHour: 9
   closeHour: 20
-  secondsPerGameHour: 0.01
+  secondsPerGameHour: 5
   npcSpawner: {fileID: 6570637}
 --- !u!1 &1770120266
 GameObject:
@@ -84759,6 +84759,7 @@ GameObject:
   - component: {fileID: 2108380455}
   - component: {fileID: 2108380454}
   - component: {fileID: 2108380456}
+  - component: {fileID: 2108380457}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -84865,6 +84866,57 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!114 &2108380457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108380453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64c43a38b7c4df64686f26c392a7c85e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sunLight: {fileID: 2108380454}
+  fixedYRotation: -30
+  fixedZRotation: 0
+  keyframes:
+  - hour: 9
+    sunAngleX: 25
+    intensity: 0.8
+    color: {r: 0.94716984, g: 0.8631755, b: 0.8631755, a: 1}
+    ambientIntensity: 0.8
+  - hour: 12
+    sunAngleX: 55
+    intensity: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    ambientIntensity: 1
+  - hour: 15
+    sunAngleX: 60
+    intensity: 1.05
+    color: {r: 1, g: 1, b: 1, a: 1}
+    ambientIntensity: 1
+  - hour: 17
+    sunAngleX: 30
+    intensity: 0.9
+    color: {r: 1, g: 0.75, b: 0.5, a: 1}
+    ambientIntensity: 0.8
+  - hour: 18
+    sunAngleX: 15
+    intensity: 0.6
+    color: {r: 1, g: 0.55, b: 0.3, a: 1}
+    ambientIntensity: 0.5
+  - hour: 19
+    sunAngleX: 5
+    intensity: 0.3
+    color: {r: 0.9, g: 0.35, b: 0.25, a: 1}
+    ambientIntensity: 0.3
+  - hour: 20
+    sunAngleX: -5
+    intensity: 0.08
+    color: {r: 0.25, g: 0.3, b: 0.5, a: 1}
+    ambientIntensity: 0.15
 --- !u!1001 &2110993894
 PrefabInstance:
   m_ObjectHideFlags: 0
