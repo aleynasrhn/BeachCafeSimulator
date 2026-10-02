@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 1c1a57d9acb006948866415586d3daff
+guid: 636a7e6ef98b5464bb5cab5f082848a6
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -7,38 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: blue
-    second: {fileID: 2100000, guid: 7ca4c15128506fd4bad4e78c573ec900, type: 2}
+      name: aiStandardSurface1
+    second: {fileID: 2100000, guid: 705db2714db5c444c9001b4df1f06f0d, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: green
-    second: {fileID: 2100000, guid: 9de7f994cdeeb7c4ebeaf5d35a063864, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light tinted blue
-    second: {fileID: 2100000, guid: 2ed6368847ce9014282c9cd412881396, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: pink
-    second: {fileID: 2100000, guid: 3f953fffc80e96044b764e6380f165fa, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: red
-    second: {fileID: 2100000, guid: 4fae96cd109b1c24e9e2bcfe0b316ebd, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: weird pink
-    second: {fileID: 2100000, guid: b8c2ef4d99ac5114b9d2403435f2f217, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: white
-    second: {fileID: 2100000, guid: 7f631d8efd8f0234aa945e91e60eee12, type: 2}
+      name: aiStandardSurface2
+    second: {fileID: 2100000, guid: 798b1447dcabf4d4db4b40fb60b840f3, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
