@@ -45,6 +45,21 @@ public class NPCController : MonoBehaviour
     private static bool queuePointsInitialized = false;
 
     // =========================================================
+    // GÜN SİSTEMİ İÇİN AKTİF MÜŞTERİ SAYACI
+    // =========================================================
+    //
+    // Bir NPC gerçekten kuyruğa girdiği andan (TryJoinQueue),
+    // kafeden tamamen ayrılıp yok olana (OnDestroy) kadar bu
+    // sayaca dahildir. DayCycleManager, günü bitirip bitiremeyeceğini
+    // bu sayaç sıfır mı diye bakarak anlar.
+    //
+    // =========================================================
+
+    public static int ActiveCafeCustomerCount { get; private set; }
+
+    private bool isActiveCafeCustomer = false;
+
+    // =========================================================
     // MASA
     // =========================================================
 
@@ -601,6 +616,15 @@ public class NPCController : MonoBehaviour
         queuedNPCs.Add(
             this
         );
+
+        // =====================================================
+        // GÜN SİSTEMİ: AKTİF MÜŞTERİ SAYACI
+        // =====================================================
+
+        isActiveCafeCustomer = true;
+        ActiveCafeCustomerCount++;
+
+        DayStatsTracker.Instance?.RecordCustomerArrived();
 
         int queueIndex =
             queuedNPCs.Count - 1;
@@ -1406,6 +1430,8 @@ public class NPCController : MonoBehaviour
             }
         }
 
+        DayStatsTracker.Instance?.RecordOrderResult(false, penalty);
+
         LeaveTable();
     }
 
@@ -1441,6 +1467,8 @@ public class NPCController : MonoBehaviour
 
         if (isCorrect)
         {
+            DayStatsTracker.Instance?.RecordOrderResult(true, 0f);
+
             StartDrinkSequence(cup);
         }
         else
@@ -1454,6 +1482,8 @@ public class NPCController : MonoBehaviour
                 customerOrder != null
                     ? customerOrder.pricePaid
                     : 0f;
+
+            DayStatsTracker.Instance?.RecordOrderResult(false, wrongOrderPenalty);
 
             if (wrongOrderPenalty > 0f)
             {
@@ -1749,6 +1779,8 @@ public class NPCController : MonoBehaviour
             );
         }
 
+        DayStatsTracker.Instance?.RecordCustomerLeft(wasOrderCorrect);
+
         Debug.Log(
             $"{gameObject.name} masadan kalkıyor."
         );
@@ -1815,10 +1847,6 @@ public class NPCController : MonoBehaviour
 
     // =========================================================
     // TUVALET SEKANSI - GİRİŞ/ÇIKIŞ
-    // =========================================================
-    //
-    // NPCToiletVisitor bu iki metodu çağırır.
-    //
     // =========================================================
 
     public void EnterToiletSequence()
@@ -1897,7 +1925,6 @@ public class NPCController : MonoBehaviour
         if (currentState ==
             NPCState.InToiletSequence)
         {
-            // Animasyonu bu süreçte NPCToiletVisitor yönetiyor.
             return;
         }
 
@@ -1930,6 +1957,18 @@ public class NPCController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (isActiveCafeCustomer)
+        {
+            isActiveCafeCustomer = false;
+
+            ActiveCafeCustomerCount--;
+
+            if (ActiveCafeCustomerCount < 0)
+            {
+                ActiveCafeCustomerCount = 0;
+            }
+        }
+
         if (orderWaitCoroutine != null)
         {
             StopCoroutine(

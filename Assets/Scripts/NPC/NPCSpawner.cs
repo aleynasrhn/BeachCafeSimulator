@@ -39,24 +39,16 @@ public class NPCSpawner : MonoBehaviour
 
     private int activeNPCCount = 0;
 
-    // SADECE GERÇEKTEN KUYRUĞA GİREN
-    // MÜŞTERİLER BURADA SAYILIR.
     private int cafeCustomersSpawnedToday = 0;
 
     private float spawnTimer;
 
-    private bool spawningEnabled = true;
-
-    // =========================================================
-    // SON SPAWN EDİLEN PREFAB GEÇMİŞİ (TEKRAR ENGELİ İÇİN)
-    // =========================================================
+    // Günün başlaması (DayCycleManager.StartDay -> StartNewDay)
+    // çağrılana kadar spawn kapalı kalır.
+    private bool spawningEnabled = false;
 
     private readonly List<GameObject> recentlySpawnedPrefabs =
         new List<GameObject>();
-
-    // =========================================================
-    // PUBLIC BİLGİLER
-    // =========================================================
 
     public int ActiveNPCCount =>
         activeNPCCount;
@@ -67,18 +59,10 @@ public class NPCSpawner : MonoBehaviour
     public int DailyCafeCustomers =>
         dailyCafeCustomers;
 
-    // =========================================================
-    // START
-    // =========================================================
-
     private void Start()
     {
         SetNextSpawnTime();
     }
-
-    // =========================================================
-    // UPDATE
-    // =========================================================
 
     private void Update()
     {
@@ -95,10 +79,6 @@ public class NPCSpawner : MonoBehaviour
         }
     }
 
-    // =========================================================
-    // SONRAKİ SPAWN SÜRESİ
-    // =========================================================
-
     private void SetNextSpawnTime()
     {
         spawnTimer =
@@ -108,21 +88,8 @@ public class NPCSpawner : MonoBehaviour
             );
     }
 
-    // =========================================================
-    // TEKRAR ETMEYEN RASTGELE PREFAB SEÇ
-    // =========================================================
-    //
-    // Son "prefabCooldownCount" kadar spawn edilen prefab
-    // hariç tutulup, kalan uygun prefablardan rastgele biri
-    // seçilir. Böylece aynı karakter (örn. Lisa) art arda ya
-    // da çok kısa aralıklarla tekrar spawn olamaz.
-    //
-    // =========================================================
-
     private GameObject SelectRandomPrefab()
     {
-        // Prefab sayısından fazla cooldown istenirse, listeyi
-        // tamamen boşaltmamak için sınırla.
         int effectiveCooldown =
             Mathf.Clamp(
                 prefabCooldownCount,
@@ -141,8 +108,6 @@ public class NPCSpawner : MonoBehaviour
             }
         }
 
-        // Güvenlik: hiç uygun aday kalmadıysa (olmaması gerekir
-        // ama olursa) tüm listeyi kullan.
         if (candidates.Count == 0)
         {
             candidates = new List<GameObject>(npcPrefabs);
@@ -163,24 +128,12 @@ public class NPCSpawner : MonoBehaviour
         return selected;
     }
 
-    // =========================================================
-    // NPC SPAWN
-    // =========================================================
-
     private void TrySpawnNPC()
     {
-        // ---------------------------------------------------------
-        // AKTİF NPC LİMİTİ
-        // ---------------------------------------------------------
-
         if (activeNPCCount >= maxActiveNPC)
         {
             return;
         }
-
-        // ---------------------------------------------------------
-        // PREFAB KONTROLÜ
-        // ---------------------------------------------------------
 
         if (npcPrefabs == null ||
             npcPrefabs.Count == 0)
@@ -192,10 +145,6 @@ public class NPCSpawner : MonoBehaviour
             return;
         }
 
-        // ---------------------------------------------------------
-        // SPAWN POINT KONTROLÜ
-        // ---------------------------------------------------------
-
         if (spawnPoints == null ||
             spawnPoints.Length == 0)
         {
@@ -206,16 +155,8 @@ public class NPCSpawner : MonoBehaviour
             return;
         }
 
-        // ---------------------------------------------------------
-        // TEKRAR ETMEYEN RASTGELE NPC PREFAB
-        // ---------------------------------------------------------
-
         GameObject selectedPrefab =
             SelectRandomPrefab();
-
-        // ---------------------------------------------------------
-        // RASTGELE SPAWN POINT
-        // ---------------------------------------------------------
 
         int spawnIndex =
             Random.Range(
@@ -235,18 +176,6 @@ public class NPCSpawner : MonoBehaviour
             return;
         }
 
-        // ---------------------------------------------------------
-        // BU NPC MÜŞTERİ ADAYI MI?
-        // ---------------------------------------------------------
-        //
-        // Günlük gerçek müşteri sayısı henüz dolmadıysa
-        // NPC'nin müşteri olma ihtimali var.
-        //
-        // Burada henüz sayacı artırmıyoruz!
-        // NPC gerçekten queue'ya girince artıracağız.
-        //
-        // ---------------------------------------------------------
-
         bool dailyCustomerLimitReached =
             cafeCustomersSpawnedToday >=
             dailyCafeCustomers;
@@ -255,21 +184,13 @@ public class NPCSpawner : MonoBehaviour
 
         if (dailyCustomerLimitReached)
         {
-            // Günlük 12 gerçek müşteri tamamlandı.
-            // Bundan sonra sadece sokak NPC'leri.
             isCafeCustomerCandidate = false;
         }
         else
         {
-            // Örneğin %40 sokak,
-            // %60 müşteri adayı.
             isCafeCustomerCandidate =
                 Random.value >= streetPedestrianChance;
         }
-
-        // ---------------------------------------------------------
-        // NPC OLUŞTUR
-        // ---------------------------------------------------------
 
         GameObject spawnedNPC =
             Instantiate(
@@ -280,16 +201,8 @@ public class NPCSpawner : MonoBehaviour
 
         activeNPCCount++;
 
-        // ---------------------------------------------------------
-        // SPAWN TARAFI
-        // ---------------------------------------------------------
-
         bool fromSpawnPoint1 =
             spawnIndex == 0;
-
-        // ---------------------------------------------------------
-        // NPC CONTROLLER
-        // ---------------------------------------------------------
 
         NPCController npcController =
             spawnedNPC.GetComponent<NPCController>();
@@ -310,10 +223,6 @@ public class NPCSpawner : MonoBehaviour
             );
         }
 
-        // ---------------------------------------------------------
-        // TRACKER
-        // ---------------------------------------------------------
-
         NPCSpawnedTracker tracker =
             spawnedNPC.GetComponent<NPCSpawnedTracker>();
 
@@ -326,10 +235,6 @@ public class NPCSpawner : MonoBehaviour
         tracker.Initialize(
             this
         );
-
-        // ---------------------------------------------------------
-        // DEBUG
-        // ---------------------------------------------------------
 
         string spawnType =
             isCafeCustomerCandidate
@@ -346,13 +251,8 @@ public class NPCSpawner : MonoBehaviour
         );
     }
 
-    // =========================================================
-    // NPC GERÇEKTEN KUYRUĞA GİRDİ
-    // =========================================================
-
     public bool RegisterCafeCustomer()
     {
-        // Günlük limit dolduysa bu NPC müşteri olamaz.
         if (cafeCustomersSpawnedToday >=
             dailyCafeCustomers)
         {
@@ -370,10 +270,6 @@ public class NPCSpawner : MonoBehaviour
         return true;
     }
 
-    // =========================================================
-    // NPC YOK OLDU
-    // =========================================================
-
     public void NotifyNPCDestroyed()
     {
         activeNPCCount--;
@@ -389,10 +285,6 @@ public class NPCSpawner : MonoBehaviour
             $"{activeNPCCount}/{maxActiveNPC}"
         );
     }
-
-    // =========================================================
-    // YENİ GÜN
-    // =========================================================
 
     public void StartNewDay(
         int newDailyCafeCustomerCount)
@@ -415,10 +307,6 @@ public class NPCSpawner : MonoBehaviour
         );
     }
 
-    // =========================================================
-    // SPAWN'I DURDUR
-    // =========================================================
-
     public void StopSpawning()
     {
         spawningEnabled = false;
@@ -427,10 +315,6 @@ public class NPCSpawner : MonoBehaviour
             "NPC spawn sistemi durduruldu."
         );
     }
-
-    // =========================================================
-    // SPAWN'I TEKRAR BAŞLAT
-    // =========================================================
 
     public void ResumeSpawning()
     {
