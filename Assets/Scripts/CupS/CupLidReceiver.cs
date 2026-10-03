@@ -1,0 +1,170 @@
+using UnityEngine;
+
+public class CupLidReceiver : MonoBehaviour
+{
+    [Header("Kapak Takma Noktası")]
+    [SerializeField] private Transform lidPoint;
+
+    [Header("Bardak Boyutu")]
+    [SerializeField] private CupSize cupSize;
+
+    [Header("UI")]
+    [SerializeField] private InteractionUI interactionUI;
+
+    private GameObject attachedLid;
+
+    public CupSize CupSize =>
+        cupSize;
+
+    public bool HasLid =>
+        attachedLid != null;
+
+
+    // =========================================================
+    // BAŞLANGIÇ
+    // =========================================================
+
+    private void Awake()
+    {
+        if (interactionUI == null)
+        {
+            interactionUI =
+                FindFirstObjectByType<InteractionUI>();
+        }
+
+
+        if (interactionUI == null)
+        {
+            Debug.LogWarning(
+                "CupLidReceiver: Sahnedeki InteractionUI bulunamadı!"
+            );
+        }
+    }
+
+
+    // =========================================================
+    // KAPAK TAK
+    // =========================================================
+
+    public bool TryAttachLid(
+        PickupItem lidPickup)
+    {
+        if (lidPickup == null)
+            return false;
+
+
+        LidItem lidItem =
+            lidPickup.GetComponent<LidItem>();
+
+
+        if (lidItem == null)
+            return false;
+
+
+        // =====================================================
+        // BOYUT
+        // =====================================================
+
+        if (lidItem.Size != cupSize)
+        {
+            interactionUI?.ShowMessage(
+                "Bu kapak bu bardağa uygun değil!"
+            );
+
+            return false;
+        }
+
+
+        // =====================================================
+        // ZATEN KAPAK VAR MI?
+        // =====================================================
+
+        if (HasLid)
+        {
+            interactionUI?.ShowMessage(
+                "Bu bardağın zaten kapağı var!"
+            );
+
+            return false;
+        }
+
+
+        // =====================================================
+        // LID POINT
+        // =====================================================
+
+        if (lidPoint == null)
+        {
+            Debug.LogWarning(
+                "CupLidReceiver: LidPoint atanmadı!",
+                this
+            );
+
+            return false;
+        }
+
+
+        // =====================================================
+        // KAPAĞI TAK
+        // =====================================================
+
+        attachedLid =
+            lidPickup.gameObject;
+
+
+        lidPickup.AttachToObject(
+            transform,
+            lidPoint.position,
+            lidPoint.rotation
+        );
+
+
+        // =====================================================
+        // ÖNEMLİ:
+        // KAPAK ARTIK FİZİKSEL ENGEL OLMASIN
+        // =====================================================
+
+        lidPickup.SetColliderTrigger(true);
+
+
+        Debug.Log(
+            "Kapak cup'a takıldı. " +
+            "Kapak collider artık Trigger."
+        );
+
+
+        return true;
+    }
+
+
+    // =========================================================
+    // KAPAK ÇIKAR
+    // =========================================================
+
+    public void DetachLid(
+        PickupItem lidPickup)
+    {
+        if (lidPickup == null)
+            return;
+
+
+        if (attachedLid ==
+            lidPickup.gameObject)
+        {
+            attachedLid = null;
+
+
+            // =================================================
+            // NORMAL COLLIDER'A DÖN
+            // =================================================
+
+            lidPickup.SetColliderTrigger(false);
+
+
+            Debug.Log(
+                "Kapak cup'tan çıkarıldı. " +
+                "Kapak collider normale döndü."
+            );
+        }
+    }
+}
