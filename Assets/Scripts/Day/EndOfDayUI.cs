@@ -125,6 +125,14 @@ public class EndOfDayUI : MonoBehaviour
         Time.timeScale = 0f;
 
         // -----------------------------------------------------
+        // İMLECİ SERBEST BIRAK (Oyuncu ESC'ye basmadan
+        // doğrudan butona tıklayabilsin diye)
+        // -----------------------------------------------------
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        // -----------------------------------------------------
         // BAŞLIK
         // -----------------------------------------------------
 
@@ -264,12 +272,21 @@ public class EndOfDayUI : MonoBehaviour
 
     private void OnContinueClicked()
     {
+        Debug.Log("EndOfDayUI: Continue butonuna basıldı.");
+
         Time.timeScale = 1f;
 
         if (panelRoot != null)
         {
             panelRoot.SetActive(false);
         }
+
+        // -----------------------------------------------------
+        // İMLECİ TEKRAR KİLİTLE (Oyun kontrolüne geri dön)
+        // -----------------------------------------------------
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
         if (DayCycleManager.Instance != null)
         {

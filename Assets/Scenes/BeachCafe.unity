@@ -55882,7 +55882,7 @@ GameObject:
   - component: {fileID: 1221938036}
   - component: {fileID: 1221938035}
   m_Layer: 5
-  m_Name: Button
+  m_Name: continuebutton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -79146,7 +79146,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   openHour: 9
   closeHour: 20
-  secondsPerGameHour: 3
+  secondsPerGameHour: 0.5
   npcSpawner: {fileID: 6570637}
 --- !u!1 &1770120266
 GameObject:
