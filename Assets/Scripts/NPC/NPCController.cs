@@ -1468,7 +1468,7 @@ public class NPCController : MonoBehaviour
         if (isCorrect)
         {
             DayStatsTracker.Instance?.RecordOrderResult(true, 0f);
-
+            CafeFloorLitterZone.Instance?.MakeDirty();
             StartDrinkSequence(cup);
         }
         else

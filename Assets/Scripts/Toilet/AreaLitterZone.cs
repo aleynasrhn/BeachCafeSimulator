@@ -6,7 +6,7 @@ using UnityEngine;
 /// Bölgedeki olası kir objelerini (kağıt + leke) tutar, kirlenince
 /// bunlardan rastgele bir kısmını aktif eder.
 /// </summary>
-public class AreaLitterZone : MonoBehaviour
+public class AreaLitterZone : MonoBehaviour, ILitterZone
 {
     [Header("Bu Bölgedeki Olası Kirler (Kağıt + Leke)")]
     [Tooltip("Hepsi sahnede kapalı (inactive) dursun, script başta zaten kapatır.")]
