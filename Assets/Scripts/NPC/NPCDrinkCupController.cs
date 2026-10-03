@@ -23,24 +23,23 @@ public class NPCDrinkCupController : MonoBehaviour
         public float handScaleMultiplier = 1f;
     }
 
-
     [Header("Bardak Tutma")]
     [SerializeField] private Transform drinkCupHolder;
 
     [Header("Boyuta Göre Elde Konum Ayarları")]
-    [SerializeField] private List<HandCupSettings> handSettingsPerSize = new List<HandCupSettings>();
-
+    [SerializeField]
+    private List<HandCupSettings> handSettingsPerSize =
+        new List<HandCupSettings>();
 
     private PickupItem currentCup;
 
-    // Kupanın masadaki (ele alınmadan önceki) orijinal durumu.
+    // Kupanın masadaki durumu
     private Transform originalParent;
     private Vector3 originalWorldPosition;
     private Quaternion originalWorldRotation;
     private Vector3 originalLocalScale;
 
     private bool isCupInHand = false;
-
 
     // =========================================================
     // BARDAK ATA
@@ -50,23 +49,27 @@ public class NPCDrinkCupController : MonoBehaviour
     {
         currentCup = cup;
         isCupInHand = false;
+
+        Debug.Log(
+            $"{gameObject.name}: İçilecek bardak atandı → " +
+            $"{cup?.name}"
+        );
     }
 
-
     // =========================================================
-    // BARDAĞI ELE AL
-    // =========================================================
-    //
-    // BU METODU "Drinking" ANİMASYONUNDAKİ TakeCup EVENT'İ ÇAĞIRIYOR.
-    // Her tekrar (2. kez içme vb.) için de otomatik olarak yeniden
-    // çağrılır çünkü Animation Event klibe bağlı, script'e değil.
-    //
+    // ELE AL
     // =========================================================
 
     public void TakeCup()
     {
         if (currentCup == null)
+        {
+            Debug.LogWarning(
+                $"{gameObject.name}: TakeCup çağrıldı ama currentCup yok."
+            );
+
             return;
+        }
 
         if (drinkCupHolder == null)
         {
@@ -79,14 +82,8 @@ public class NPCDrinkCupController : MonoBehaviour
 
         if (isCupInHand)
         {
-            // Zaten elde, tekrar alma.
             return;
         }
-
-
-        // =====================================================
-        // BOYUTU ÖĞREN
-        // =====================================================
 
         DrinkRecipe recipe =
             currentCup.GetComponent<DrinkRecipe>();
@@ -94,8 +91,7 @@ public class NPCDrinkCupController : MonoBehaviour
         if (recipe == null)
         {
             Debug.LogWarning(
-                $"{gameObject.name}: Alınan bardakta DrinkRecipe " +
-                "bulunamadı, elde konumlandırma yapılamıyor."
+                $"{gameObject.name}: Bardakta DrinkRecipe bulunamadı."
             );
 
             return;
@@ -109,16 +105,14 @@ public class NPCDrinkCupController : MonoBehaviour
         if (settings == null)
         {
             Debug.LogWarning(
-                $"{gameObject.name}: {recipe.Size} boyutu için " +
-                "Hand Settings tanımlanmamış!"
+                $"{gameObject.name}: {recipe.Size} için Hand Settings yok!"
             );
 
             return;
         }
 
-
         // =====================================================
-        // ELE ALMADAN ÖNCEKİ (MASADAKİ) KONUMU KAYDET
+        // MASA KONUMUNU KAYDET
         // =====================================================
 
         originalParent =
@@ -133,9 +127,14 @@ public class NPCDrinkCupController : MonoBehaviour
         originalLocalScale =
             currentCup.transform.localScale;
 
+        // =====================================================
+        // OYUNCU ETKİLEŞİMİNİ GEÇİCİ KİLİTLE
+        // =====================================================
+
+        currentCup.SetInteractionLocked(true);
 
         // =====================================================
-        // ELE YERLEŞTİR
+        // ELE AL
         // =====================================================
 
         currentCup.transform.SetParent(
@@ -147,7 +146,9 @@ public class NPCDrinkCupController : MonoBehaviour
             settings.handPosition;
 
         currentCup.transform.localRotation =
-            Quaternion.Euler(settings.handRotation);
+            Quaternion.Euler(
+                settings.handRotation
+            );
 
         currentCup.transform.localScale =
             originalLocalScale *
@@ -156,19 +157,13 @@ public class NPCDrinkCupController : MonoBehaviour
         isCupInHand = true;
 
         Debug.Log(
-            $"{gameObject.name} {recipe.Size} bardağı eline aldı."
+            $"{gameObject.name}: " +
+            $"{recipe.Size} bardağı eline aldı."
         );
     }
 
-
     // =========================================================
-    // BARDAĞI MASAYA BIRAK
-    // =========================================================
-    //
-    // BU METODU "Drinking" ANİMASYONUNDAKİ BIRAKMA EVENT'İ ÇAĞIRACAK.
-    // Animator penceresinde ilgili event'in Function alanına
-    // bu metodu (PutCupOnTable) seçmen gerekiyor.
-    //
+    // MASAYA BIRAK
     // =========================================================
 
     public void PutCupOnTable()
@@ -177,14 +172,23 @@ public class NPCDrinkCupController : MonoBehaviour
             return;
 
         if (!isCupInHand)
-        {
-            // Zaten elde değil, bırakılacak bir şey yok.
             return;
-        }
 
+        RestoreCupToTable();
+    }
+
+    // =========================================================
+    // BARDAĞI MASAYA GERİ DÖNDÜR
+    // =========================================================
+
+    private void RestoreCupToTable()
+    {
+        if (currentCup == null)
+            return;
 
         currentCup.transform.SetParent(
-            originalParent
+            originalParent,
+            true
         );
 
         currentCup.transform.position =
@@ -196,10 +200,57 @@ public class NPCDrinkCupController : MonoBehaviour
         currentCup.transform.localScale =
             originalLocalScale;
 
+        // Tekrar oyuncunun alabilmesine izin ver
+        currentCup.SetInteractionLocked(false);
+
         isCupInHand = false;
 
         Debug.Log(
-            $"{gameObject.name} bardağı masaya bıraktı."
+            $"{gameObject.name}: Bardak tekrar masaya bırakıldı " +
+            "ve oyuncu tarafından alınabilir."
         );
     }
+
+    // =========================================================
+    // DIŞARIDAN ZORLA BIRAKTIR
+    // =========================================================
+
+    public void ForcePutCupOnTable()
+    {
+        if (currentCup == null)
+            return;
+
+        if (!isCupInHand)
+        {
+            currentCup.SetInteractionLocked(false);
+            return;
+        }
+
+        RestoreCupToTable();
+    }
+
+    // =========================================================
+    // TEMİZLE
+    // =========================================================
+
+    public void ClearCup()
+    {
+        if (currentCup != null)
+        {
+            currentCup.SetInteractionLocked(false);
+        }
+
+        currentCup = null;
+        isCupInHand = false;
+    }
+
+    // =========================================================
+    // GETTER
+    // =========================================================
+
+    public PickupItem CurrentCup =>
+        currentCup;
+
+    public bool IsCupInHand =>
+        isCupInHand;
 }

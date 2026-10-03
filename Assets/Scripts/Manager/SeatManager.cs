@@ -31,6 +31,14 @@ public class SeatManager : MonoBehaviour
     // =========================================================
     // BOŞ KOLTUK BUL
     // =========================================================
+    //
+    // Bir koltuk şu durumda "boş" sayılmaz:
+    // - Zaten başka bir NPC tarafından rezerve edilmişse
+    // - Masasında (DrinkPlacePoint) hâlâ bardak veya bahşiş
+    //   duruyorsa (IsOccupiedByItem). Oyuncu masayı temizlemeden
+    //   yeni müşteri oraya oturamaz.
+    //
+    // =========================================================
 
     public Transform GetFreeSeat()
     {
@@ -42,16 +50,28 @@ public class SeatManager : MonoBehaviour
             if (seat == null)
                 continue;
 
-            if (!occupiedSeats.Contains(seat))
+            if (occupiedSeats.Contains(seat))
+                continue;
+
+            DrinkPlacePoint point =
+                GetDrinkPlacePoint(seat);
+
+            if (point != null &&
+                point.IsOccupiedByItem)
             {
-                freeSeats.Add(seat);
+                // Masada hâlâ kullanılmış bardak ya da
+                // alınmamış bahşiş var, bu koltuğu atla.
+                continue;
             }
+
+            freeSeats.Add(seat);
         }
 
         if (freeSeats.Count == 0)
         {
             Debug.LogWarning(
-                "Boş sandalye kalmadı!"
+                "Boş sandalye kalmadı! " +
+                "(Hiç yok ya da hepsinin masası kirli olabilir.)"
             );
 
             return null;
@@ -98,13 +118,6 @@ public class SeatManager : MonoBehaviour
         string seatName =
             seat.name;
 
-
-        // Örnek:
-        // SitPoint1
-        // SitPoint15
-        //
-        // DrinkPlacePoint1
-        // DrinkPlacePoint15
 
         if (!seatName.StartsWith("SitPoint"))
         {

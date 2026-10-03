@@ -1,20 +1,22 @@
 using UnityEngine;
 
 /// <summary>
-/// Kullanılmış espresso kahvesini portafilterdan boşaltır.
-/// Oyuncu elinde kullanılmış kahveli portafilter tutarken
-/// çöp kovasına E ile etkileşirse kahve temizlenir.
+/// İki farklı işi yapar:
+/// 1) Elinde kullanılmış kahveli PORTAFİLTER varsa: sadece kahveyi
+///    boşaltır (portafilter elde kalır, tekrar kullanılabilir).
+/// 2) Elinde (masadan alınmış) herhangi bir KAHVE BARDAĞI (DrinkRecipe
+///    içeren item) varsa: bardağı tamamen yok eder, elden düşer.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class CoffeeTrashBin : MonoBehaviour, IInteractable
 {
     [Header("Ayarlar")]
-    [SerializeField] private string acceptedItemName = "Portafilter";
+    [SerializeField] private string portafilterItemName = "Portafilter";
 
 
     public string GetInteractPrompt()
     {
-        return "Kahveyi boşalt";
+        return "E - Çöp Kovası";
     }
 
 
@@ -24,11 +26,12 @@ public class CoffeeTrashBin : MonoBehaviour, IInteractable
             return;
 
 
+        bool fromLeftHand;
+
         PickupItem heldItem =
-            player.GetHeldItem();
+            GetHeldFrom(player, out fromLeftHand);
 
 
-        // Elinde item yok.
         if (heldItem == null)
         {
             Debug.Log("Çöp kovası: Oyuncunun elinde item yok.");
@@ -36,45 +39,93 @@ public class CoffeeTrashBin : MonoBehaviour, IInteractable
         }
 
 
-        Debug.Log(
-            "Çöp kovası: Elde olan item = " +
-            heldItem.ItemName
-        );
+        // =====================================================
+        // DURUM 1: PORTAFİLTER → SADECE KAHVEYİ BOŞALT
+        // =====================================================
 
-
-        // Portafilter değil.
-        if (heldItem.ItemName != acceptedItemName)
+        if (heldItem.ItemName == portafilterItemName)
         {
+            if (!heldItem.HasUsedCoffee)
+            {
+                Debug.Log(
+                    "Çöp kovası: Portafilterde kullanılmış kahve yok."
+                );
+
+                return;
+            }
+
+            heldItem.EmptyGroundCoffee();
+
             Debug.Log(
-                "Çöp kovası: Bu item portafilter değil."
+                "Çöp kovası: Kullanılmış kahve boşaltıldı."
             );
 
             return;
         }
 
 
-        // Kullanılmış kahve kontrolü.
-        if (!heldItem.HasUsedCoffee)
+        // =====================================================
+        // DURUM 2: KAHVE BARDAĞI → TAMAMEN AT
+        // =====================================================
+
+        DrinkRecipe recipe =
+            heldItem.GetComponent<DrinkRecipe>();
+
+        if (recipe != null)
         {
-            Debug.Log(
-                "Çöp kovası: Portafilterde kullanılmış kahve yok."
-            );
+            if (fromLeftHand)
+            {
+                player.SetLeftHeldItem(null);
+            }
+            else
+            {
+                player.SetHeldItem(null);
+            }
+
+            Destroy(heldItem.gameObject);
+
+            Debug.Log("Çöp kovası: Bardak atıldı.");
 
             return;
         }
 
 
-        Debug.Log(
-            "Çöp kovası: Kullanılmış kahve temizleniyor..."
-        );
-
-
-        // KAHVEYİ SİL
-        heldItem.EmptyGroundCoffee();
-
+        // =====================================================
+        // NE PORTAFİLTER NE BARDAK
+        // =====================================================
 
         Debug.Log(
-            "Çöp kovası: Kahve başarıyla boşaltıldı."
+            "Çöp kovası: Bu item kabul edilmiyor " +
+            "(ne portafilter ne de bardak)."
         );
+    }
+
+
+    // =========================================================
+    // SAĞ YA DA SOL ELDEKİ ITEM'I BUL
+    // =========================================================
+
+    private PickupItem GetHeldFrom(
+        PlayerInteraction player,
+        out bool fromLeftHand)
+    {
+        fromLeftHand = false;
+
+        PickupItem held =
+            player.GetHeldItem();
+
+        if (held != null)
+            return held;
+
+        held =
+            player.GetLeftHeldItem();
+
+        if (held != null)
+        {
+            fromLeftHand = true;
+            return held;
+        }
+
+        return null;
     }
 }
