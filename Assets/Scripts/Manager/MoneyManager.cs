@@ -40,10 +40,6 @@ public class MoneyManager : MonoBehaviour
         UpdateMoneyText();
     }
 
-    // =========================================================
-    // TEMEL PARA İŞLEMLERİ (GÖSTERGESİZ)
-    // =========================================================
-
     public void AddMoney(float amount)
     {
         currentMoney += amount;
@@ -68,10 +64,6 @@ public class MoneyManager : MonoBehaviour
         );
     }
 
-    // =========================================================
-    // GÖSTERGELİ PARA İŞLEMLERİ (BAHŞİŞ / YANLIŞ SİPARİŞ CEZASI)
-    // =========================================================
-
     public void AddMoneyWithFeedback(float amount)
     {
         AddMoney(amount);
@@ -87,8 +79,21 @@ public class MoneyManager : MonoBehaviour
     }
 
     // =========================================================
-    // DEĞİŞİM YAZISI
+    // PARAYI DOĞRUDAN AYARLA (KAYIT YÜKLERKEN KULLANILIR)
     // =========================================================
+    //
+    // AddMoney/SubtractMoney'den farklı olarak göstergesiz,
+    // doğrudan atama yapar. Sadece GameBootstrap'ın kayıt
+    // yüklerken kullanması için.
+    //
+    // =========================================================
+
+    public void SetMoney(float amount)
+    {
+        currentMoney = amount;
+
+        UpdateMoneyText();
+    }
 
     private void ShowMoneyDelta(float delta)
     {
@@ -121,10 +126,6 @@ public class MoneyManager : MonoBehaviour
 
         deltaCoroutine = null;
     }
-
-    // =========================================================
-    // UI
-    // =========================================================
 
     private void UpdateMoneyText()
     {

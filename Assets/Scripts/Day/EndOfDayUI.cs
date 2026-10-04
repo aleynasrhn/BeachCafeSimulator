@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -34,9 +35,18 @@ public class EndOfDayUI : MonoBehaviour
     [Header("Devam Butonu")]
     [SerializeField] private Button continueButton;
 
+    [Header("Geçiş Süreleri")]
+    [SerializeField] private float fadeOutDuration = 0.5f;
+    [SerializeField] private float blackHoldDuration = 2f;
+    [SerializeField] private float fadeInDuration = 1f;
+
     // =========================================================
-    // AWAKE
+    // PauseMenuController, gün sonu paneli açıkken ESC'ye
+    // basılınca pause menüsünün ÜSTÜNE binmesini engellemek
+    // için bunu kontrol eder.
     // =========================================================
+
+    public static bool IsShowing { get; private set; } = false;
 
     private void Awake()
     {
@@ -52,18 +62,10 @@ public class EndOfDayUI : MonoBehaviour
         }
     }
 
-    // =========================================================
-    // START
-    // =========================================================
-
     private void Start()
     {
         SubscribeToDayManager();
     }
-
-    // =========================================================
-    // DAY MANAGER'A BAĞLAN
-    // =========================================================
 
     private void SubscribeToDayManager()
     {
@@ -78,15 +80,7 @@ public class EndOfDayUI : MonoBehaviour
 
         DayCycleManager.Instance.OnDayEnded -= Show;
         DayCycleManager.Instance.OnDayEnded += Show;
-
-        Debug.Log(
-            "EndOfDayUI: OnDayEnded eventine başarıyla bağlandı."
-        );
     }
-
-    // =========================================================
-    // DESTROY
-    // =========================================================
 
     private void OnDestroy()
     {
@@ -99,18 +93,12 @@ public class EndOfDayUI : MonoBehaviour
         {
             continueButton.onClick.RemoveListener(OnContinueClicked);
         }
-    }
 
-    // =========================================================
-    // GÜN SONU EKRANINI GÖSTER
-    // =========================================================
+        IsShowing = false;
+    }
 
     public void Show(DayResult result)
     {
-        Debug.Log(
-            "EndOfDayUI.Show() ÇALIŞTI!"
-        );
-
         if (panelRoot == null)
         {
             Debug.LogError(
@@ -122,168 +110,99 @@ public class EndOfDayUI : MonoBehaviour
 
         panelRoot.SetActive(true);
 
-        Time.timeScale = 0f;
+        IsShowing = true;
 
-        // -----------------------------------------------------
-        // İMLECİ SERBEST BIRAK (Oyuncu ESC'ye basmadan
-        // doğrudan butona tıklayabilsin diye)
-        // -----------------------------------------------------
+        Time.timeScale = 0f;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // -----------------------------------------------------
-        // BAŞLIK
-        // -----------------------------------------------------
-
         if (dayNumberText != null)
-        {
-            dayNumberText.text =
-                $"Gün {result.dayNumber}";
-        }
+            dayNumberText.text = $"Gün {result.dayNumber}";
 
         if (workHoursText != null)
-        {
-            workHoursText.text =
-                result.workHoursText;
-        }
-
-        // -----------------------------------------------------
-        // GELİR
-        // -----------------------------------------------------
+            workHoursText.text = result.workHoursText;
 
         if (totalEarnedText != null)
-        {
-            totalEarnedText.text =
-                $"{result.totalGrossRevenue:0.00}$";
-        }
+            totalEarnedText.text = $"{result.totalGrossRevenue:0.00}$";
 
         if (wrongOrdersText != null)
-        {
-            wrongOrdersText.text =
-                $"-{result.totalPenalty:0.00}$";
-        }
+            wrongOrdersText.text = $"-{result.totalPenalty:0.00}$";
 
         if (profitText != null)
-        {
-            profitText.text =
-                $"{result.profit:0.00}$";
-        }
-
-        // -----------------------------------------------------
-        // SİPARİŞLER
-        // -----------------------------------------------------
+            profitText.text = $"{result.profit:0.00}$";
 
         if (totalOrdersText != null)
-        {
-            totalOrdersText.text =
-                result.totalOrdersPlaced.ToString();
-        }
+            totalOrdersText.text = result.totalOrdersPlaced.ToString();
 
         if (successfulOrdersText != null)
-        {
-            successfulOrdersText.text =
-                result.successfulOrders.ToString();
-        }
+            successfulOrdersText.text = result.successfulOrders.ToString();
 
         if (failedOrdersText != null)
-        {
-            failedOrdersText.text =
-                result.failedOrders.ToString();
-        }
-
-        // -----------------------------------------------------
-        // MÜŞTERİLER
-        // -----------------------------------------------------
+            failedOrdersText.text = result.failedOrders.ToString();
 
         if (customersArrivedText != null)
-        {
-            customersArrivedText.text =
-                result.customersArrived.ToString();
-        }
+            customersArrivedText.text = result.customersArrived.ToString();
 
         if (satisfiedText != null)
-        {
-            satisfiedText.text =
-                result.satisfiedCustomers.ToString();
-        }
+            satisfiedText.text = result.satisfiedCustomers.ToString();
 
         if (unsatisfiedText != null)
-        {
-            unsatisfiedText.text =
-                result.unsatisfiedCustomers.ToString();
-        }
+            unsatisfiedText.text = result.unsatisfiedCustomers.ToString();
 
-        // -----------------------------------------------------
-        // YILDIZLAR
-        // -----------------------------------------------------
-
-        UpdateStars(
-            result.starRating
-        );
-
-        Debug.Log(
-            $"GÜN SONU UI AÇILDI | " +
-            $"Gün: {result.dayNumber} | " +
-            $"Gelir: {result.totalGrossRevenue:0.00}$ | " +
-            $"Ceza: {result.totalPenalty:0.00}$ | " +
-            $"Kâr: {result.profit:0.00}$ | " +
-            $"Yıldız: {result.starRating}"
-        );
+        UpdateStars(result.starRating);
     }
-
-    // =========================================================
-    // YILDIZLARI GÜNCELLE
-    // =========================================================
 
     private void UpdateStars(int rating)
     {
         if (starIcons == null)
             return;
 
-        rating =
-            Mathf.Clamp(
-                rating,
-                0,
-                5
-            );
+        rating = Mathf.Clamp(rating, 0, 5);
 
         for (int i = 0; i < starIcons.Length; i++)
         {
             if (starIcons[i] == null)
                 continue;
 
-            if (i < rating)
-            {
-                starIcons[i].sprite =
-                    filledStarSprite;
-            }
-            else
-            {
-                starIcons[i].sprite =
-                    emptyStarSprite;
-            }
+            starIcons[i].sprite =
+                i < rating ? filledStarSprite : emptyStarSprite;
         }
     }
 
     // =========================================================
-    // DEVAM ET
+    // DEVAM ET: FADE + SAHNE SIFIRLAMA + YENİ GÜN + OTOMATİK KAYIT
     // =========================================================
 
     private void OnContinueClicked()
     {
-        Debug.Log("EndOfDayUI: Continue butonuna basıldı.");
+        StartCoroutine(ContinueRoutine());
+    }
 
-        Time.timeScale = 1f;
+    private IEnumerator ContinueRoutine()
+    {
+        if (continueButton != null)
+        {
+            continueButton.interactable = false;
+        }
+
+        if (FadeScreenUI.Instance != null)
+        {
+            yield return FadeScreenUI.Instance.FadeOut(fadeOutDuration);
+        }
 
         if (panelRoot != null)
         {
             panelRoot.SetActive(false);
         }
 
-        // -----------------------------------------------------
-        // İMLECİ TEKRAR KİLİTLE (Oyun kontrolüne geri dön)
-        // -----------------------------------------------------
+        IsShowing = false;
+
+        DayResetManager.ResetSceneForNewDay();
+
+        yield return new WaitForSecondsRealtime(blackHoldDuration);
+
+        Time.timeScale = 1f;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -291,6 +210,31 @@ public class EndOfDayUI : MonoBehaviour
         if (DayCycleManager.Instance != null)
         {
             DayCycleManager.Instance.PrepareNextDay();
+        }
+
+        GameSaveData saveData = new GameSaveData
+        {
+            currentDay =
+                DayManager.Instance != null
+                    ? DayManager.Instance.CurrentDay
+                    : 1,
+
+            money =
+                MoneyManager.Instance != null
+                    ? MoneyManager.Instance.GetMoney()
+                    : 0f
+        };
+
+        SaveManager.Save(saveData);
+
+        if (FadeScreenUI.Instance != null)
+        {
+            yield return FadeScreenUI.Instance.FadeIn(fadeInDuration);
+        }
+
+        if (continueButton != null)
+        {
+            continueButton.interactable = true;
         }
     }
 }

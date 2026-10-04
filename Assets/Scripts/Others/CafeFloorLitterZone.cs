@@ -1,18 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Kafe zeminindeki pislik havuzu. Sen sahneye 10 tane pislik
-/// objesi koyacaksın (hepsi başta kapalı duracak), her doğru
-/// sipariş tesliminde bunlardan rastgele BİR tanesi aktif olur.
-/// Mop ile süpürülerek temizlenir (SweepableStain kullanır).
-/// </summary>
 public class CafeFloorLitterZone : MonoBehaviour, ILitterZone
 {
     public static CafeFloorLitterZone Instance { get; private set; }
 
     [Header("Kafe Zemini - Olası Pislikler (10 tane öner)")]
-    [Tooltip("Hepsi sahnede kapalı (inactive) dursun, script başta zaten kapatır.")]
     [SerializeField] private List<GameObject> litterPool = new List<GameObject>();
 
     private readonly List<GameObject> activeLitter = new List<GameObject>();
@@ -41,10 +34,6 @@ public class CafeFloorLitterZone : MonoBehaviour, ILitterZone
         if (Instance == this)
             Instance = null;
     }
-
-    // =========================================================
-    // HER DOĞRU SİPARİŞ TESLİMİNDE BİR PİSLİK ÇIKAR
-    // =========================================================
 
     public void MakeDirty()
     {
@@ -81,5 +70,20 @@ public class CafeFloorLitterZone : MonoBehaviour, ILitterZone
     public void NotifyLitterCleaned(GameObject obj)
     {
         activeLitter.Remove(obj);
+    }
+
+    // =========================================================
+    // YENİ GÜN: TÜM KİRİ ANINDA TEMİZLE
+    // =========================================================
+
+    public void CleanAll()
+    {
+        foreach (GameObject obj in litterPool)
+        {
+            if (obj != null)
+                obj.SetActive(false);
+        }
+
+        activeLitter.Clear();
     }
 }

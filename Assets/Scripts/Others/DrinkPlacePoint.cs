@@ -156,6 +156,30 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
     }
 
     // =========================================================
+    // YENİ GÜN: MASADAKİ BARDAĞI YOK ET
+    // =========================================================
+    //
+    // DayResetManager, gün geçişinde (siyah ekranın arkasında)
+    // her DrinkPlacePoint için bunu çağırır. Masada kullanılmış
+    // bir bardak varsa yok edilir, masa tekrar kullanılabilir
+    // hale gelir (IsOccupiedByItem otomatik false döner).
+    //
+    // =========================================================
+
+    public void ClearCupForNewDay()
+    {
+        if (currentCupOnTable != null)
+        {
+            currentCupOnTable.OnPickedUp -=
+                HandleTableCupPickedUp;
+
+            Destroy(currentCupOnTable.gameObject);
+
+            currentCupOnTable = null;
+        }
+    }
+
+    // =========================================================
     // INTERACTION PROMPT
     // =========================================================
 

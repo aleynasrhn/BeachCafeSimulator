@@ -13,7 +13,7 @@ public class PlayerMovement : MonoBehaviour
     public float acceleration = 10f;
     public float mouseSensitivity = 200f;
     public float gravity = -30f;
-    public bool canMove = true; 
+    public bool canMove = true;
 
     private float currentSpeed;
     private float xRotation;
@@ -42,6 +42,9 @@ public class PlayerMovement : MonoBehaviour
         Cursor.visible = false;
         defaultYPos = cameraHolder.localPosition.y;
         playerCamera.fieldOfView = walkFOV;
+
+        // Ayarlar panelinde kaydedilmiş mouse hassasiyeti varsa uygula.
+        mouseSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", mouseSensitivity);
     }
 
     void Update()
@@ -57,7 +60,7 @@ public class PlayerMovement : MonoBehaviour
         UpdateFOV();
     }
 
-  
+
     void MovePlayer()
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
@@ -97,7 +100,7 @@ public class PlayerMovement : MonoBehaviour
         transform.Rotate(Vector3.up * mouseX);
     }
 
-  
+
     void ApplyGravity()
     {
         isGrounded = controller.isGrounded;
@@ -157,4 +160,3 @@ public class PlayerMovement : MonoBehaviour
     }
 
 }
-
