@@ -33,6 +33,11 @@ public class ToiletManager : MonoBehaviour
     public Transform RoomEntryPoint => roomEntryPoint;
     public Transform RoomInsidePoint => roomInsidePoint;
 
+    public int StallCount => stalls.Count;
+
+    public bool IsCommonAreaDirty =>
+        commonAreaZone != null && commonAreaZone.IsDirty;
+
     public int DirtyStallCount
     {
         get

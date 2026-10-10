@@ -5,12 +5,15 @@ public class CafeFloorLitterZone : MonoBehaviour, ILitterZone
 {
     public static CafeFloorLitterZone Instance { get; private set; }
 
-    [Header("Kafe Zemini - Olası Pislikler (10 tane öner)")]
+    [Header("Kafe Zemini - Olası Pislikler")]
     [SerializeField] private List<GameObject> litterPool = new List<GameObject>();
 
     private readonly List<GameObject> activeLitter = new List<GameObject>();
 
     public bool IsDirty => activeLitter.Count > 0;
+
+    // Şu an zeminde duran pislik sayısı (gün puanı için).
+    public int ActiveCount => activeLitter.Count;
 
     private void Awake()
     {

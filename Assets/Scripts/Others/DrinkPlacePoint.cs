@@ -16,6 +16,7 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
     private Vector3 tipPositionOffset =
         new Vector3(0.15f, 0f, 0f);
 
+    [Header("Yedek Bahşiş Aralığı (TipManager yoksa)")]
     [SerializeField] private float tipMinAmount = 0.5f;
     [SerializeField] private float tipMaxAmount = 1f;
 
@@ -75,11 +76,28 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
     }
 
     // =========================================================
-    // BAHŞİŞ OLUŞTUR
+    // BAHŞİŞ OLUŞTUR (YEDEK: RASTGELE)
     // =========================================================
 
     public void SpawnTip()
     {
+        SpawnTip(
+            Random.Range(
+                tipMinAmount,
+                tipMaxAmount
+            )
+        );
+    }
+
+    // =========================================================
+    // BAHŞİŞ OLUŞTUR (HESAPLANMIŞ MİKTAR)
+    // =========================================================
+
+    public void SpawnTip(float amount)
+    {
+        if (amount <= 0f)
+            return;
+
         if (tipPrefab == null)
         {
             Debug.LogWarning(
@@ -94,12 +112,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
         {
             return;
         }
-
-        float amount =
-            Random.Range(
-                tipMinAmount,
-                tipMaxAmount
-            );
 
         Vector3 spawnPosition =
             transform.position +
@@ -158,13 +170,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
     // =========================================================
     // YENİ GÜN: MASADAKİ BARDAĞI YOK ET
     // =========================================================
-    //
-    // DayResetManager, gün geçişinde (siyah ekranın arkasında)
-    // her DrinkPlacePoint için bunu çağırır. Masada kullanılmış
-    // bir bardak varsa yok edilir, masa tekrar kullanılabilir
-    // hale gelir (IsOccupiedByItem otomatik false döner).
-    //
-    // =========================================================
 
     public void ClearCupForNewDay()
     {
@@ -198,10 +203,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
         if (player == null)
             return;
 
-        // =====================================================
-        // ELDEN KAHVEYİ AL
-        // =====================================================
-
         PickupItem held =
             player.GetHeldItem();
 
@@ -218,10 +219,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
         if (held == null)
             return;
 
-        // =====================================================
-        // DRINK RECIPE
-        // =====================================================
-
         DrinkRecipe recipe =
             held.GetComponent<DrinkRecipe>();
 
@@ -234,10 +231,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             return;
         }
 
-        // =====================================================
-        // KAHVE TÜRÜ
-        // =====================================================
-
         CoffeeType? coffeeType =
             recipe.DetermineCoffeeType();
 
@@ -249,10 +242,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
 
             return;
         }
-
-        // =====================================================
-        // CUSTOMER
-        // =====================================================
 
         if (customer == null)
         {
@@ -273,10 +262,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             return;
         }
 
-        // =====================================================
-        // MASADA ZATEN BARDAK VAR MI?
-        // =====================================================
-
         if (currentCupOnTable != null)
         {
             Debug.Log(
@@ -287,21 +272,12 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             return;
         }
 
-        // =====================================================
-        // SİPARİŞ DOĞRULAMA
-        // =====================================================
-
         bool isCorrect =
             OrderValidator.Validate(
                 customer.CustomerOrder,
                 recipe,
                 out string reason
             );
-
-        // =====================================================
-        // KAHVEYİ MASAYA KOY
-        // DOĞRU / YANLIŞ FARK ETMEZ
-        // =====================================================
 
         Vector3 placePosition =
             transform.position +
@@ -314,10 +290,6 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             rotationOffset
         );
 
-        // =====================================================
-        // OYUNCUNUN ELİNİ TEMİZLE
-        // =====================================================
-
         if (fromLeftHand)
         {
             player.SetLeftHeldItem(null);
@@ -327,19 +299,11 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             player.SetHeldItem(null);
         }
 
-        // =====================================================
-        // MASADAKİ BARDAĞI KAYDET
-        // =====================================================
-
         currentCupOnTable =
             held;
 
         held.OnPickedUp +=
             HandleTableCupPickedUp;
-
-        // =====================================================
-        // DOĞRU KAHVE
-        // =====================================================
 
         if (isCorrect)
         {
@@ -357,19 +321,11 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             return;
         }
 
-        // =====================================================
-        // YANLIŞ KAHVE
-        // =====================================================
-
         Debug.Log(
             $"Sipariş yanlış! " +
             $"{customer.gameObject.name}: " +
             $"{reason}"
         );
-
-        // Para cezasını burada vermiyoruz.
-        // NPC önce kahveyi içecek.
-        // Sonuç daha sonra NPC tarafından yönetilecek.
 
         customer.ServeOrder(
             false,

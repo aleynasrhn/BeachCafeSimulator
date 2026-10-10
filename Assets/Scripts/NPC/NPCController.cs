@@ -47,13 +47,6 @@ public class NPCController : MonoBehaviour
     // =========================================================
     // GÜN SİSTEMİ İÇİN AKTİF MÜŞTERİ SAYACI
     // =========================================================
-    //
-    // Bir NPC gerçekten kuyruğa girdiği andan (TryJoinQueue),
-    // kafeden tamamen ayrılıp yok olana (OnDestroy) kadar bu
-    // sayaca dahildir. DayCycleManager, günü bitirip bitiremeyeceğini
-    // bu sayaç sıfır mı diye bakarak anlar.
-    //
-    // =========================================================
 
     public static int ActiveCafeCustomerCount { get; private set; }
 
@@ -92,8 +85,6 @@ public class NPCController : MonoBehaviour
     [SerializeField] private bool isCafeCustomer = true;
 
     private NPCSpawner npcSpawner;
-
-    private bool cafeCustomerRegistered = false;
 
     // =========================================================
     // İÇME
@@ -142,6 +133,12 @@ public class NPCController : MonoBehaviour
     private Coroutine orderWaitCoroutine;
 
     private float currentOrderWaitTime;
+
+    // Masaya oturduktan sonra geçen süre (servis hızı için).
+    private float orderElapsed = 0f;
+
+    // Doğru servis anındaki süre oranı (0 = anında, 1 = süre dolmak üzere).
+    private float serviceRatio = 1f;
 
     private Order pendingTicketOrder;
 
@@ -609,8 +606,6 @@ public class NPCController : MonoBehaviour
 
                 return;
             }
-
-            cafeCustomerRegistered = true;
         }
 
         queuedNPCs.Add(
@@ -1336,7 +1331,7 @@ public class NPCController : MonoBehaviour
         float waitTime =
             currentOrderWaitTime;
 
-        float elapsed = 0f;
+        orderElapsed = 0f;
 
         if (orderWaitUI != null)
         {
@@ -1348,15 +1343,15 @@ public class NPCController : MonoBehaviour
             );
         }
 
-        while (elapsed < waitTime)
+        while (orderElapsed < waitTime)
         {
-            elapsed += Time.deltaTime;
+            orderElapsed += Time.deltaTime;
 
             float progress =
-                elapsed / waitTime;
+                orderElapsed / waitTime;
 
             float remaining =
-                waitTime - elapsed;
+                waitTime - orderElapsed;
 
             if (orderWaitUI != null)
             {
@@ -1467,8 +1462,25 @@ public class NPCController : MonoBehaviour
 
         if (isCorrect)
         {
+            // =================================================
+            // SERVİS HIZI: sürenin ne kadarı harcandı?
+            // =================================================
+
+            serviceRatio =
+                currentOrderWaitTime > 0f
+                    ? Mathf.Clamp01(orderElapsed / currentOrderWaitTime)
+                    : 1f;
+
+            Debug.Log(
+                $"{gameObject.name}: Servis hızı oranı = " +
+                $"{serviceRatio:0.00}"
+            );
+
             DayStatsTracker.Instance?.RecordOrderResult(true, 0f);
+            DayStatsTracker.Instance?.RecordServiceSpeed(serviceRatio);
+
             CafeFloorLitterZone.Instance?.MakeDirty();
+
             StartDrinkSequence(cup);
         }
         else
@@ -1769,9 +1781,36 @@ public class NPCController : MonoBehaviour
 
         if (assignedDrinkPlacePoint != null)
         {
+            // =================================================
+            // BAHŞİŞ: sadece doğru sipariş + servis hızına göre
+            // =================================================
+
             if (wasOrderCorrect)
             {
-                assignedDrinkPlacePoint.SpawnTip();
+                if (TipManager.Instance != null)
+                {
+                    float tip =
+                        TipManager.Instance.CalculateTip(
+                            serviceRatio
+                        );
+
+                    if (tip > 0f)
+                    {
+                        assignedDrinkPlacePoint.SpawnTip(tip);
+                    }
+                    else
+                    {
+                        Debug.Log(
+                            $"{gameObject.name}: Servis geç kaldı " +
+                            $"(oran {serviceRatio:0.00}), bahşiş yok."
+                        );
+                    }
+                }
+                else
+                {
+                    // TipManager sahnede yoksa eski rastgele bahşiş.
+                    assignedDrinkPlacePoint.SpawnTip();
+                }
             }
 
             assignedDrinkPlacePoint.SetCustomer(
@@ -1925,6 +1964,7 @@ public class NPCController : MonoBehaviour
         if (currentState ==
             NPCState.InToiletSequence)
         {
+            // Animasyonu bu süreçte NPCToiletVisitor yönetiyor.
             return;
         }
 

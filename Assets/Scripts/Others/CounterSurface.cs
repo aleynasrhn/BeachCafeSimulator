@@ -1,67 +1,272 @@
 using UnityEngine;
 
 /// <summary>
-/// Tezgahın (counter) mesh'ine sahip GameObject'e eklenir — collider'ı olan obje olmalı.
-/// GameObject'in Layer'ını "Interactable" yap.
+/// Tezgahın collider'ı olan yüzeyine eklenir.
+/// Oyuncu elindeki item'ı baktığı noktaya bırakır.
 ///
-/// PlacementPoint sistemi yerine geçer: sabit noktalar yerine, oyuncu tezgahın
-/// neresine bakıyorsa elindeki item oraya bırakılır.
+/// Shot bardağı tezgaha bırakılırsa drop sesi burada çalınır.
+/// DockPoint'lere bırakıldığında bu ses ÇALMAZ.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class CounterSurface : MonoBehaviour, IInteractable
 {
-    [Header("Ayarlar")]
-    [Tooltip("Zaten bir item olan noktaya çok yakına bırakmayı engellemek için minimum mesafe")]
+    [Header("Yerleştirme Ayarları")]
+
+    [Tooltip("Başka bir item'a bundan daha yakın noktaya bırakmayı engeller.")]
     [SerializeField] private float minDistanceBetweenItems = 0.15f;
-    [Tooltip("Yerdeki item'ları kontrol etmek için kullanılan layer - Interactable seç")]
+
+    [Tooltip("Tezgah üstündeki item'ların layer'ı.")]
     [SerializeField] private LayerMask itemLayer;
-    [Tooltip("Coffee grinder, espresso machine gibi tezgah üstündeki sabit makinelerin collider'larının olduğu layer - buraya item bırakılamasın")]
+
+    [Tooltip("Tezgah üstündeki makinelerin bulunduğu layer.")]
     [SerializeField] private LayerMask obstacleLayer;
+
+
+    // =========================================================
+    // SHOT BARDAĞI SESİ
+    // =========================================================
+
+    [Header("Shot Bardagi Ses")]
+
+    [Tooltip("Shot bardağını tezgaha bırakınca çalacak ses.")]
+    [SerializeField] private AudioClip shotGlassDropClip;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float shotGlassDropVolume = 1f;
+
+
+    // =========================================================
+    // AUDIO SOURCE
+    // =========================================================
+
+    private AudioSource audioSource;
+
+
+    // =========================================================
+    // AWAKE
+    // =========================================================
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
+        audioSource.spatialBlend = 0f;
+    }
+
+
+    // =========================================================
+    // PROMPT
+    // =========================================================
 
     public string GetInteractPrompt()
     {
         return "E - Tezgaha bırak";
     }
 
+
+    // =========================================================
+    // INTERACT
+    // =========================================================
+
     public void Interact(PlayerInteraction player)
     {
-        // Önce sağ el, boşsa sol el (tamper) denenir
+        if (player == null)
+            return;
+
+
+        // =====================================================
+        // SAĞ EL
+        // =====================================================
+
         PickupItem held = player.GetHeldItem();
+
         bool fromLeftHand = false;
+
+
+        // =====================================================
+        // SAĞ EL BOŞSA SOL EL
+        // =====================================================
+
         if (held == null)
         {
             held = player.GetLeftHeldItem();
             fromLeftHand = true;
         }
-        if (held == null) return; // ikisi de boş, tezgahla etkileşimin anlamı yok
+
+
+        // İki el de boş
+        if (held == null)
+            return;
+
+
+        // =====================================================
+        // BIRAKILACAK NOKTA
+        // =====================================================
 
         Vector3 placePos = player.LastHitPoint;
 
+
+        // =====================================================
+        // NOKTA DOLU MU?
+        // =====================================================
+
         if (IsSpotOccupied(placePos))
-            return; // çok yakında zaten bir item var, üst üste bindirme
+            return;
+
+
+        // =====================================================
+        // SHOT BARDAĞI MI?
+        //
+        // Bırakmadan ÖNCE kontrol ediyoruz.
+        // Çünkü PlaceOnCounter sonrası artık elde olmayacak.
+        // =====================================================
+
+        PourSource pourSource =
+            held.GetComponent<PourSource>();
+
+
+        bool isShotGlass =
+            pourSource != null;
+
+
+        // =====================================================
+        // TEZGAHA BIRAK
+        // =====================================================
 
         held.PlaceOnCounter(placePos);
 
-        if (fromLeftHand) player.SetLeftHeldItem(null);
-        else player.SetHeldItem(null);
+
+        // =====================================================
+        // ELİ TEMİZLE
+        // =====================================================
+
+        if (fromLeftHand)
+        {
+            player.SetLeftHeldItem(null);
+        }
+        else
+        {
+            player.SetHeldItem(null);
+        }
+
+
+        // =====================================================
+        // SHOT BARDAĞI BIRAKMA SESİ
+        //
+        // SADECE TEZGAHA BIRAKILDIĞINDA ÇALIŞIR.
+        // =====================================================
+
+        if (isShotGlass)
+        {
+            PlayShotGlassDropSound();
+        }
     }
+
+
+    // =========================================================
+    // SHOT DROP SESİ
+    // =========================================================
+
+    private void PlayShotGlassDropSound()
+    {
+        if (shotGlassDropClip == null)
+        {
+            Debug.LogWarning(
+                "CounterSurface: Shot Glass Drop Clip atanmemiş!"
+            );
+
+            return;
+        }
+
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+
+            if (audioSource == null)
+            {
+                audioSource =
+                    gameObject.AddComponent<AudioSource>();
+            }
+
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
+            audioSource.spatialBlend = 0f;
+        }
+
+
+        audioSource.PlayOneShot(
+            shotGlassDropClip,
+            shotGlassDropVolume
+        );
+
+
+        Debug.Log(
+            "SHOT BARDAĞI TEZGAHA BIRAKILDI → DROP SESİ ÇALDI"
+        );
+    }
+
+
+    // =========================================================
+    // NOKTA DOLULUK KONTROLÜ
+    // =========================================================
 
     private bool IsSpotOccupied(Vector3 pos)
     {
-        Vector3 checkCenter = pos + Vector3.up * 0.05f;
+        Vector3 checkCenter =
+            pos + Vector3.up * 0.05f;
 
-        // 1) Zaten bırakılmış bir item var mı?
-        Collider[] nearbyItems = Physics.OverlapSphere(checkCenter, minDistanceBetweenItems, itemLayer);
-        foreach (var hitCollider in nearbyItems)
+
+        // =====================================================
+        // ITEM KONTROLÜ
+        // =====================================================
+
+        Collider[] nearbyItems =
+            Physics.OverlapSphere(
+                checkCenter,
+                minDistanceBetweenItems,
+                itemLayer
+            );
+
+
+        foreach (Collider hitCollider in nearbyItems)
         {
-            if (hitCollider.TryGetComponent(out PickupItem item) && !item.IsHeld)
+            PickupItem item =
+                hitCollider.GetComponentInParent<PickupItem>();
+
+
+            if (item != null && !item.IsHeld)
+            {
                 return true;
+            }
         }
 
-        // 2) Grinder, espresso machine gibi sabit bir makineye çarpıyor mu?
-        Collider[] nearbyObstacles = Physics.OverlapSphere(checkCenter, minDistanceBetweenItems, obstacleLayer);
+
+        // =====================================================
+        // MAKİNE / ENGEL KONTROLÜ
+        // =====================================================
+
+        Collider[] nearbyObstacles =
+            Physics.OverlapSphere(
+                checkCenter,
+                minDistanceBetweenItems,
+                obstacleLayer
+            );
+
+
         if (nearbyObstacles.Length > 0)
+        {
             return true;
+        }
+
 
         return false;
     }

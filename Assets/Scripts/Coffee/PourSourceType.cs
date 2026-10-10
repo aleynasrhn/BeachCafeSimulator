@@ -16,6 +16,9 @@ public enum PourSourceType
 ///
 /// Milk:
 /// - MilkFiller üzerinden çalışır.
+///
+/// Ayrıca espresso shot bardağı bırakıldığında
+/// bırakma sesi çalabilir.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class PourSource : MonoBehaviour, IHoldInteractable
@@ -30,14 +33,39 @@ public class PourSource : MonoBehaviour, IHoldInteractable
     [Tooltip("Espresso kaynağının PickupItem'ı.")]
     [SerializeField] private PickupItem sourcePickupItem;
 
+    [Header("Espresso Dökme Sesi")]
+    [SerializeField] private AudioClip espressoPourClip;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float espressoPourVolume = 1f;
+
+   
+
     [Header("Milk")]
     [Tooltip("Milk için kullanılacak MilkFiller.")]
     [SerializeField] private MilkFiller sourceMilkFiller;
 
 
-    // Espresso kaynağındaki shot sayısı.
+    // =========================================================
+    // ESPRESSO
+    // =========================================================
+
     private int espressoShotCount = 0;
 
+
+    // =========================================================
+    // SES
+    // =========================================================
+
+    private AudioSource runtimeAudioSource;
+
+    private bool espressoSoundPlaying = false;
+
+
+    // =========================================================
+    // GETTERS
+    // =========================================================
 
     public float HoldDuration =>
         holdDuration;
@@ -53,21 +81,53 @@ public class PourSource : MonoBehaviour, IHoldInteractable
 
 
     // =========================================================
+    // AWAKE
+    // =========================================================
+
+    private void Awake()
+    {
+        if (sourcePickupItem == null)
+        {
+            sourcePickupItem =
+                GetComponent<PickupItem>();
+        }
+
+        CreateAudioSource();
+    }
+
+
+    // =========================================================
+    // AUDIO SOURCE
+    // =========================================================
+
+    private void CreateAudioSource()
+    {
+        runtimeAudioSource =
+            gameObject.AddComponent<AudioSource>();
+
+        runtimeAudioSource.playOnAwake = false;
+        runtimeAudioSource.loop = false;
+        runtimeAudioSource.spatialBlend = 0f;
+        runtimeAudioSource.mute = false;
+        runtimeAudioSource.priority = 128;
+    }
+
+
+    // =========================================================
     // ESPRESSO SHOT AYARLA
     // =========================================================
 
     public void SetEspressoShots(int shotCount)
     {
-        if (sourceType != PourSourceType.Espresso)
+        if (sourceType !=
+            PourSourceType.Espresso)
             return;
-
 
         espressoShotCount =
             Mathf.Max(
                 0,
                 shotCount
             );
-
 
         Debug.Log(
             $"Espresso kaynağına " +
@@ -82,18 +142,16 @@ public class PourSource : MonoBehaviour, IHoldInteractable
 
     public void ConsumeEspressoShots()
     {
-        if (sourceType != PourSourceType.Espresso)
+        if (sourceType !=
+            PourSourceType.Espresso)
             return;
 
-
         espressoShotCount = 0;
-
 
         if (sourcePickupItem != null)
         {
             sourcePickupItem.EmptyEspresso();
         }
-
 
         Debug.Log(
             "Espresso kaynağı tamamen boşaldı."
@@ -114,7 +172,6 @@ public class PourSource : MonoBehaviour, IHoldInteractable
                 "E'ye basılı tut (Espresso Dök)";
         }
 
-
         return
             "E'ye basılı tut (Süt Dök)";
     }
@@ -130,18 +187,14 @@ public class PourSource : MonoBehaviour, IHoldInteractable
         if (player == null)
             return false;
 
-
         PickupItem held =
             player.GetHeldItem();
-
 
         if (held == null)
             return false;
 
-
         DrinkRecipe recipe =
             held.GetComponent<DrinkRecipe>();
-
 
         if (recipe == null)
             return false;
@@ -157,10 +210,8 @@ public class PourSource : MonoBehaviour, IHoldInteractable
             CupPourReceiver receiver =
                 held.GetComponent<CupPourReceiver>();
 
-
             if (receiver == null)
                 return false;
-
 
             return
                 HasEspresso &&
@@ -189,18 +240,14 @@ public class PourSource : MonoBehaviour, IHoldInteractable
         if (player == null)
             return;
 
-
         PickupItem held =
             player.GetHeldItem();
-
 
         if (held == null)
             return;
 
-
         CupPourReceiver receiver =
             held.GetComponent<CupPourReceiver>();
-
 
         if (receiver == null)
             return;
@@ -213,6 +260,8 @@ public class PourSource : MonoBehaviour, IHoldInteractable
         if (sourceType ==
             PourSourceType.Espresso)
         {
+            StartEspressoPourSound();
+
             receiver.SetEspressoProgress(
                 progress01
             );
@@ -251,23 +300,28 @@ public class PourSource : MonoBehaviour, IHoldInteractable
         PlayerInteraction player)
     {
         if (player == null)
+        {
+            StopEspressoPourSound();
             return;
-
+        }
 
         PickupItem held =
             player.GetHeldItem();
 
-
         if (held == null)
+        {
+            StopEspressoPourSound();
             return;
-
+        }
 
         CupPourReceiver receiver =
             held.GetComponent<CupPourReceiver>();
 
-
         if (receiver == null)
+        {
+            StopEspressoPourSound();
             return;
+        }
 
 
         // -----------------------------------------------------
@@ -281,6 +335,8 @@ public class PourSource : MonoBehaviour, IHoldInteractable
                 this
             );
 
+            StopEspressoPourSound();
+
             return;
         }
 
@@ -291,7 +347,6 @@ public class PourSource : MonoBehaviour, IHoldInteractable
 
         if (sourceMilkFiller == null)
             return;
-
 
         if (sourceMilkFiller.IsFrothed)
         {
@@ -309,15 +364,100 @@ public class PourSource : MonoBehaviour, IHoldInteractable
 
 
     // =========================================================
-    // AWAKE
+    // ESPRESSO DÖKME SESİ
     // =========================================================
 
-    private void Awake()
+    private void StartEspressoPourSound()
     {
-        if (sourcePickupItem == null)
+        if (sourceType !=
+            PourSourceType.Espresso)
+            return;
+
+        if (espressoPourClip == null)
         {
-            sourcePickupItem =
-                GetComponent<PickupItem>();
+            Debug.LogError(
+                "ESPRESSO POUR CLIP BOS! " +
+                gameObject.name
+            );
+
+            return;
         }
+
+        if (runtimeAudioSource == null)
+        {
+            CreateAudioSource();
+        }
+
+        if (espressoSoundPlaying)
+            return;
+
+        runtimeAudioSource.clip =
+            espressoPourClip;
+
+        runtimeAudioSource.volume =
+            espressoPourVolume;
+
+        runtimeAudioSource.loop = true;
+        runtimeAudioSource.spatialBlend = 0f;
+        runtimeAudioSource.mute = false;
+
+        runtimeAudioSource.Play();
+
+        espressoSoundPlaying = true;
+
+        Debug.Log(
+            "ESPRESSO DOKME SESI BASLADI! " +
+            gameObject.name
+        );
+    }
+
+
+    // =========================================================
+    // ESPRESSO DÖKME SESİ DURDUR
+    // =========================================================
+
+    private void StopEspressoPourSound()
+    {
+        espressoSoundPlaying = false;
+
+        if (runtimeAudioSource == null)
+            return;
+
+        if (runtimeAudioSource.isPlaying)
+        {
+            runtimeAudioSource.Stop();
+
+            Debug.Log(
+                "ESPRESSO DOKME SESI DURDU! " +
+                gameObject.name
+            );
+        }
+    }
+
+
+    // =========================================================
+    // SHOT BARDAĞI BIRAKMA SESİ
+    // =========================================================
+
+    
+
+
+    // =========================================================
+    // HOLD İPTAL
+    // =========================================================
+
+    public void CancelHold()
+    {
+        StopEspressoPourSound();
+    }
+
+
+    // =========================================================
+    // DISABLE
+    // =========================================================
+
+    private void OnDisable()
+    {
+        StopEspressoPourSound();
     }
 }

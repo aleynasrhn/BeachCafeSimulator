@@ -16,14 +16,14 @@ public class NPCSpawner : MonoBehaviour
     [SerializeField]
     private int maxActiveNPC = 12;
 
-    [Header("Spawn Süresi")]
+    [Header("Spawn Süresi (Gün başında DayCycleManager ezer)")]
     [SerializeField]
     private float minSpawnInterval = 5f;
 
     [SerializeField]
     private float maxSpawnInterval = 10f;
 
-    [Header("Günlük Müşteri")]
+    [Header("Günlük Müşteri (Gün başında DayCycleManager ezer)")]
     [SerializeField]
     private int dailyCafeCustomers = 12;
 
@@ -39,12 +39,14 @@ public class NPCSpawner : MonoBehaviour
 
     private int activeNPCCount = 0;
 
+    // SADECE GERÇEKTEN KUYRUĞA GİREN
+    // MÜŞTERİLER BURADA SAYILIR.
     private int cafeCustomersSpawnedToday = 0;
 
     private float spawnTimer;
 
-    // Günün başlaması (DayCycleManager.StartDay -> StartNewDay)
-    // çağrılana kadar spawn kapalı kalır.
+    // Gün başlayana (DayCycleManager.StartDay -> StartNewDay)
+    // kadar spawn kapalı kalır.
     private bool spawningEnabled = false;
 
     private readonly List<GameObject> recentlySpawnedPrefabs =
@@ -184,6 +186,8 @@ public class NPCSpawner : MonoBehaviour
 
         if (dailyCustomerLimitReached)
         {
+            // Günlük gerçek müşteri hedefi doldu,
+            // bundan sonra sadece sokak NPC'leri.
             isCafeCustomerCandidate = false;
         }
         else
@@ -286,6 +290,10 @@ public class NPCSpawner : MonoBehaviour
         );
     }
 
+    // =========================================================
+    // YENİ GÜN (SADECE MÜŞTERİ SAYISI)
+    // =========================================================
+
     public void StartNewDay(
         int newDailyCafeCustomerCount)
     {
@@ -305,6 +313,24 @@ public class NPCSpawner : MonoBehaviour
             $"Günlük gerçek müşteri hedefi: " +
             $"{dailyCafeCustomers}"
         );
+    }
+
+    // =========================================================
+    // YENİ GÜN (MÜŞTERİ SAYISI + SPAWN ARALIĞI)
+    // =========================================================
+
+    public void StartNewDay(
+        int newDailyCafeCustomerCount,
+        float newMinSpawnInterval,
+        float newMaxSpawnInterval)
+    {
+        minSpawnInterval =
+            Mathf.Max(1f, newMinSpawnInterval);
+
+        maxSpawnInterval =
+            Mathf.Max(minSpawnInterval, newMaxSpawnInterval);
+
+        StartNewDay(newDailyCafeCustomerCount);
     }
 
     public void StopSpawning()

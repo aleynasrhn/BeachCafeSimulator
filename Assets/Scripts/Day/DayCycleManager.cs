@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DayCycleManager : MonoBehaviour
@@ -13,6 +14,25 @@ public class DayCycleManager : MonoBehaviour
         Ended
     }
 
+    // =========================================================
+    // GÜNLÜK ZORLUK TABLOSU
+    // =========================================================
+
+    [Serializable]
+    public class DayDifficulty
+    {
+        public int day = 1;
+
+        [Tooltip("Bu gün kuyruğa girecek toplam gerçek müşteri sayısı.")]
+        public int customers = 6;
+
+        [Tooltip("İki NPC spawn'ı arasındaki en kısa süre (sn).")]
+        public float minSpawnInterval = 40f;
+
+        [Tooltip("İki NPC spawn'ı arasındaki en uzun süre (sn).")]
+        public float maxSpawnInterval = 65f;
+    }
+
     [Header("Çalışma Saatleri")]
     [SerializeField] private int openHour = 9;
     [SerializeField] private int closeHour = 20;
@@ -20,6 +40,29 @@ public class DayCycleManager : MonoBehaviour
     [Header("Zaman Akış Hızı")]
     [Tooltip("1 oyun-içi saatin gerçek dünyada kaç saniye sürdüğü.")]
     [SerializeField] private float secondsPerGameHour = 60f;
+
+    [Header("Zorluk Eğrisi (Gün Bazlı)")]
+    [Tooltip("Gün sırasına göre doldur. Listede olmayan bir gün için, ondan önceki en son girdi kullanılır.")]
+    [SerializeField]
+    private List<DayDifficulty> difficultyByDay = new List<DayDifficulty>
+    {
+        new DayDifficulty { day = 1, customers = 6,  minSpawnInterval = 40f, maxSpawnInterval = 65f },
+        new DayDifficulty { day = 2, customers = 8,  minSpawnInterval = 30f, maxSpawnInterval = 50f },
+        new DayDifficulty { day = 3, customers = 10, minSpawnInterval = 25f, maxSpawnInterval = 40f },
+        new DayDifficulty { day = 4, customers = 12, minSpawnInterval = 20f, maxSpawnInterval = 35f },
+        new DayDifficulty { day = 5, customers = 14, minSpawnInterval = 18f, maxSpawnInterval = 30f },
+        new DayDifficulty { day = 6, customers = 16, minSpawnInterval = 15f, maxSpawnInterval = 27f },
+        new DayDifficulty { day = 7, customers = 18, minSpawnInterval = 14f, maxSpawnInterval = 24f },
+    };
+
+    [Header("Tablonun Ötesindeki Günler")]
+    [SerializeField] private int extraCustomersPerDay = 2;
+    [SerializeField] private int maxCustomersPerDay = 30;
+    [SerializeField] private float minAllowedSpawnInterval = 8f;
+
+    [Header("Spawn Aralığı Ölçekleme")]
+    [Tooltip("Tablodaki spawn aralıkları bu gün hızına göre hazırlandı. Seconds Per Game Hour'u test için küçültünce aralıklar otomatik orantılı kısalır.")]
+    [SerializeField] private float referenceSecondsPerGameHour = 60f;
 
     [Header("Referanslar")]
     [SerializeField] private NPCSpawner npcSpawner;
@@ -34,6 +77,11 @@ public class DayCycleManager : MonoBehaviour
     public event Action OnNoMoreCustomers;
     public event Action<DayResult> OnDayEnded;
     public event Action OnCannotEndDay;
+
+    // Özet ekranındaki "Devam Et"e basılınca, yeni günün başlatılmaya
+    // HAZIR olduğunu bildirir. DayPhaseUI dinleyip "Günü Başlat (Space)"
+    // yazısını tekrar gösterir.
+    public event Action OnReadyForNextDay;
 
     private void Awake()
     {
@@ -63,46 +111,14 @@ public class DayCycleManager : MonoBehaviour
 
     private void HandleSpacePressed()
     {
-        Debug.Log(
-            $"SPACE BASILDI | Phase: {currentPhase} | " +
-            $"Aktif Müşteri: {NPCController.ActiveCafeCustomerCount}"
-        );
-
         switch (currentPhase)
         {
             case DayPhase.NotStarted:
-
-                Debug.Log("SPACE → Gün başlatılıyor.");
-
                 StartDay();
-
                 break;
 
             case DayPhase.NoMoreCustomers:
-
-                Debug.Log(
-                    "SPACE → Gün bitirme deneniyor. " +
-                    $"Aktif müşteri: {NPCController.ActiveCafeCustomerCount}"
-                );
-
                 TryEndDay();
-
-                break;
-
-            case DayPhase.Open:
-
-                Debug.Log(
-                    "SPACE → Kafe hâlâ açık, gün bitirilemez."
-                );
-
-                break;
-
-            case DayPhase.Ended:
-
-                Debug.Log(
-                    "SPACE → Gün zaten bitmiş."
-                );
-
                 break;
         }
     }
@@ -143,14 +159,119 @@ public class DayCycleManager : MonoBehaviour
 
         DayStatsTracker.Instance?.ResetForNewDay();
 
+        int dayNumber =
+            DayManager.Instance != null
+                ? DayManager.Instance.CurrentDay
+                : 1;
+
         if (npcSpawner != null)
         {
-            npcSpawner.StartNewDay(npcSpawner.DailyCafeCustomers);
+            DayDifficulty difficulty =
+                GetDifficultyForDay(dayNumber);
+
+            if (difficulty != null)
+            {
+                float scale =
+                    secondsPerGameHour /
+                    Mathf.Max(0.01f, referenceSecondsPerGameHour);
+
+                float minInterval =
+                    Mathf.Max(2f, difficulty.minSpawnInterval * scale);
+
+                float maxInterval =
+                    Mathf.Max(minInterval, difficulty.maxSpawnInterval * scale);
+
+                npcSpawner.StartNewDay(
+                    difficulty.customers,
+                    minInterval,
+                    maxInterval
+                );
+
+                Debug.Log(
+                    $"Gün {dayNumber} zorluğu: " +
+                    $"{difficulty.customers} müşteri | " +
+                    $"spawn {minInterval:0}-{maxInterval:0} sn"
+                );
+            }
+            else
+            {
+                // Tablo boşsa spawner'ın kendi Inspector değerleri kullanılır.
+                npcSpawner.StartNewDay(npcSpawner.DailyCafeCustomers);
+            }
         }
 
         OnDayStarted?.Invoke();
 
         Debug.Log("Gün başladı. Kafe açık.");
+    }
+
+    // =========================================================
+    // O GÜNÜN ZORLUĞUNU BUL
+    // =========================================================
+
+    private DayDifficulty GetDifficultyForDay(int day)
+    {
+        if (difficultyByDay == null || difficultyByDay.Count == 0)
+            return null;
+
+        DayDifficulty best = null;
+        DayDifficulty last = null;
+
+        foreach (DayDifficulty entry in difficultyByDay)
+        {
+            if (entry == null)
+                continue;
+
+            if (last == null || entry.day > last.day)
+            {
+                last = entry;
+            }
+
+            if (entry.day <= day &&
+                (best == null || entry.day > best.day))
+            {
+                best = entry;
+            }
+        }
+
+        if (last == null)
+            return null;
+
+        // Tablodaki ilk günden bile önceyse ilk girdiyi kullan.
+        if (best == null)
+        {
+            best = difficultyByDay[0];
+        }
+
+        // Tablonun içindeki günler: bulunan girdi aynen kullanılır.
+        if (day <= last.day)
+            return best;
+
+        // Tablonun ötesi: müşteri sayısı artar, aralıklar orantılı kısalır.
+        int daysBeyond = day - last.day;
+
+        int customers =
+            Mathf.Min(
+                last.customers + daysBeyond * extraCustomersPerDay,
+                Mathf.Max(maxCustomersPerDay, last.customers)
+            );
+
+        float ratio =
+            (float)last.customers / Mathf.Max(1, customers);
+
+        float minInterval =
+            Mathf.Max(minAllowedSpawnInterval, last.minSpawnInterval * ratio);
+
+        float maxInterval =
+            Mathf.Max(minInterval + 1f, last.maxSpawnInterval * ratio);
+
+        return new DayDifficulty
+        {
+            day = day,
+            customers = customers,
+            minSpawnInterval = minInterval,
+            maxSpawnInterval = maxInterval
+        };
     }
 
     // =========================================================
@@ -221,6 +342,10 @@ public class DayCycleManager : MonoBehaviour
 
         currentPhase = DayPhase.NotStarted;
         currentHour = openHour;
+
+        OnReadyForNextDay?.Invoke();
+
+        Debug.Log("Yeni gün hazır, Space ile başlatılabilir.");
     }
 
     // =========================================================

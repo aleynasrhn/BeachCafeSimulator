@@ -825,6 +825,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09186e606e22577478cef86192d38fdc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  accuracyWeight: 0.3
+  satisfactionWeight: 0.2
+  speedWeight: 0.25
+  cleanlinessWeight: 0.25
+  fiveStarThreshold: 0.9
+  fourStarThreshold: 0.75
+  threeStarThreshold: 0.55
+  twoStarThreshold: 0.3
+  floorDirtyCountForZeroScore: 5
 --- !u!1 &9634361
 GameObject:
   m_ObjectHideFlags: 0
@@ -1087,6 +1096,8 @@ MonoBehaviour:
   requireGroundCoffee: 0
   requireTamped: 0
   rejectUsedCoffee: 0
+  attachSound: {fileID: 0}
+  attachSoundVolume: 1
 --- !u!65 &13665548
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1647,6 +1658,9 @@ MonoBehaviour:
   frothedMilkMaterial: {fileID: 2100000, guid: 5f0fb30db2b98ed40aa91e0cbeac9bbb, type: 2}
   countdownText: {fileID: 1367624541}
   steamDuration: 3
+  steamSoundClip: {fileID: 8300000, guid: ce552efa092ba2b4b91bcccacb24f9d5, type: 3}
+  steamSoundVolume: 1
+  steamFadeOutDuration: 0.8
 --- !u!65 &25614493
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6376,6 +6390,8 @@ MonoBehaviour:
   requireGroundCoffee: 0
   requireTamped: 0
   rejectUsedCoffee: 0
+  attachSound: {fileID: 0}
+  attachSoundVolume: 1
 --- !u!65 &162473894
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9349,6 +9365,60 @@ RectTransform:
   m_AnchoredPosition: {x: -599.25, y: -405.75}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &252605850
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 252605851}
+  - component: {fileID: 252605852}
+  m_Layer: 0
+  m_Name: TipManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &252605851
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 252605850}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 470223619}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &252605852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 252605850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f52af168edb82de4195f15d1d02ed5a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tiers:
+  - maxTimeRatio: 0.5
+    minTip: 1
+    maxTip: 1.5
+  - maxTimeRatio: 0.75
+    minTip: 0.5
+    maxTip: 1
+  - maxTimeRatio: 0.9
+    minTip: 0.25
+    maxTip: 0.5
 --- !u!1 &252875829
 GameObject:
   m_ObjectHideFlags: 0
@@ -20447,6 +20517,7 @@ Transform:
   - {fileID: 541546251}
   - {fileID: 520340316}
   - {fileID: 354173738}
+  - {fileID: 252605851}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &470223620
@@ -42215,6 +42286,8 @@ MonoBehaviour:
   sourceType: 0
   holdDuration: 1.5
   sourcePickupItem: {fileID: 1033425215}
+  espressoPourClip: {fileID: 8300000, guid: f1c067d190c15db4caeeface761a1918, type: 3}
+  espressoPourVolume: 1
   sourceMilkFiller: {fileID: 0}
 --- !u!1 &1034522821
 GameObject:
@@ -46326,6 +46399,8 @@ MonoBehaviour:
   requireGroundCoffee: 0
   requireTamped: 0
   rejectUsedCoffee: 0
+  attachSound: {fileID: 0}
+  attachSoundVolume: 1
 --- !u!65 &1142183532
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -54604,6 +54679,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   holdDuration: 3.5
   acceptedItemName: portafilter
+  grinderAudioSource: {fileID: 919132148359794589}
 --- !u!65 &1353560785
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -60065,6 +60141,8 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 64
+  shotGlassDropClip: {fileID: 8300000, guid: 863abfd0bf9d26b4a9f7621fe518ceda, type: 3}
+  shotGlassDropVolume: 1
 --- !u!1 &1495668356
 GameObject:
   m_ObjectHideFlags: 0
@@ -67877,6 +67955,8 @@ MonoBehaviour:
   requireGroundCoffee: 1
   requireTamped: 1
   rejectUsedCoffee: 0
+  attachSound: {fileID: 8300000, guid: f8f3f1bf44190264997612839f5686ae, type: 3}
+  attachSoundVolume: 1
 --- !u!65 &1720149365
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -69201,7 +69281,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   openHour: 9
   closeHour: 20
-  secondsPerGameHour: 2
+  secondsPerGameHour: 10
+  difficultyByDay:
+  - day: 1
+    customers: 6
+    minSpawnInterval: 25
+    maxSpawnInterval: 60
+  - day: 2
+    customers: 8
+    minSpawnInterval: 25
+    maxSpawnInterval: 50
+  - day: 3
+    customers: 10
+    minSpawnInterval: 25
+    maxSpawnInterval: 40
+  - day: 4
+    customers: 12
+    minSpawnInterval: 20
+    maxSpawnInterval: 35
+  - day: 5
+    customers: 14
+    minSpawnInterval: 18
+    maxSpawnInterval: 30
+  - day: 6
+    customers: 16
+    minSpawnInterval: 15
+    maxSpawnInterval: 27
+  - day: 7
+    customers: 18
+    minSpawnInterval: 14
+    maxSpawnInterval: 24
+  extraCustomersPerDay: 2
+  maxCustomersPerDay: 30
+  minAllowedSpawnInterval: 8
+  referenceSecondsPerGameHour: 60
   npcSpawner: {fileID: 6570637}
 --- !u!1 &1770120266
 GameObject:
@@ -78946,6 +79059,8 @@ MonoBehaviour:
   holdDuration: 2
   acceptedItemName: Milk
   milkFiller: {fileID: 2046940667}
+  milkPourClip: {fileID: 8300000, guid: f1c067d190c15db4caeeface761a1918, type: 3}
+  milkPourVolume: 1
 --- !u!114 &2046940671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -78961,6 +79076,8 @@ MonoBehaviour:
   sourceType: 1
   holdDuration: 1.5
   sourcePickupItem: {fileID: 0}
+  espressoPourClip: {fileID: 0}
+  espressoPourVolume: 1
   sourceMilkFiller: {fileID: 2046940667}
 --- !u!1001 &2050958884
 PrefabInstance:
@@ -109315,6 +109432,7 @@ GameObject:
   - component: {fileID: 543450652346471718}
   - component: {fileID: 1353560785}
   - component: {fileID: 1353560784}
+  - component: {fileID: 919132148359794589}
   m_Layer: 3
   m_Name: coffee-grinder-sketchfab
   m_TagString: Untagged
@@ -109322,6 +109440,103 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!82 &919132148359794589
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132148359794588}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 644e1bbc53aa66d4b843204281f58fc8, type: 3}
+  m_Resource: {fileID: 8300000, guid: 644e1bbc53aa66d4b843204281f58fc8, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &919132148424135222
 GameObject:
   m_ObjectHideFlags: 0

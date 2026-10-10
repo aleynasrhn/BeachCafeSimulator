@@ -15,6 +15,9 @@ using UnityEngine;
 /// - Kullanılmış kahve durumu
 /// - Espresso durumu
 /// - Geçici etkileşim kilidi
+/// - Smooth dock
+/// - Hold position override
+/// - Başka objeye attach / detach
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
@@ -87,12 +90,6 @@ public class PickupItem : MonoBehaviour, IInteractable
     // =========================================================
     // OYUNCU BU ITEM'I ELİNE ALDIĞINDA TETİKLENİR
     // =========================================================
-    //
-    // Masaya bırakılmış bir bardağın oyuncu tarafından geri
-    // alındığını (DrinkPlacePoint gibi dış sistemlerin haberdar
-    // olması için) bildirmek amacıyla eklendi.
-    //
-    // =========================================================
 
     public event Action<PickupItem> OnPickedUp;
 
@@ -113,12 +110,11 @@ public class PickupItem : MonoBehaviour, IInteractable
     // ETKİLEŞİM KİLİDİ
     // =========================================================
 
-    // Tamper, başka bir işlem vb. sırasında item alınamasın.
     private bool isInteractionLocked = false;
 
 
     // =========================================================
-    // SMOOTH DOCK (ANİMASYONLU YERLEŞTİRME)
+    // SMOOTH DOCK
     // =========================================================
 
     private Coroutine smoothDockCoroutine;
@@ -141,8 +137,11 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        col = GetComponent<Collider>();
+        rb =
+            GetComponent<Rigidbody>();
+
+        col =
+            GetComponent<Collider>();
 
 
         uprightRotation =
@@ -309,7 +308,8 @@ public class PickupItem : MonoBehaviour, IInteractable
     }
 
 
-    public void Interact(PlayerInteraction player)
+    public void Interact(
+        PlayerInteraction player)
     {
         if (isInteractionLocked)
             return;
@@ -330,9 +330,11 @@ public class PickupItem : MonoBehaviour, IInteractable
     // ETKİLEŞİM KİLİDİ
     // =========================================================
 
-    public void SetInteractionLocked(bool locked)
+    public void SetInteractionLocked(
+        bool locked)
     {
-        isInteractionLocked = locked;
+        isInteractionLocked =
+            locked;
     }
 
 
@@ -344,11 +346,16 @@ public class PickupItem : MonoBehaviour, IInteractable
     // PICK UP
     // =========================================================
 
-    private void PickUp(PlayerInteraction player)
+    private void PickUp(
+        PlayerInteraction player)
     {
         if (isInteractionLocked)
             return;
 
+
+        // -----------------------------------------------------
+        // KETTLE KONTROLÜ
+        // -----------------------------------------------------
 
         KettleHeatController kettleHeat =
             GetComponent<KettleHeatController>();
@@ -365,17 +372,45 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
 
 
+        // -----------------------------------------------------
+        // BAĞLI OBJE VARSA AYIR
+        // -----------------------------------------------------
+
         if (isAttachedToObject)
         {
             DetachFromObject();
         }
 
 
+        // -----------------------------------------------------
+        // SMOOTH DOCK VARSA DURDUR
+        // -----------------------------------------------------
+
+        if (smoothDockCoroutine != null)
+        {
+            StopCoroutine(
+                smoothDockCoroutine
+            );
+
+            smoothDockCoroutine = null;
+
+            isInteractionLocked = false;
+        }
+
+
+        // -----------------------------------------------------
+        // EL NOKTASI
+        // -----------------------------------------------------
+
         holdPoint =
             isLeftHandOnly
                 ? player.LeftHoldPoint
                 : player.HoldPoint;
 
+
+        // -----------------------------------------------------
+        // FİZİK
+        // -----------------------------------------------------
 
         rb.isKinematic = true;
         rb.useGravity = false;
@@ -384,6 +419,10 @@ public class PickupItem : MonoBehaviour, IInteractable
 
         isHeld = true;
 
+
+        // -----------------------------------------------------
+        // PLAYER REFERANSI
+        // -----------------------------------------------------
 
         if (isLeftHandOnly)
         {
@@ -394,6 +433,11 @@ public class PickupItem : MonoBehaviour, IInteractable
             player.SetHeldItem(this);
         }
 
+
+        // -----------------------------------------------------
+        // EVENT
+        // -----------------------------------------------------
+
         OnPickedUp?.Invoke(this);
     }
 
@@ -402,7 +446,8 @@ public class PickupItem : MonoBehaviour, IInteractable
     // DROP
     // =========================================================
 
-    public void Drop(PlayerInteraction player)
+    public void Drop(
+        PlayerInteraction player)
     {
         if (isInteractionLocked)
             return;
@@ -427,6 +472,11 @@ public class PickupItem : MonoBehaviour, IInteractable
         {
             player.SetHeldItem(null);
         }
+
+        // NOT:
+        // Burada ses çalmıyoruz.
+        // Shot bardağı tezgaha bırakıldığında sesi
+        // CounterSurface.PlayDropSound() üzerinden çalacak.
     }
 
 
@@ -456,6 +506,11 @@ public class PickupItem : MonoBehaviour, IInteractable
 
         holdPoint = null;
         hasPositionOverride = false;
+
+        // NOT:
+        // Burada ses çalmıyoruz.
+        // CounterSurface, tezgaha bırakma işlemi tamamlandıktan
+        // sonra shot bardağı sesini kendisi başlatacak.
     }
 
 
@@ -483,6 +538,8 @@ public class PickupItem : MonoBehaviour, IInteractable
 
         holdPoint = null;
         hasPositionOverride = false;
+
+        // Burada da bırakma sesi yok.
     }
 
 
@@ -496,6 +553,10 @@ public class PickupItem : MonoBehaviour, IInteractable
         if (isInteractionLocked)
             return;
 
+
+        // -----------------------------------------------------
+        // KETTLE KONTROLÜ
+        // -----------------------------------------------------
 
         KettleHeatController kettleHeat =
             GetComponent<KettleHeatController>();
@@ -512,24 +573,45 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
 
 
+        // -----------------------------------------------------
+        // BAĞLI OBJE
+        // -----------------------------------------------------
+
         if (isAttachedToObject)
         {
             DetachFromObject();
         }
 
 
+        // -----------------------------------------------------
+        // SMOOTH DOCK VARSA DURDUR
+        // -----------------------------------------------------
+
         if (smoothDockCoroutine != null)
         {
-            StopCoroutine(smoothDockCoroutine);
+            StopCoroutine(
+                smoothDockCoroutine
+            );
+
             smoothDockCoroutine = null;
+
+            isInteractionLocked = false;
         }
 
+
+        // -----------------------------------------------------
+        // EL
+        // -----------------------------------------------------
 
         holdPoint =
             isLeftHandOnly
                 ? player.LeftHoldPoint
                 : player.HoldPoint;
 
+
+        // -----------------------------------------------------
+        // FİZİK
+        // -----------------------------------------------------
 
         rb.isKinematic = true;
         rb.useGravity = false;
@@ -539,6 +621,10 @@ public class PickupItem : MonoBehaviour, IInteractable
         isHeld = true;
 
 
+        // -----------------------------------------------------
+        // PLAYER
+        // -----------------------------------------------------
+
         if (isLeftHandOnly)
         {
             player.SetLeftHeldItem(this);
@@ -547,6 +633,11 @@ public class PickupItem : MonoBehaviour, IInteractable
         {
             player.SetHeldItem(this);
         }
+
+
+        // -----------------------------------------------------
+        // EVENT
+        // -----------------------------------------------------
 
         OnPickedUp?.Invoke(this);
     }
@@ -580,18 +671,19 @@ public class PickupItem : MonoBehaviour, IInteractable
 
         holdPoint = null;
         hasPositionOverride = false;
+
+        // Dock'a koyarken genel shot bırakma sesi yok.
     }
 
 
     // =========================================================
-    // SMOOTH DOCK (ANİMASYONLU YERLEŞTİRME)
+    // SMOOTH DOCK
     // =========================================================
     //
-    // DockAt() ile aynı işi yapar ama pozisyon/rotasyonu anında
-    // değil, "duration" saniyede yumuşak geçişle (SmoothStep)
-    // uygular. Animasyon bitene kadar item'ın etkileşimi kilitli
-    // ve collider'ı kapalı kalır (havada süzülürken tekrar
-    // alınamasın diye). Animasyon bitince onComplete çağrılır.
+    // ToolHolder tarafından kullanılır.
+    //
+    // Item belirlenen süre içerisinde yumuşak şekilde dock'a gider.
+    // Animasyon boyunca item kilitlidir.
     //
     // =========================================================
 
@@ -606,14 +698,19 @@ public class PickupItem : MonoBehaviour, IInteractable
             DetachFromObject();
         }
 
+
         if (smoothDockCoroutine != null)
         {
-            StopCoroutine(smoothDockCoroutine);
+            StopCoroutine(
+                smoothDockCoroutine
+            );
         }
+
 
         isHeld = false;
         holdPoint = null;
         hasPositionOverride = false;
+
 
         rb.isKinematic = true;
         rb.useGravity = false;
@@ -621,6 +718,7 @@ public class PickupItem : MonoBehaviour, IInteractable
         col.enabled = false;
 
         isInteractionLocked = true;
+
 
         smoothDockCoroutine =
             StartCoroutine(
@@ -643,8 +741,10 @@ public class PickupItem : MonoBehaviour, IInteractable
         Vector3 startPos =
             transform.position;
 
+
         Quaternion startRot =
             transform.rotation;
+
 
         Quaternion targetRot =
             uprightRotation *
@@ -652,15 +752,23 @@ public class PickupItem : MonoBehaviour, IInteractable
                 extraRotationEuler
             );
 
+
         float t = 0f;
 
-        // duration 0 ya da negatifse tek karede tamamla.
+
         float safeDuration =
-            Mathf.Max(0.01f, duration);
+            Mathf.Max(
+                0.01f,
+                duration
+            );
+
 
         while (t < 1f)
         {
-            t += Time.deltaTime / safeDuration;
+            t +=
+                Time.deltaTime /
+                safeDuration;
+
 
             float eased =
                 Mathf.SmoothStep(
@@ -669,12 +777,14 @@ public class PickupItem : MonoBehaviour, IInteractable
                     Mathf.Clamp01(t)
                 );
 
+
             transform.position =
                 Vector3.Lerp(
                     startPos,
                     worldPosition,
                     eased
                 );
+
 
             transform.rotation =
                 Quaternion.Slerp(
@@ -683,18 +793,29 @@ public class PickupItem : MonoBehaviour, IInteractable
                     eased
                 );
 
+
             yield return null;
         }
 
-        transform.position = worldPosition;
-        transform.rotation = targetRot;
+
+        transform.position =
+            worldPosition;
+
+
+        transform.rotation =
+            targetRot;
+
 
         col.enabled = true;
+
         isHeld = false;
+
         holdPoint = null;
+
         isInteractionLocked = false;
 
         smoothDockCoroutine = null;
+
 
         onComplete?.Invoke();
     }
@@ -727,13 +848,16 @@ public class PickupItem : MonoBehaviour, IInteractable
             worldRotation;
 
 
-        transform.SetParent(parent);
+        transform.SetParent(
+            parent
+        );
 
 
         attachedParent =
             parent;
 
-        isAttachedToObject = true;
+        isAttachedToObject =
+            true;
 
 
         rb.isKinematic = true;
@@ -762,6 +886,10 @@ public class PickupItem : MonoBehaviour, IInteractable
             attachedParent;
 
 
+        // -----------------------------------------------------
+        // CUP LID
+        // -----------------------------------------------------
+
         if (oldParent != null)
         {
             CupLidReceiver cupLidReceiver =
@@ -770,10 +898,16 @@ public class PickupItem : MonoBehaviour, IInteractable
 
             if (cupLidReceiver != null)
             {
-                cupLidReceiver.DetachLid(this);
+                cupLidReceiver.DetachLid(
+                    this
+                );
             }
         }
 
+
+        // -----------------------------------------------------
+        // DÜNYA POZİSYONU
+        // -----------------------------------------------------
 
         Vector3 worldPosition =
             transform.position;
@@ -782,7 +916,9 @@ public class PickupItem : MonoBehaviour, IInteractable
             transform.rotation;
 
 
-        transform.SetParent(null);
+        transform.SetParent(
+            null
+        );
 
 
         transform.position =
@@ -845,8 +981,21 @@ public class PickupItem : MonoBehaviour, IInteractable
         }
 
 
+        if (smoothDockCoroutine != null)
+        {
+            StopCoroutine(
+                smoothDockCoroutine
+            );
+
+            smoothDockCoroutine = null;
+
+            isInteractionLocked = false;
+        }
+
+
         transform.position =
             originalWorldPosition;
+
 
         transform.rotation =
             uprightRotation;
@@ -870,7 +1019,8 @@ public class PickupItem : MonoBehaviour, IInteractable
 
     private void Update()
     {
-        if (!isHeld || holdPoint == null)
+        if (!isHeld ||
+            holdPoint == null)
             return;
 
 
@@ -892,6 +1042,7 @@ public class PickupItem : MonoBehaviour, IInteractable
                 holdPoint.TransformPoint(
                     holdPositionOffset
                 );
+
 
             targetRotation =
                 holdPoint.rotation *

@@ -10,6 +10,8 @@ using UnityEngine;
 ///
 /// Sağ ve sol elde tutulan item'ları destekler.
 /// Brew gibi işlemler sırasında dock kilitlenebilir.
+///
+/// Dock'a item başarıyla takıldığında opsiyonel takma sesi çalar.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class MachineDockPoint : MonoBehaviour, IInteractable
@@ -38,6 +40,15 @@ public class MachineDockPoint : MonoBehaviour, IInteractable
     [SerializeField] private bool rejectUsedCoffee = false;
 
 
+    [Header("Takma Sesi")]
+    [Tooltip("Item dock'a başarıyla takıldığında çalacak ses.")]
+    [SerializeField] private AudioClip attachSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float attachSoundVolume = 1f;
+
+
     // =========================================================
     // DURUM
     // =========================================================
@@ -47,6 +58,13 @@ public class MachineDockPoint : MonoBehaviour, IInteractable
     private PickupItem dockedItem;
 
     private bool isLocked = false;
+
+
+    // =========================================================
+    // SES
+    // =========================================================
+
+    private AudioSource runtimeAudioSource;
 
 
     // =========================================================
@@ -61,6 +79,41 @@ public class MachineDockPoint : MonoBehaviour, IInteractable
 
     public bool IsLocked =>
         isLocked;
+
+
+    // =========================================================
+    // AWAKE
+    // =========================================================
+
+    private void Awake()
+    {
+        CreateAudioSource();
+    }
+
+
+    // =========================================================
+    // AUDIO SOURCE OLUŞTUR
+    // =========================================================
+
+    private void CreateAudioSource()
+    {
+        runtimeAudioSource =
+            gameObject.AddComponent<AudioSource>();
+
+        runtimeAudioSource.playOnAwake = false;
+
+        runtimeAudioSource.loop = false;
+
+        // 2D ses
+        runtimeAudioSource.spatialBlend = 0f;
+
+        runtimeAudioSource.volume =
+            attachSoundVolume;
+
+        runtimeAudioSource.mute = false;
+
+        runtimeAudioSource.priority = 128;
+    }
 
 
     // =========================================================
@@ -109,6 +162,7 @@ public class MachineDockPoint : MonoBehaviour, IInteractable
 
 
             isOccupied = false;
+
             dockedItem = null;
 
             return;
@@ -124,28 +178,32 @@ public class MachineDockPoint : MonoBehaviour, IInteractable
         bool isLeftHandItem = false;
 
 
-        // Önce normal eldeki itemı kontrol et.
+        // Önce sağ eldeki item'ı kontrol et.
         PickupItem rightHandItem =
             player.GetHeldItem();
 
 
         if (rightHandItem != null &&
-            rightHandItem.ItemName == acceptedItemName)
+            rightHandItem.ItemName.ToLower() ==
+            acceptedItemName.ToLower())
         {
             held = rightHandItem;
+
             isLeftHandItem = false;
         }
         else
         {
-            // Sonra sol eldeki itemı kontrol et.
+            // Sonra sol eldeki item'ı kontrol et.
             PickupItem leftHandItem =
                 player.GetLeftHeldItem();
 
 
             if (leftHandItem != null &&
-                leftHandItem.ItemName == acceptedItemName)
+                leftHandItem.ItemName.ToLower() ==
+                acceptedItemName.ToLower())
             {
                 held = leftHandItem;
+
                 isLeftHandItem = true;
             }
         }
@@ -210,6 +268,10 @@ public class MachineDockPoint : MonoBehaviour, IInteractable
         );
 
 
+        // -----------------------------------------------------
+        // DOCK DURUMU
+        // -----------------------------------------------------
+
         dockedItem = held;
 
         isOccupied = true;
@@ -227,6 +289,52 @@ public class MachineDockPoint : MonoBehaviour, IInteractable
         {
             player.SetHeldItem(null);
         }
+
+
+        // -----------------------------------------------------
+        // TAKMA SESİ
+        // -----------------------------------------------------
+
+        PlayAttachSound();
+    }
+
+
+    // =========================================================
+    // TAKMA SESİ
+    // =========================================================
+
+    private void PlayAttachSound()
+    {
+        if (attachSound == null)
+        {
+            return;
+        }
+
+
+        if (runtimeAudioSource == null)
+        {
+            CreateAudioSource();
+        }
+
+
+        runtimeAudioSource.volume =
+            attachSoundVolume;
+
+        runtimeAudioSource.mute = false;
+
+        runtimeAudioSource.spatialBlend = 0f;
+
+
+        runtimeAudioSource.PlayOneShot(
+            attachSound,
+            attachSoundVolume
+        );
+
+
+        Debug.Log(
+            "DOCK TAKMA SESI CALDI! " +
+            gameObject.name
+        );
     }
 
 

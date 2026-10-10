@@ -17,4 +17,11 @@ public class DayResult
     public int unsatisfiedCustomers;
 
     public int starRating;
+
+    // Yıldızın nasıl çıktığını görmek için (0-1 arası puanlar).
+    public float accuracyScore;
+    public float satisfactionScore;
+    public float speedScore;
+    public float cleanlinessScore;
+    public float finalScore;
 }
