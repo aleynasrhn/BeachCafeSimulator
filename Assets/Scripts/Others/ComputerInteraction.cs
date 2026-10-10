@@ -42,6 +42,24 @@ public class ComputerInteraction : MonoBehaviour
         if (isUsingComputer || isReturning)
             return;
 
+        // =====================================================
+        // POS İŞLEMİ SÜRERKEN YA DA POS'TAN KAMERA DÖNERKEN
+        // PC'YE GİRİLEMEZ.
+        // =====================================================
+        //
+        // Aksi halde kameranın ARA konumu "orijinal konum" diye
+        // kaydedilir ve iki script aynı kamerayı farklı yönlere
+        // çekmeye başlar.
+        //
+        // =====================================================
+
+        if (PosMachineController.Instance != null &&
+            (PosMachineController.Instance.IsUsingPos ||
+             PosMachineController.Instance.IsReturning))
+        {
+            return;
+        }
+
         // Oyuncunun mevcut kamera konumunu kaydet
         originalCameraPosition = cameraHolder.position;
         originalCameraRotation = cameraHolder.rotation;

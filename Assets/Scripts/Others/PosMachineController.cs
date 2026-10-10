@@ -116,6 +116,10 @@ public class PosMachineController : MonoBehaviour
 
     public bool IsUsingPos => isUsingPos;
 
+    // POS'tan kamera eski konumuna dönerken true.
+    // ComputerInteraction, bu sürede PC'ye girişi engeller.
+    public bool IsReturning => isReturning;
+
 
     // =========================================================
     // AWAKE
