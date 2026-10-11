@@ -7,6 +7,7 @@ using UnityEngine;
 ///
 /// Ayrıca:
 /// - Espresso shot sayısını
+/// - Sütün ısı durumunu
 /// - Ekstra malzemeleri
 /// takip eder.
 /// </summary>
@@ -23,8 +24,11 @@ public class DrinkRecipe : MonoBehaviour
 
     private bool hasEspresso = false;
     private bool hasMilk = false;
-    private bool hasFrothedMilk = false;
     private bool hasHotWater = false;
+
+    // Bardağa dökülen sütün ısı durumu.
+    private MilkHeatState milkHeat =
+        MilkHeatState.Cold;
 
 
     // =========================================================
@@ -54,12 +58,20 @@ public class DrinkRecipe : MonoBehaviour
         hasEspresso;
 
 
+    // Bardakta herhangi bir süt var mı? (soğuk veya sıcak)
     public bool HasMilk =>
         hasMilk;
 
 
+    // Eski scriptler bozulmasın diye duruyor:
+    // ısıtılmış süt varsa true.
     public bool HasFrothedMilk =>
-        hasFrothedMilk;
+        hasMilk &&
+        milkHeat != MilkHeatState.Cold;
+
+
+    public MilkHeatState MilkHeat =>
+        milkHeat;
 
 
     public bool HasHotWater =>
@@ -81,7 +93,6 @@ public class DrinkRecipe : MonoBehaviour
     public bool HasAnyContent =>
         hasEspresso ||
         hasMilk ||
-        hasFrothedMilk ||
         hasHotWater;
 
 
@@ -103,19 +114,23 @@ public class DrinkRecipe : MonoBehaviour
     // SÜT
     // =========================================================
 
-    public void AddMilk()
+    // Parametre verilmezse soğuk süt kabul edilir
+    // (örneğin süt kutusundan direkt dökülen süt).
+    public void AddMilk(
+        MilkHeatState heat = MilkHeatState.Cold)
     {
         hasMilk = true;
+
+        milkHeat = heat;
     }
 
 
-    // =========================================================
-    // KÖPÜKLÜ SÜT
-    // =========================================================
-
+    // Eski çağrılar için. Cappuccino ısısında süt ekler.
     public void AddFrothedMilk()
     {
-        hasFrothedMilk = true;
+        AddMilk(
+            MilkHeatState.CappuccinoReady
+        );
     }
 
 
@@ -190,12 +205,12 @@ public class DrinkRecipe : MonoBehaviour
     public CoffeeType? DetermineCoffeeType()
     {
         // -----------------------------------------------------
-        // CAPPUCCINO
+        // CAPPUCCINO (süt 5-6 sn ısıtılmış olmalı)
         // -----------------------------------------------------
 
         if (hasEspresso &&
-            hasFrothedMilk &&
-            !hasMilk &&
+            hasMilk &&
+            MilkHeatRules.IsCappuccinoHeat(milkHeat) &&
             !hasHotWater)
         {
             return CoffeeType.Cappuccino;
@@ -203,12 +218,12 @@ public class DrinkRecipe : MonoBehaviour
 
 
         // -----------------------------------------------------
-        // LATTE
+        // LATTE (süt 3-4 sn ısıtılmış olmalı)
         // -----------------------------------------------------
 
         if (hasEspresso &&
             hasMilk &&
-            !hasFrothedMilk &&
+            MilkHeatRules.IsLatteHeat(milkHeat) &&
             !hasHotWater)
         {
             return CoffeeType.Latte;
@@ -221,8 +236,7 @@ public class DrinkRecipe : MonoBehaviour
 
         if (hasEspresso &&
             hasHotWater &&
-            !hasMilk &&
-            !hasFrothedMilk)
+            !hasMilk)
         {
             return CoffeeType.Americano;
         }
@@ -234,13 +248,14 @@ public class DrinkRecipe : MonoBehaviour
 
         if (hasEspresso &&
             !hasMilk &&
-            !hasFrothedMilk &&
             !hasHotWater)
         {
             return CoffeeType.Espresso;
         }
 
 
+        // Soğuk / yetersiz / fazla ısınmış / yanık süt
+        // geçerli bir kahve türü değil.
         return null;
     }
 
@@ -255,9 +270,9 @@ public class DrinkRecipe : MonoBehaviour
 
         hasMilk = false;
 
-        hasFrothedMilk = false;
-
         hasHotWater = false;
+
+        milkHeat = MilkHeatState.Cold;
 
 
         espressoShotCount = 0;

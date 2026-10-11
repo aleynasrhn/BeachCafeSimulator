@@ -4,7 +4,8 @@ using UnityEngine;
 /// Gün boyunca gelir, sipariş, müşteri ve servis hızı istatistiklerini
 /// toplar. Gün bitince DayCycleManager, BuildResult() ile özet ekranı
 /// için bir DayResult üretir. Yıldız puanı; sipariş doğruluğu, müşteri
-/// memnuniyeti, servis hızı ve temizliğin ağırlıklı ortalamasıdır.
+/// memnuniyeti, servis hızı, kahve kalitesi (süt ısısı) ve temizliğin
+/// ağırlıklı ortalamasıdır.
 /// </summary>
 public class DayStatsTracker : MonoBehaviour
 {
@@ -15,6 +16,9 @@ public class DayStatsTracker : MonoBehaviour
     [SerializeField] private float satisfactionWeight = 0.20f;
     [SerializeField] private float speedWeight = 0.25f;
     [SerializeField] private float cleanlinessWeight = 0.25f;
+
+    [Tooltip("Süt ısısı gibi kahve kalitesinin puana etkisi.")]
+    [SerializeField] private float qualityWeight = 0.15f;
 
     [Header("Yıldız Eşikleri (Toplam Puan 0-1)")]
     [SerializeField] private float fiveStarThreshold = 0.90f;
@@ -39,6 +43,9 @@ public class DayStatsTracker : MonoBehaviour
 
     private float speedScoreSum;
     private int servedOrderCount;
+
+    private float qualityScoreSum;
+    private int qualityOrderCount;
 
     private void Awake()
     {
@@ -76,6 +83,9 @@ public class DayStatsTracker : MonoBehaviour
 
         speedScoreSum = 0f;
         servedOrderCount = 0;
+
+        qualityScoreSum = 0f;
+        qualityOrderCount = 0;
     }
 
     // =========================================================
@@ -116,6 +126,15 @@ public class DayStatsTracker : MonoBehaviour
         servedOrderCount++;
     }
 
+    // NPCController: DOĞRU servis edilen siparişte çağrılır.
+    // quality: 1 = mükemmel (veya sütsüz kahve),
+    // düşük değer = süt ısısı kabul edilir ama tam isabet değil.
+    public void RecordOrderQuality(float quality)
+    {
+        qualityScoreSum += Mathf.Clamp01(quality);
+        qualityOrderCount++;
+    }
+
     // NPCController: NPC gerçekten kuyruğa girdiğinde çağrılır.
     public void RecordCustomerArrived()
     {
@@ -154,6 +173,11 @@ public class DayStatsTracker : MonoBehaviour
                 ? speedScoreSum / servedOrderCount
                 : 0f;
 
+        float quality =
+            qualityOrderCount > 0
+                ? qualityScoreSum / qualityOrderCount
+                : 0f;
+
         float cleanliness =
             ComputeCleanlinessScore();
 
@@ -164,6 +188,7 @@ public class DayStatsTracker : MonoBehaviour
             accuracyWeight +
             satisfactionWeight +
             speedWeight +
+            qualityWeight +
             cleanlinessWeight;
 
         float finalScore =
@@ -171,6 +196,7 @@ public class DayStatsTracker : MonoBehaviour
                 ? (accuracy * accuracyWeight +
                    satisfaction * satisfactionWeight +
                    speed * speedWeight +
+                   quality * qualityWeight +
                    cleanliness * cleanlinessWeight) / weightSum
                 : 0f;
 
@@ -182,7 +208,8 @@ public class DayStatsTracker : MonoBehaviour
         Debug.Log(
             $"GÜN PUANI | Doğruluk: {accuracy:0.00} | " +
             $"Memnuniyet: {satisfaction:0.00} | " +
-            $"Hız: {speed:0.00} | Temizlik: {cleanliness:0.00} | " +
+            $"Hız: {speed:0.00} | Kalite: {quality:0.00} | " +
+            $"Temizlik: {cleanliness:0.00} | " +
             $"Toplam: {finalScore:0.00} → {stars} yıldız"
         );
 
@@ -208,6 +235,7 @@ public class DayStatsTracker : MonoBehaviour
             accuracyScore = accuracy,
             satisfactionScore = satisfaction,
             speedScore = speed,
+            qualityScore = quality,
             cleanlinessScore = cleanliness,
             finalScore = finalScore
         };

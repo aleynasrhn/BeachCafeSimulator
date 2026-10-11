@@ -42,29 +42,23 @@ public class CupPourReceiver : MonoBehaviour
         if (source == null)
             return false;
 
-
         if (cup == null)
             return false;
-
 
         if (recipe == null)
             return false;
 
-
         if (!source.HasEspresso)
             return false;
-
 
         // Cup'ta espresso varsa
         // ikinci kez espresso dökülmesin.
         if (recipe.HasEspresso)
             return false;
 
-
         // En az 1 shot olmalı.
         if (source.EspressoShotCount <= 0)
             return false;
-
 
         return true;
     }
@@ -75,7 +69,6 @@ public class CupPourReceiver : MonoBehaviour
     {
         if (liquidVisual == null)
             return;
-
 
         liquidVisual.SetEspressoProgress(
             progress01
@@ -128,7 +121,7 @@ public class CupPourReceiver : MonoBehaviour
 
     // =========================================================
     // MILK SOURCE
-    // SÜT KUTUSU
+    // SÜT KUTUSU (her zaman soğuk süt)
     // =========================================================
 
     public bool CanReceiveMilkSource(
@@ -137,26 +130,20 @@ public class CupPourReceiver : MonoBehaviour
         if (source == null)
             return false;
 
-
         if (recipe == null)
             return false;
-
 
         if (!recipe.HasEspresso)
             return false;
 
-
         if (!source.HasMilk)
             return false;
-
 
         if (recipe.HasMilk)
             return false;
 
-
         if (recipe.HasFrothedMilk)
             return false;
-
 
         return true;
     }
@@ -167,7 +154,6 @@ public class CupPourReceiver : MonoBehaviour
     {
         if (liquidVisual == null)
             return;
-
 
         liquidVisual.SetMilkProgress(
             progress01
@@ -182,7 +168,10 @@ public class CupPourReceiver : MonoBehaviour
             return;
 
 
-        recipe.AddMilk();
+        // Süt kutusundan gelen süt soğuktur.
+        recipe.AddMilk(
+            MilkHeatState.Cold
+        );
 
 
         if (liquidVisual != null)
@@ -194,13 +183,13 @@ public class CupPourReceiver : MonoBehaviour
 
 
         Debug.Log(
-            "Milk kutusundan süt cup'a döküldü."
+            "Milk kutusundan SOĞUK süt cup'a döküldü."
         );
     }
 
 
     // =========================================================
-    // MILK PITCHER
+    // MILK PITCHER (ısıtılmamış süt)
     // =========================================================
 
     public bool CanReceiveMilk(
@@ -209,30 +198,23 @@ public class CupPourReceiver : MonoBehaviour
         if (source == null)
             return false;
 
-
         if (recipe == null)
             return false;
-
 
         if (!source.HasMilk)
             return false;
 
-
         if (source.IsFrothed)
             return false;
-
 
         if (!recipe.HasEspresso)
             return false;
 
-
         if (recipe.HasMilk)
             return false;
 
-
         if (recipe.HasFrothedMilk)
             return false;
-
 
         return true;
     }
@@ -243,7 +225,6 @@ public class CupPourReceiver : MonoBehaviour
     {
         if (liquidVisual == null)
             return;
-
 
         liquidVisual.SetMilkProgress(
             progress01
@@ -258,7 +239,10 @@ public class CupPourReceiver : MonoBehaviour
             return;
 
 
-        recipe.AddMilk();
+        // Isıyı, süt boşalmadan ÖNCE tarife yaz.
+        recipe.AddMilk(
+            source.HeatState
+        );
 
 
         if (liquidVisual != null)
@@ -273,13 +257,13 @@ public class CupPourReceiver : MonoBehaviour
 
 
         Debug.Log(
-            "Normal süt pitcher'dan cup'a döküldü."
+            "Isıtılmamış süt pitcher'dan cup'a döküldü."
         );
     }
 
 
     // =========================================================
-    // KÖPÜKLÜ SÜT
+    // ISITILMIŞ SÜT
     // =========================================================
 
     public bool CanReceiveFrothedMilk(
@@ -288,30 +272,23 @@ public class CupPourReceiver : MonoBehaviour
         if (source == null)
             return false;
 
-
         if (recipe == null)
             return false;
-
 
         if (!source.HasMilk)
             return false;
 
-
         if (!source.IsFrothed)
             return false;
-
 
         if (!recipe.HasEspresso)
             return false;
 
-
         if (recipe.HasFrothedMilk)
             return false;
 
-
         if (recipe.HasMilk)
             return false;
-
 
         return true;
     }
@@ -322,7 +299,6 @@ public class CupPourReceiver : MonoBehaviour
     {
         if (liquidVisual == null)
             return;
-
 
         liquidVisual.SetFrothedMilkProgress(
             progress01
@@ -337,7 +313,13 @@ public class CupPourReceiver : MonoBehaviour
             return;
 
 
-        recipe.AddFrothedMilk();
+        // Isıyı, süt boşalmadan ÖNCE tarife yaz.
+        MilkHeatState heat =
+            source.HeatState;
+
+        recipe.AddMilk(
+            heat
+        );
 
 
         if (liquidVisual != null)
@@ -352,7 +334,7 @@ public class CupPourReceiver : MonoBehaviour
 
 
         Debug.Log(
-            "Köpüklü süt cup'a döküldü."
+            $"Isıtılmış süt cup'a döküldü. Isı: {heat}"
         );
     }
 
@@ -367,34 +349,26 @@ public class CupPourReceiver : MonoBehaviour
         if (source == null)
             return false;
 
-
         if (recipe == null)
             return false;
-
 
         if (!recipe.HasEspresso)
             return false;
 
-
         if (!source.HasWater)
             return false;
-
 
         if (!source.IsHot)
             return false;
 
-
         if (recipe.HasHotWater)
             return false;
-
 
         if (recipe.HasMilk)
             return false;
 
-
         if (recipe.HasFrothedMilk)
             return false;
-
 
         return true;
     }
@@ -405,7 +379,6 @@ public class CupPourReceiver : MonoBehaviour
     {
         if (liquidVisual == null)
             return;
-
 
         liquidVisual.SetWaterProgress(
             progress01

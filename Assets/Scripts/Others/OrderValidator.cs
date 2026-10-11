@@ -7,6 +7,7 @@ using UnityEngine;
 /// oyuncunun hazırladığı DrinkRecipe'i karşılaştırır.
 ///
 /// Kontrol edilenler:
+/// - Sütün ısısı (Latte: 3-4 sn, Cappuccino: 5-6 sn)
 /// - Kahve türü
 /// - Bardak boyutu
 /// - Espresso shot sayısı
@@ -43,6 +44,20 @@ public static class OrderValidator
         if (recipe == null)
         {
             reason = "Hazırlanmış kahve bulunamadı.";
+            return false;
+        }
+
+
+        // -----------------------------------------------------
+        // SÜT ISISI (Latte / Cappuccino)
+        // -----------------------------------------------------
+
+        if (!IsMilkHeatCorrect(
+            order.coffeeType,
+            recipe,
+            out string heatReason))
+        {
+            reason = heatReason;
             return false;
         }
 
@@ -140,6 +155,89 @@ public static class OrderValidator
 
 
     // =========================================================
+    // SÜT ISISI DOĞRU MU?
+    // =========================================================
+
+    private static bool IsMilkHeatCorrect(
+        CoffeeType orderedType,
+        DrinkRecipe recipe,
+        out string reason)
+    {
+        reason = "";
+
+
+        // Sadece sütlü kahvelerde kontrol edilir.
+        // Süt yoksa ya da sipariş sütlü değilse,
+        // kahve türü kontrolü zaten yakalar.
+        if (orderedType != CoffeeType.Latte &&
+            orderedType != CoffeeType.Cappuccino)
+        {
+            return true;
+        }
+
+
+        if (!recipe.HasMilk)
+            return true;
+
+
+        MilkHeatState actual =
+            recipe.MilkHeat;
+
+
+        bool isAcceptable =
+            orderedType == CoffeeType.Latte
+                ? MilkHeatRules.IsLatteHeat(actual)
+                : MilkHeatRules.IsCappuccinoHeat(actual);
+
+
+        if (isAcceptable)
+            return true;
+
+
+        string coffeeName =
+            orderedType.ToString();
+
+
+        if (actual == MilkHeatState.Burnt)
+        {
+            reason = "Süt yanmış.";
+            return false;
+        }
+
+
+        if (actual == MilkHeatState.Cold)
+        {
+            reason = "Süt hiç ısıtılmamış.";
+            return false;
+        }
+
+
+        // Kabul edilen aralığın en düşük değeri.
+        MilkHeatState minAccepted =
+            orderedType == CoffeeType.Latte
+                ? MilkHeatState.LatteReady
+                : MilkHeatState.CappuccinoOkay;
+
+
+        // Enum sırası ısıya göre dizili:
+        // actual < minAccepted → yeterince ısınmamış
+        // aksi halde            → fazla ısınmış
+        if (actual < minAccepted)
+        {
+            reason =
+                $"Süt {coffeeName} için yeterince ısıtılmamış.";
+        }
+        else
+        {
+            reason =
+                $"Süt {coffeeName} için fazla ısıtılmış.";
+        }
+
+        return false;
+    }
+
+
+    // =========================================================
     // BEKLENEN SHOT SAYISI
     // =========================================================
 
@@ -206,10 +304,6 @@ public static class OrderValidator
         List<string> requestedExtras,
         IReadOnlyList<string> preparedExtras)
     {
-        // -----------------------------------------------------
-        // NULL'LARI NORMALLEŞTİR
-        // -----------------------------------------------------
-
         int requestedCount =
             CountRealExtras(
                 requestedExtras

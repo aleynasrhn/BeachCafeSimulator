@@ -231,10 +231,13 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             return;
         }
 
-        CoffeeType? coffeeType =
-            recipe.DetermineCoffeeType();
-
-        if (!coffeeType.HasValue)
+        // Espresso yoksa kahve henüz hazır değildir.
+        //
+        // Süt ısısı yanlışsa (soğuk, az, fazla, yanık)
+        // kahve tamamlanmıştır ama yanlış hazırlanmıştır.
+        // Bunu OrderValidator yakalar ve müşteri
+        // yanlış sipariş olarak değerlendirir.
+        if (!recipe.HasEspresso)
         {
             Debug.Log(
                 "Bu kahve henüz tamamlanmamış."

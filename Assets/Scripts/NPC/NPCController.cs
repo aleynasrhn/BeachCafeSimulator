@@ -143,6 +143,23 @@ public class NPCController : MonoBehaviour
     private Order pendingTicketOrder;
 
     // =========================================================
+    // SÜT ISI KALİTESİ
+    // =========================================================
+
+    [Header("Süt Isı Kalitesi")]
+    [Tooltip(
+        "Süt kabul edilebilir ama tam isabet değilse " +
+        "(Latte 4 sn / Cappuccino 5 sn) bahşiş ve gün puanı " +
+        "bu değerle çarpılır. 1 = fark yok, 0 = bahşiş yok."
+    )]
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float okayMilkQuality = 0.5f;
+
+    // Servis edilen kahvenin süt kalitesi (1 = mükemmel).
+    private float heatQuality = 1f;
+
+    // =========================================================
     // KAFEDEN AYRILMA
     // =========================================================
 
@@ -1476,8 +1493,21 @@ public class NPCController : MonoBehaviour
                 $"{serviceRatio:0.00}"
             );
 
+            // =================================================
+            // SÜT ISI KALİTESİ (mükemmel = 1, kabul edilir = düşük)
+            // =================================================
+
+            heatQuality =
+                GetHeatQuality(cup);
+
+            Debug.Log(
+                $"{gameObject.name}: Süt kalitesi = " +
+                $"{heatQuality:0.00}"
+            );
+
             DayStatsTracker.Instance?.RecordOrderResult(true, 0f);
             DayStatsTracker.Instance?.RecordServiceSpeed(serviceRatio);
+            DayStatsTracker.Instance?.RecordOrderQuality(heatQuality);
 
             CafeFloorLitterZone.Instance?.MakeDirty();
 
@@ -1538,6 +1568,30 @@ public class NPCController : MonoBehaviour
                     WaitThenLeaveTable()
                 );
         }
+    }
+
+    // =========================================================
+    // SÜT ISI KALİTESİ HESAPLA
+    // =========================================================
+
+    private float GetHeatQuality(PickupItem cup)
+    {
+        if (cup == null)
+            return 1f;
+
+        DrinkRecipe recipe =
+            cup.GetComponent<DrinkRecipe>();
+
+        // Sütsüz kahvelerde (Espresso, Americano) fark yok.
+        if (recipe == null ||
+            !recipe.HasMilk)
+        {
+            return 1f;
+        }
+
+        return MilkHeatRules.IsPerfect(recipe.MilkHeat)
+            ? 1f
+            : okayMilkQuality;
     }
 
     // =========================================================
@@ -1783,6 +1837,7 @@ public class NPCController : MonoBehaviour
         {
             // =================================================
             // BAHŞİŞ: sadece doğru sipariş + servis hızına göre
+            // + süt ısı kalitesiyle çarpılır
             // =================================================
 
             if (wasOrderCorrect)
@@ -1794,6 +1849,12 @@ public class NPCController : MonoBehaviour
                             serviceRatio
                         );
 
+                    // Süt tam isabet değilse bahşiş azalır.
+                    tip =
+                        Mathf.Round(
+                            tip * heatQuality * 100f
+                        ) / 100f;
+
                     if (tip > 0f)
                     {
                         assignedDrinkPlacePoint.SpawnTip(tip);
@@ -1801,8 +1862,9 @@ public class NPCController : MonoBehaviour
                     else
                     {
                         Debug.Log(
-                            $"{gameObject.name}: Servis geç kaldı " +
-                            $"(oran {serviceRatio:0.00}), bahşiş yok."
+                            $"{gameObject.name}: Bahşiş yok " +
+                            $"(servis oranı {serviceRatio:0.00}, " +
+                            $"süt kalitesi {heatQuality:0.00})."
                         );
                     }
                 }

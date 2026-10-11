@@ -829,6 +829,7 @@ MonoBehaviour:
   satisfactionWeight: 0.2
   speedWeight: 0.25
   cleanlinessWeight: 0.25
+  qualityWeight: 0.15
   fiveStarThreshold: 0.9
   fourStarThreshold: 0.75
   threeStarThreshold: 0.55
@@ -1656,8 +1657,13 @@ MonoBehaviour:
   pitcherDock: {fileID: 162473892}
   steamVisual: {fileID: 578555433}
   frothedMilkMaterial: {fileID: 2100000, guid: 5f0fb30db2b98ed40aa91e0cbeac9bbb, type: 2}
+  burntMilkMaterial: {fileID: 0}
   countdownText: {fileID: 1367624541}
-  steamDuration: 3
+  indicatorLight: {fileID: 0}
+  coldColor: {r: 1, g: 1, b: 1, a: 1}
+  greenColor: {r: 0, g: 1, b: 0, a: 1}
+  orangeColor: {r: 1, g: 0.55, b: 0, a: 1}
+  redColor: {r: 1, g: 0, b: 0, a: 1}
   steamSoundClip: {fileID: 8300000, guid: ce552efa092ba2b4b91bcccacb24f9d5, type: 3}
   steamSoundVolume: 1
   steamFadeOutDuration: 0.8
@@ -8387,6 +8393,7 @@ GameObject:
   - component: {fileID: 206586332}
   - component: {fileID: 206586331}
   - component: {fileID: 206586334}
+  - component: {fileID: 206586335}
   m_Layer: 3
   m_Name: Masa (3)
   m_TagString: Untagged
@@ -8482,6 +8489,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.9000001, y: 0.8998029, z: 0.024500005}
   m_Center: {x: -0.0000038146973, y: 0.000030517578, z: -0.000000059604645}
+--- !u!208 &206586335
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 206586329}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.45000002, y: 0.45000002, z: 0.012}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &207183301
 GameObject:
   m_ObjectHideFlags: 0
@@ -31785,7 +31808,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 107.2, y: 108.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &646511397
 Canvas:
@@ -41871,6 +41894,7 @@ GameObject:
   - component: {fileID: 1010918275}
   - component: {fileID: 1010918274}
   - component: {fileID: 1010918277}
+  - component: {fileID: 1010918278}
   m_Layer: 3
   m_Name: Masa (2)
   m_TagString: Untagged
@@ -41966,6 +41990,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.9000001, y: 0.8998029, z: 0.024500009}
   m_Center: {x: 0, y: 0, z: -0.00000011920929}
+--- !u!208 &1010918278
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1010918272}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.45000002, y: 0.45000002, z: 0.012}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!4 &1011615516 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2325232697281237574, guid: 9ffce037f913e774f8cb89c6f397a2d6,
@@ -48180,6 +48220,7 @@ GameObject:
   - component: {fileID: 1188505257}
   - component: {fileID: 1188505256}
   - component: {fileID: 1188505259}
+  - component: {fileID: 1188505260}
   m_Layer: 3
   m_Name: Masa (3)
   m_TagString: Untagged
@@ -48275,6 +48316,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.9000001, y: 0.8998029, z: 0.024500009}
   m_Center: {x: 0, y: 0, z: -0.00000023841858}
+--- !u!208 &1188505260
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1188505254}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.45000002, y: 0.45000002, z: 0.012}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &1190367351
 GameObject:
   m_ObjectHideFlags: 0
@@ -55676,7 +55733,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -58.912796, y: 409.18082}
-  m_SizeDelta: {x: 1, y: 0.05}
+  m_SizeDelta: {x: 16.42, y: 0.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1367624541
 MonoBehaviour:
@@ -70887,6 +70944,7 @@ GameObject:
   - component: {fileID: 1797346917}
   - component: {fileID: 1797346916}
   - component: {fileID: 1797346919}
+  - component: {fileID: 1797346920}
   m_Layer: 3
   m_Name: Masa (1)
   m_TagString: Untagged
@@ -70982,6 +71040,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.9000001, y: 0.8998029, z: 0.024500005}
   m_Center: {x: 0, y: 0, z: 0.000000059604645}
+--- !u!208 &1797346920
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1797346914}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.45000002, y: 0.45000002, z: 0.012}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &1798079593
 GameObject:
   m_ObjectHideFlags: 0
@@ -103050,6 +103124,7 @@ GameObject:
   - component: {fileID: 5175580847085803925}
   - component: {fileID: 8182149835870347735}
   - component: {fileID: 6943776528187642788}
+  - component: {fileID: 8182149835870347736}
   m_Layer: 0
   m_Name: Stool Base.039
   m_TagString: Untagged
@@ -107290,6 +107365,7 @@ GameObject:
   - component: {fileID: 8543266021828467215}
   - component: {fileID: 4096727187682615904}
   - component: {fileID: 4213623268675705538}
+  - component: {fileID: 8543266021828467216}
   m_Layer: 0
   m_Name: Stool Base.038
   m_TagString: Untagged
@@ -220319,6 +220395,7 @@ GameObject:
   - component: {fileID: 2102783599781229678}
   - component: {fileID: 6955246582791633455}
   - component: {fileID: 122849192721486160}
+  - component: {fileID: 6955246582791633456}
   m_Layer: 0
   m_Name: Stool Base.037
   m_TagString: Untagged
@@ -232317,6 +232394,7 @@ GameObject:
   - component: {fileID: 2939713593984830818}
   - component: {fileID: 2507695088069349532}
   - component: {fileID: 4914037967623558613}
+  - component: {fileID: 5244494516815254592}
   m_Layer: 0
   m_Name: Stool Base.036
   m_TagString: Untagged
@@ -232324,6 +232402,27 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!65 &5244494516815254592
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5244494516815254591}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.19271167, y: 0.18596679, z: 0.016037075}
+  m_Center: {x: 0.07334115, y: 0.07042023, z: 0.0020229188}
 --- !u!4 &5244812153251278292
 Transform:
   m_ObjectHideFlags: 0
@@ -270745,6 +270844,7 @@ GameObject:
   - component: {fileID: 6926983935496941771}
   - component: {fileID: 4205718027080021023}
   - component: {fileID: 2131131273}
+  - component: {fileID: 6926983935496941772}
   m_Layer: 3
   m_Name: Masa
   m_TagString: Untagged
@@ -281526,6 +281626,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6608962957739668153}
   m_Mesh: {fileID: -7504641574322746595, guid: 8d3ff8d983d735a4f959d5b1973aec16, type: 3}
+--- !u!208 &6926983935496941772
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6608962957739668153}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.45000002, y: 0.45000002, z: 0.012}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!23 &6927444929839050310
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -282071,6 +282187,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4827523013526851527}
   m_Mesh: {fileID: 5577664943201802229, guid: 6a05c176d7de09c4daaa4a29f97d54c5, type: 3}
+--- !u!65 &6955246582791633456
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4827523013526851527}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.19271167, y: 0.18596679, z: 0.016037075}
+  m_Center: {x: 0.07334115, y: 0.07042023, z: 0.002022917}
 --- !u!33 &6955429292798511767
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -315797,6 +315934,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 664395156925838489}
   m_Mesh: {fileID: -3869802491729713887, guid: 6a05c176d7de09c4daaa4a29f97d54c5, type: 3}
+--- !u!65 &8182149835870347736
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 664395156925838489}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.19271167, y: 0.18596679, z: 0.016037075}
+  m_Center: {x: 0.07335641, y: 0.07042023, z: 0.0020229197}
 --- !u!1 &8182360868780793814
 GameObject:
   m_ObjectHideFlags: 0
@@ -326898,6 +327056,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1578017524}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8543266021828467216
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 827886246251514077}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.19271167, y: 0.18596679, z: 0.016037075}
+  m_Center: {x: 0.07335641, y: 0.07042404, z: 0.0020229146}
 --- !u!4 &8543480010512014011
 Transform:
   m_ObjectHideFlags: 0

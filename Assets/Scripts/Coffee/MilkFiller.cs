@@ -30,7 +30,12 @@ public class MilkFiller : MonoBehaviour
     // 1 = tam dolu
     private float currentProgress = 0f;
 
-    private bool isFrothed = false;
+    // Sütün toplam ısınma süresi (saniye).
+    // 0 = hiç ısıtılmadı.
+    private float heatSeconds = 0f;
+
+    // Süt boşalınca eski rengine dönmek için.
+    private Material originalMilkMaterial;
 
 
     // =========================================================
@@ -44,8 +49,19 @@ public class MilkFiller : MonoBehaviour
     public bool HasMilk =>
         currentProgress > 0.01f;
 
+    public float HeatSeconds =>
+        heatSeconds;
+
+    public MilkHeatState HeatState =>
+        MilkHeatRules.GetState(heatSeconds);
+
+    // Süt en az bir kez ısıtıldı mı?
+    // (CupPourInteraction hâlâ bunu kullanıyor.)
     public bool IsFrothed =>
-        isFrothed;
+        heatSeconds > 0.01f;
+
+    public bool IsBurnt =>
+        HeatState == MilkHeatState.Burnt;
 
 
     // =========================================================
@@ -54,6 +70,12 @@ public class MilkFiller : MonoBehaviour
 
     private void Start()
     {
+        if (milkRenderer != null)
+        {
+            originalMilkMaterial =
+                milkRenderer.sharedMaterial;
+        }
+
         if (milkFillTransform == null)
         {
             Debug.LogError(
@@ -69,7 +91,7 @@ public class MilkFiller : MonoBehaviour
         currentProgress = 0f;
         isFull = false;
         isFilling = false;
-        isFrothed = false;
+        heatSeconds = 0f;
 
         milkFillTransform.localPosition =
             basePosition;
@@ -138,9 +160,16 @@ public class MilkFiller : MonoBehaviour
         isFull = false;
         isFilling = false;
 
-        // Süt tamamen bittiği için
-        // köpüklü durum da sıfırlanır.
-        isFrothed = false;
+        // Süt bittiği için ısı da sıfırlanır.
+        heatSeconds = 0f;
+
+        // Süt rengi de eski haline dönsün.
+        if (milkRenderer != null &&
+            originalMilkMaterial != null)
+        {
+            milkRenderer.material =
+                originalMilkMaterial;
+        }
 
         UpdateMilkVisual();
 
@@ -181,20 +210,40 @@ public class MilkFiller : MonoBehaviour
 
 
     // =========================================================
-    // KÖPÜRT
+    // ISI UYGULA (SteamButton çağırır)
     // =========================================================
 
-    public void SetFrothedMaterial(
-        Material frothedMaterial)
+    public void ApplyHeat(
+        float seconds,
+        Material heatedMaterial,
+        Material burntMaterial)
     {
-        if (milkRenderer != null &&
-            frothedMaterial != null)
+        heatSeconds =
+            Mathf.Clamp(
+                seconds,
+                0f,
+                MilkHeatRules.MaxSeconds
+            );
+
+        if (milkRenderer != null)
         {
-            milkRenderer.material =
-                frothedMaterial;
+            if (HeatState == MilkHeatState.Burnt &&
+                burntMaterial != null)
+            {
+                milkRenderer.material =
+                    burntMaterial;
+            }
+            else if (IsFrothed &&
+                     heatedMaterial != null)
+            {
+                milkRenderer.material =
+                    heatedMaterial;
+            }
         }
 
-        isFrothed = true;
+        Debug.Log(
+            $"Süt ısındı: {heatSeconds:0.0} sn → {HeatState}"
+        );
     }
 
 

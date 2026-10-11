@@ -22,6 +22,7 @@ public class DayResult
     public float accuracyScore;
     public float satisfactionScore;
     public float speedScore;
+    public float qualityScore;
     public float cleanlinessScore;
     public float finalScore;
 }

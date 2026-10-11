@@ -5,13 +5,15 @@ using TMPro;
 /// <summary>
 /// Makinedeki fiziksel düğmeye eklenir.
 /// Pitcher dock'ta süt varsa çalışır.
-/// Buhar açılır, 3-2-1 geri sayar, sonra sütü köpürtür.
 ///
-/// Buhar sesi:
-/// - Buhar başlarken çalar.
-/// - Buharlama boyunca devam eder.
-/// - Son kısımda yavaşça azalır.
-/// - Tamamen bitince ses kapanır.
+/// Tuşa basınca sayaç 0'dan yukarı sayar:
+/// - 3        → yeşil  (Latte sütü)
+/// - 4 - 6    → turuncu (6 = Cappuccino sütü)
+/// - 7 - 10   → kırmızı (yanık süt)
+/// - 10'da buhar kendiliğinden durur.
+///
+/// Oyuncu pitcher'ı makineden alınca buhar durur
+/// ve sütün ısısı kaydedilir.
 /// </summary>
 public class SteamButton : MonoBehaviour, IInteractable
 {
@@ -22,16 +24,23 @@ public class SteamButton : MonoBehaviour, IInteractable
     [Tooltip("Buhar efekti")]
     [SerializeField] private GameObject steamVisual;
 
-    [Tooltip("Köpürmüş süt materyali")]
+    [Tooltip("Isıtılmış süt materyali")]
     [SerializeField] private Material frothedMilkMaterial;
 
+    [Tooltip("Yanmış süt materyali (boş bırakılabilir)")]
+    [SerializeField] private Material burntMilkMaterial;
 
-    [Header("Sayaç")]
+
+    [Header("Sayaç ve Işık")]
     [SerializeField] private TMP_Text countdownText;
 
+    [Tooltip("Makine üzerindeki gösterge ışığı (boş bırakılabilir)")]
+    [SerializeField] private Light indicatorLight;
 
-    [Header("Ayarlar")]
-    [SerializeField] private float steamDuration = 3f;
+    [SerializeField] private Color coldColor = Color.white;
+    [SerializeField] private Color greenColor = Color.green;
+    [SerializeField] private Color orangeColor = new Color(1f, 0.55f, 0f);
+    [SerializeField] private Color redColor = Color.red;
 
 
     // =========================================================
@@ -45,7 +54,7 @@ public class SteamButton : MonoBehaviour, IInteractable
     [Range(0f, 1f)]
     private float steamSoundVolume = 1f;
 
-    [Tooltip("Buhar bitmeden kaç saniye önce ses azalmaya başlasın.")]
+    [Tooltip("Süre dolup buhar kendiliğinden bitmeden kaç saniye önce ses azalmaya başlasın.")]
     [SerializeField] private float steamFadeOutDuration = 0.8f;
 
 
@@ -75,6 +84,9 @@ public class SteamButton : MonoBehaviour, IInteractable
         if (countdownText != null)
             countdownText.gameObject.SetActive(false);
 
+        if (indicatorLight != null)
+            indicatorLight.enabled = false;
+
         CreateAudioSource();
     }
 
@@ -103,35 +115,70 @@ public class SteamButton : MonoBehaviour, IInteractable
 
 
     // =========================================================
+    // DOCK'TAKİ PITCHER'I BUL
+    // =========================================================
+
+    private MilkFiller GetDockedFiller()
+    {
+        if (pitcherDock == null ||
+            !pitcherDock.IsOccupied ||
+            pitcherDock.DockedItem == null)
+        {
+            return null;
+        }
+
+        return pitcherDock.DockedItem
+            .GetComponent<MilkFiller>();
+    }
+
+
+    // =========================================================
+    // PITCHER HÂLÂ DOCK'TA MI?
+    // =========================================================
+
+    private bool IsStillDocked(
+        MilkFiller filler,
+        PickupItem pitcherItem)
+    {
+        // Oyuncu eline aldıysa dock'tan ayrılmıştır.
+        if (pitcherItem != null &&
+            pitcherItem.IsHeld)
+        {
+            return false;
+        }
+
+        return GetDockedFiller() == filler;
+    }
+
+
+    // =========================================================
     // PROMPT
     // =========================================================
 
     public string GetInteractPrompt()
     {
         if (isSteaming)
-            return "Buharlanıyor...";
-
-
-        if (pitcherDock == null ||
-            !pitcherDock.IsOccupied)
-        {
-            return "Önce pitcher'ı tak";
-        }
-
-
-        if (pitcherDock.DockedItem == null)
-            return "Önce pitcher'ı tak";
+            return "Buharlanıyor... (Pitcher'ı alınca durur)";
 
 
         MilkFiller filler =
-            pitcherDock.DockedItem.GetComponent<MilkFiller>();
+            GetDockedFiller();
 
 
-        if (filler == null ||
-            !filler.HasMilk)
-        {
+        if (filler == null)
+            return "Önce pitcher'ı tak";
+
+
+        if (!filler.HasMilk)
             return "Önce süt doldur";
-        }
+
+
+        if (filler.IsBurnt)
+            return "Süt yandı!";
+
+
+        if (filler.IsFrothed)
+            return "E - Isıtmaya devam et";
 
 
         return "E - Buharlandır";
@@ -149,19 +196,8 @@ public class SteamButton : MonoBehaviour, IInteractable
             return;
 
 
-        if (pitcherDock == null ||
-            !pitcherDock.IsOccupied)
-        {
-            return;
-        }
-
-
-        if (pitcherDock.DockedItem == null)
-            return;
-
-
         MilkFiller filler =
-            pitcherDock.DockedItem.GetComponent<MilkFiller>();
+            GetDockedFiller();
 
 
         if (filler == null ||
@@ -169,6 +205,11 @@ public class SteamButton : MonoBehaviour, IInteractable
         {
             return;
         }
+
+
+        // Yanık süt tekrar ısıtılamaz.
+        if (filler.IsBurnt)
+            return;
 
 
         StartCoroutine(
@@ -188,98 +229,141 @@ public class SteamButton : MonoBehaviour, IInteractable
     {
         isSteaming = true;
 
+        PickupItem pitcherItem =
+            filler.GetComponent<PickupItem>();
 
-        // =====================================================
-        // BUHAR GÖRSELİNİ AÇ
-        // =====================================================
+        // Süt daha önce biraz ısıtıldıysa kaldığı yerden devam eder.
+        float heat =
+            filler.HeatSeconds;
+
+        bool timedOut = false;
+
 
         if (steamVisual != null)
             steamVisual.SetActive(true);
 
-
-        // =====================================================
-        // GERİ SAYIMI AÇ
-        // =====================================================
-
         if (countdownText != null)
             countdownText.gameObject.SetActive(true);
 
-
-        // =====================================================
-        // SESİ BAŞLAT
-        // =====================================================
+        if (indicatorLight != null)
+            indicatorLight.enabled = true;
 
         StartSteamSound();
 
 
-        float timer = steamDuration;
-
-
-        while (timer > 0f)
+        while (true)
         {
-            // -------------------------------------------------
-            // GERİ SAYIM
-            // -------------------------------------------------
+            // Oyuncu pitcher'ı aldı → dur.
+            if (!IsStillDocked(filler, pitcherItem))
+                break;
 
-            if (countdownText != null)
+            // 10 saniyeye ulaştı → kendiliğinden dur.
+            if (heat >= MilkHeatRules.MaxSeconds)
             {
-                countdownText.text =
-                    Mathf.CeilToInt(
-                        timer
-                    ).ToString();
+                heat = MilkHeatRules.MaxSeconds;
+                timedOut = true;
+                break;
             }
 
-
-            // -------------------------------------------------
-            // SES FADE OUT
-            // -------------------------------------------------
+            UpdateCounter(heat);
 
             UpdateSteamSoundFade(
-                timer
+                MilkHeatRules.MaxSeconds - heat
             );
 
-
-            timer -=
-                Time.deltaTime;
-
+            heat += Time.deltaTime;
 
             yield return null;
         }
 
 
-        // =====================================================
-        // SESİ TAMAMEN KAPAT
-        // =====================================================
+        heat = Mathf.Min(
+            heat,
+            MilkHeatRules.MaxSeconds
+        );
+
 
         StopSteamSound();
-
-
-        // =====================================================
-        // GERİ SAYIMI KAPAT
-        // =====================================================
-
-        if (countdownText != null)
-            countdownText.gameObject.SetActive(false);
-
-
-        // =====================================================
-        // BUHAR GÖRSELİNİ KAPAT
-        // =====================================================
 
         if (steamVisual != null)
             steamVisual.SetActive(false);
 
 
-        // =====================================================
-        // SÜTÜ KÖPÜRT
-        // =====================================================
-
-        filler.SetFrothedMaterial(
-            frothedMilkMaterial
+        // Isıyı süte kaydet.
+        filler.ApplyHeat(
+            heat,
+            frothedMilkMaterial,
+            burntMilkMaterial
         );
 
-
         isSteaming = false;
+
+
+        if (timedOut)
+        {
+            // Sayaç 10'da kırmızı kalsın,
+            // oyuncu pitcher'ı alınca kapansın.
+            UpdateCounter(
+                MilkHeatRules.MaxSeconds
+            );
+
+            while (IsStillDocked(filler, pitcherItem))
+            {
+                yield return null;
+            }
+        }
+
+
+        // Arada yeni bir buharlama başlamadıysa kapat.
+        if (!isSteaming)
+        {
+            if (countdownText != null)
+                countdownText.gameObject.SetActive(false);
+
+            if (indicatorLight != null)
+                indicatorLight.enabled = false;
+        }
+    }
+
+
+    // =========================================================
+    // SAYAÇ VE IŞIK GÜNCELLE
+    // =========================================================
+
+    private void UpdateCounter(float heat)
+    {
+        Color color =
+            GetHeatColor(heat);
+
+        if (countdownText != null)
+        {
+            countdownText.text =
+                Mathf.FloorToInt(heat).ToString();
+
+            countdownText.color =
+                color;
+        }
+
+        if (indicatorLight != null)
+        {
+            indicatorLight.color =
+                color;
+        }
+    }
+
+
+    private Color GetHeatColor(float heat)
+    {
+        if (heat < MilkHeatRules.LatteMin)
+            return coldColor;
+
+        if (heat < MilkHeatRules.LatteMax)
+            return greenColor;
+
+        if (heat < MilkHeatRules.BurntMin)
+            return orangeColor;
+
+        return redColor;
     }
 
 
@@ -298,19 +382,8 @@ public class SteamButton : MonoBehaviour, IInteractable
             return;
 
 
-        // Fade süresi 0 veya negatifse
-        // ses sonuna kadar aynı seviyede kalır.
-        if (steamFadeOutDuration <= 0f)
-        {
-            runtimeAudioSource.volume =
-                steamSoundVolume;
-
-            return;
-        }
-
-
-        // Fade henüz başlamadı.
-        if (remainingTime > steamFadeOutDuration)
+        if (steamFadeOutDuration <= 0f ||
+            remainingTime > steamFadeOutDuration)
         {
             runtimeAudioSource.volume =
                 steamSoundVolume;
@@ -331,16 +404,12 @@ public class SteamButton : MonoBehaviour, IInteractable
             );
 
 
-        float currentVolume =
+        runtimeAudioSource.volume =
             Mathf.Lerp(
                 steamSoundVolume,
                 0f,
                 fadeProgress
             );
-
-
-        runtimeAudioSource.volume =
-            currentVolume;
     }
 
 
@@ -431,5 +500,16 @@ public class SteamButton : MonoBehaviour, IInteractable
     private void OnDisable()
     {
         StopSteamSound();
+
+        isSteaming = false;
+
+        if (steamVisual != null)
+            steamVisual.SetActive(false);
+
+        if (countdownText != null)
+            countdownText.gameObject.SetActive(false);
+
+        if (indicatorLight != null)
+            indicatorLight.enabled = false;
     }
 }
