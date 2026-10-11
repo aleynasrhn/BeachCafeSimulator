@@ -3,25 +3,23 @@ using System.Collections;
 using TMPro;
 
 /// <summary>
-/// Makinedeki fiziksel düğmeye eklenir.
-/// Pitcher dock'ta süt varsa çalışır.
+/// Makinedeki fiziksel buhar düğmesi.
 ///
-/// Tuşa basınca sayaç 0'dan yukarı sayar:
-/// - 3        → yeşil  (Latte sütü)
-/// - 4 - 6    → turuncu (6 = Cappuccino sütü)
-/// - 7 - 10   → kırmızı (yanık süt)
-/// - 10'da buhar kendiliğinden durur.
-///
-/// Oyuncu pitcher'ı makineden alınca buhar durur
-/// ve sütün ısısı kaydedilir.
+/// Akış:
+/// 1) Düğmeye E → buhar açılır (duman + ses). Sayaç BAŞLAMAZ.
+/// 2) Oyuncu pitcher elindeyken SteamWandPoint'e E basılı tutar,
+///    pitcher wand'ın altına yumuşakça gider.
+/// 3) Pitcher yerine oturunca sayaç saymaya başlar:
+///    - 3        → yeşil  (Latte sütü)
+///    - 4 - 6    → turuncu
+///    - 7 - 10   → kırmızı (yanık süt)
+/// 4) Oyuncu pitcher'ı E ile alınca ısıtma durur ve süt ısısı kaydedilir.
+///    10. saniyede buhar kendiliğinden kesilir.
 /// </summary>
 public class SteamButton : MonoBehaviour, IInteractable
 {
     [Header("Referanslar")]
-    [Tooltip("Steam wand altındaki MachineDockPoint")]
-    [SerializeField] private MachineDockPoint pitcherDock;
-
-    [Tooltip("Buhar efekti")]
+    [Tooltip("Buhar / duman efekti")]
     [SerializeField] private GameObject steamVisual;
 
     [Tooltip("Isıtılmış süt materyali")]
@@ -43,6 +41,11 @@ public class SteamButton : MonoBehaviour, IInteractable
     [SerializeField] private Color redColor = Color.red;
 
 
+    [Header("Boşta Kalma")]
+    [Tooltip("Buhar açıldı ama pitcher yerleştirilmezse kaç saniye sonra kendiliğinden kapansın. 0 = kapanmaz.")]
+    [SerializeField] private float idleAutoOffSeconds = 15f;
+
+
     // =========================================================
     // BUHAR SESİ
     // =========================================================
@@ -62,7 +65,16 @@ public class SteamButton : MonoBehaviour, IInteractable
     // DURUM
     // =========================================================
 
-    private bool isSteaming = false;
+    // Buhar açık mı? (duman + ses)
+    private bool isSteamOn = false;
+
+    // Wand'ın altında bir pitcher var mı? (hareket, sayma, bekleme)
+    private bool sessionActive = false;
+
+    // Süt yandı, oyuncunun pitcher'ı almasını bekliyoruz.
+    private bool waitingForPickup = false;
+
+    private Coroutine idleRoutine;
 
 
     // =========================================================
@@ -70,6 +82,18 @@ public class SteamButton : MonoBehaviour, IInteractable
     // =========================================================
 
     private AudioSource runtimeAudioSource;
+
+
+    // =========================================================
+    // DIŞARIDAN OKUNANLAR (SteamWandPoint kullanır)
+    // =========================================================
+
+    public bool IsSteamOn =>
+        isSteamOn;
+
+    // Wand'ın altı dolu mu?
+    public bool IsOccupied =>
+        sessionActive;
 
 
     // =========================================================
@@ -115,122 +139,180 @@ public class SteamButton : MonoBehaviour, IInteractable
 
 
     // =========================================================
-    // DOCK'TAKİ PITCHER'I BUL
-    // =========================================================
-
-    private MilkFiller GetDockedFiller()
-    {
-        if (pitcherDock == null ||
-            !pitcherDock.IsOccupied ||
-            pitcherDock.DockedItem == null)
-        {
-            return null;
-        }
-
-        return pitcherDock.DockedItem
-            .GetComponent<MilkFiller>();
-    }
-
-
-    // =========================================================
-    // PITCHER HÂLÂ DOCK'TA MI?
-    // =========================================================
-
-    private bool IsStillDocked(
-        MilkFiller filler,
-        PickupItem pitcherItem)
-    {
-        // Oyuncu eline aldıysa dock'tan ayrılmıştır.
-        if (pitcherItem != null &&
-            pitcherItem.IsHeld)
-        {
-            return false;
-        }
-
-        return GetDockedFiller() == filler;
-    }
-
-
-    // =========================================================
     // PROMPT
     // =========================================================
 
     public string GetInteractPrompt()
     {
-        if (isSteaming)
-            return "Buharlanıyor... (Pitcher'ı alınca durur)";
+        if (sessionActive)
+        {
+            return waitingForPickup
+                ? "Süt yandı! Pitcher'ı al"
+                : "Buharlanıyor... (Pitcher'ı alınca durur)";
+        }
 
 
-        MilkFiller filler =
-            GetDockedFiller();
-
-
-        if (filler == null)
-            return "Önce pitcher'ı tak";
-
-
-        if (!filler.HasMilk)
-            return "Önce süt doldur";
-
-
-        if (filler.IsBurnt)
-            return "Süt yandı!";
-
-
-        if (filler.IsFrothed)
-            return "E - Isıtmaya devam et";
-
-
-        return "E - Buharlandır";
+        return isSteamOn
+            ? "E - Buharı kapat"
+            : "E - Buharı aç";
     }
 
 
     // =========================================================
-    // INTERACT
+    // INTERACT (DÜĞMEYE BASILDI)
     // =========================================================
 
     public void Interact(
         PlayerInteraction player)
     {
-        if (isSteaming)
+        // Pitcher wand'ın altındayken düğme devre dışı.
+        // Durdurmak için pitcher alınır.
+        if (sessionActive)
             return;
 
 
-        MilkFiller filler =
-            GetDockedFiller();
+        if (isSteamOn)
+        {
+            TurnSteamOff();
+        }
+        else
+        {
+            TurnSteamOn();
+        }
+    }
 
+
+    // =========================================================
+    // BUHARI AÇ
+    // =========================================================
+
+    private void TurnSteamOn()
+    {
+        if (isSteamOn)
+            return;
+
+        isSteamOn = true;
+
+        if (steamVisual != null)
+            steamVisual.SetActive(true);
+
+        StartSteamSound();
+
+        if (idleAutoOffSeconds > 0f)
+        {
+            idleRoutine =
+                StartCoroutine(
+                    IdleAutoOffRoutine()
+                );
+        }
+    }
+
+
+    // =========================================================
+    // BUHARI KAPAT
+    // =========================================================
+
+    private void TurnSteamOff()
+    {
+        isSteamOn = false;
+
+        StopIdleRoutine();
+
+        StopSteamSound();
+
+        if (steamVisual != null)
+            steamVisual.SetActive(false);
+    }
+
+
+    // =========================================================
+    // BOŞTA KALAN BUHARI KAPAT
+    // =========================================================
+
+    private IEnumerator IdleAutoOffRoutine()
+    {
+        yield return new WaitForSeconds(
+            idleAutoOffSeconds
+        );
+
+        idleRoutine = null;
+
+        // Bu arada pitcher yerleştirildiyse dokunma.
+        if (!sessionActive)
+        {
+            TurnSteamOff();
+        }
+    }
+
+
+    private void StopIdleRoutine()
+    {
+        if (idleRoutine != null)
+        {
+            StopCoroutine(
+                idleRoutine
+            );
+
+            idleRoutine = null;
+        }
+    }
+
+
+    // =========================================================
+    // ISITMAYI BAŞLAT (SteamWandPoint çağırır)
+    // =========================================================
+
+    // Pitcher wand'ın altına gönderilirken çağrılır.
+    // Sayaç, pitcher yerine oturunca başlar.
+    public void BeginHeating(
+        MilkFiller filler,
+        PickupItem pitcherItem)
+    {
+        if (sessionActive)
+            return;
+
+        if (!isSteamOn)
+            return;
 
         if (filler == null ||
-            !filler.HasMilk)
+            pitcherItem == null)
         {
             return;
         }
 
+        sessionActive = true;
+        waitingForPickup = false;
 
-        // Yanık süt tekrar ısıtılamaz.
-        if (filler.IsBurnt)
-            return;
-
+        StopIdleRoutine();
 
         StartCoroutine(
-            SteamRoutine(
-                filler
+            HeatingRoutine(
+                filler,
+                pitcherItem
             )
         );
     }
 
 
     // =========================================================
-    // STEAM ROUTINE
+    // ISITMA ROUTINE
     // =========================================================
 
-    private IEnumerator SteamRoutine(
-        MilkFiller filler)
+    private IEnumerator HeatingRoutine(
+        MilkFiller filler,
+        PickupItem pitcherItem)
     {
-        isSteaming = true;
+        // -----------------------------------------------------
+        // PITCHER WAND'IN ALTINA GİDERKEN BEKLE
+        // (SmoothDock sırasında item kilitli olur)
+        // -----------------------------------------------------
 
-        PickupItem pitcherItem =
-            filler.GetComponent<PickupItem>();
+        while (pitcherItem != null &&
+               pitcherItem.IsInteractionLocked)
+        {
+            yield return null;
+        }
+
 
         // Süt daha önce biraz ısıtıldıysa kaldığı yerden devam eder.
         float heat =
@@ -239,23 +321,25 @@ public class SteamButton : MonoBehaviour, IInteractable
         bool timedOut = false;
 
 
-        if (steamVisual != null)
-            steamVisual.SetActive(true);
-
         if (countdownText != null)
             countdownText.gameObject.SetActive(true);
 
         if (indicatorLight != null)
             indicatorLight.enabled = true;
 
-        StartSteamSound();
 
+        // -----------------------------------------------------
+        // SAYAÇ
+        // -----------------------------------------------------
 
         while (true)
         {
             // Oyuncu pitcher'ı aldı → dur.
-            if (!IsStillDocked(filler, pitcherItem))
+            if (pitcherItem == null ||
+                pitcherItem.IsHeld)
+            {
                 break;
+            }
 
             // 10 saniyeye ulaştı → kendiliğinden dur.
             if (heat >= MilkHeatRules.MaxSeconds)
@@ -283,46 +367,53 @@ public class SteamButton : MonoBehaviour, IInteractable
         );
 
 
-        StopSteamSound();
+        // -----------------------------------------------------
+        // ISIYI SÜTE KAYDET, BUHARI KES
+        // -----------------------------------------------------
 
-        if (steamVisual != null)
-            steamVisual.SetActive(false);
-
-
-        // Isıyı süte kaydet.
         filler.ApplyHeat(
             heat,
             frothedMilkMaterial,
             burntMilkMaterial
         );
 
-        isSteaming = false;
+        TurnSteamOff();
 
+
+        // -----------------------------------------------------
+        // 10'DA DURDUYSA: SAYAÇ KIRMIZI KALSIN,
+        // OYUNCU PITCHER'I ALINCA KAPANSIN
+        // -----------------------------------------------------
 
         if (timedOut)
         {
-            // Sayaç 10'da kırmızı kalsın,
-            // oyuncu pitcher'ı alınca kapansın.
+            waitingForPickup = true;
+
             UpdateCounter(
                 MilkHeatRules.MaxSeconds
             );
 
-            while (IsStillDocked(filler, pitcherItem))
+            while (pitcherItem != null &&
+                   !pitcherItem.IsHeld)
             {
                 yield return null;
             }
         }
 
 
-        // Arada yeni bir buharlama başlamadıysa kapat.
-        if (!isSteaming)
-        {
-            if (countdownText != null)
-                countdownText.gameObject.SetActive(false);
+        // -----------------------------------------------------
+        // TEMİZLE
+        // -----------------------------------------------------
 
-            if (indicatorLight != null)
-                indicatorLight.enabled = false;
-        }
+        if (countdownText != null)
+            countdownText.gameObject.SetActive(false);
+
+        if (indicatorLight != null)
+            indicatorLight.enabled = false;
+
+        waitingForPickup = false;
+
+        sessionActive = false;
     }
 
 
@@ -501,7 +592,10 @@ public class SteamButton : MonoBehaviour, IInteractable
     {
         StopSteamSound();
 
-        isSteaming = false;
+        isSteamOn = false;
+        sessionActive = false;
+        waitingForPickup = false;
+        idleRoutine = null;
 
         if (steamVisual != null)
             steamVisual.SetActive(false);
