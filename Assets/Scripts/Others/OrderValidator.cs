@@ -10,11 +10,15 @@ using UnityEngine;
 /// - Sütün ısısı (Latte: 3-4 sn, Cappuccino: 5-6 sn)
 /// - Kahve türü
 /// - Bardak boyutu
-/// - Espresso shot sayısı
+/// - Espresso shot sayısı (filtre kahvede 0)
 /// - Ekstralar
 ///
 /// "Ekstra Espresso" fiziksel bir ekstra olarak değil,
 /// ekstra espresso shot olarak değerlendirilir.
+///
+/// NOT: Mocha ve Filtre kahve henüz sipariş olarak verilmiyor.
+/// Ama "Latte + Çikolata Şurubu" siparişi, DrinkRecipe tarafından
+/// Mocha olarak tanındığı için, Latte siparişinde Mocha latte sayılır.
 /// </summary>
 public static class OrderValidator
 {
@@ -77,12 +81,33 @@ public static class OrderValidator
         }
 
 
-        if (preparedCoffeeType.Value != order.coffeeType)
+        CoffeeType preparedType =
+            preparedCoffeeType.Value;
+
+
+        // Mocha henüz sipariş olarak yok.
+        // "Latte + Çikolata Şurubu" siparişi Mocha olarak
+        // hazırlanmış olabilir; Latte siparişinde bunu latte say.
+        // (Şurup istenmemişse, ekstra kontrolü bunu yakalar.)
+        if (preparedType == CoffeeType.Mocha &&
+            order.coffeeType == CoffeeType.Latte)
+        {
+            Debug.Log(
+                "Mocha olarak hazırlandı, " +
+                "Latte siparişi için latte kabul edildi."
+            );
+
+            preparedType =
+                CoffeeType.Latte;
+        }
+
+
+        if (preparedType != order.coffeeType)
         {
             reason =
                 $"Yanlış kahve. " +
                 $"Beklenen: {order.coffeeType}, " +
-                $"Hazırlanan: {preparedCoffeeType.Value}.";
+                $"Hazırlanan: {preparedType}.";
 
             return false;
         }
@@ -244,6 +269,17 @@ public static class OrderValidator
     private static int GetExpectedShotCount(
         Order order)
     {
+        // -----------------------------------------------------
+        // FİLTRE KAHVE (espresso yok)
+        // -----------------------------------------------------
+
+        if (order.coffeeType ==
+            CoffeeType.Filter)
+        {
+            return 0;
+        }
+
+
         // -----------------------------------------------------
         // ESPRESSO
         // -----------------------------------------------------

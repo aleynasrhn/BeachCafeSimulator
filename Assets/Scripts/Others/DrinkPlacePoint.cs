@@ -231,13 +231,13 @@ public class DrinkPlacePoint : MonoBehaviour, IInteractable
             return;
         }
 
-        // Espresso yoksa kahve henüz hazır değildir.
+        // Bardak tamamen boşsa kahve henüz hazır değildir.
         //
-        // Süt ısısı yanlışsa (soğuk, az, fazla, yanık)
-        // kahve tamamlanmıştır ama yanlış hazırlanmıştır.
-        // Bunu OrderValidator yakalar ve müşteri
+        // İçinde bir şey varsa (espresso, filtre kahve, ...)
+        // ama tarif yanlışsa (örneğin süt ısısı) bardak masaya
+        // konur. Bunu OrderValidator yakalar ve müşteri
         // yanlış sipariş olarak değerlendirir.
-        if (!recipe.HasEspresso)
+        if (!recipe.HasAnyContent)
         {
             Debug.Log(
                 "Bu kahve henüz tamamlanmamış."

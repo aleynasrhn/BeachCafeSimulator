@@ -25,6 +25,11 @@ public class OrderScreenUI : MonoBehaviour
     [SerializeField] private EspressoShotButtonUI[] espressoShotButtons;
 
 
+    [Header("Espresso Fiyatları")]
+    [SerializeField] private float espressoSinglePrice = 2.15f;
+    [SerializeField] private float espressoDoublePrice = 2.75f;
+
+
     [Header("Ana Kahve Butonları")]
     [SerializeField] private CoffeeButtonUI[] coffeeButtons;
 
@@ -100,6 +105,20 @@ public class OrderScreenUI : MonoBehaviour
 
 
     // =========================================================
+    // ESPRESSO FİYATI (Inspector'dan ayarlanır)
+    // =========================================================
+
+    private float GetEspressoPrice(
+        EspressoShotButtonUI.ShotType shot)
+    {
+        return shot ==
+               EspressoShotButtonUI.ShotType.Single
+            ? espressoSinglePrice
+            : espressoDoublePrice;
+    }
+
+
+    // =========================================================
     // NPC'DEN SİPARİŞ AL
     // =========================================================
 
@@ -154,15 +173,10 @@ public class OrderScreenUI : MonoBehaviour
 
         if (order.coffeeType == CoffeeType.Espresso)
         {
-            if (order.espressoShot ==
-                EspressoShotButtonUI.ShotType.Single)
-            {
-                total = 2.15f;
-            }
-            else
-            {
-                total = 2.75f;
-            }
+            total =
+                GetEspressoPrice(
+                    order.espressoShot
+                );
         }
         else
         {
@@ -464,25 +478,20 @@ public class OrderScreenUI : MonoBehaviour
             {
                 if (selectedEspressoShot != null)
                 {
-                    float price;
+                    float price =
+                        GetEspressoPrice(
+                            selectedEspressoShot.Shot
+                        );
 
-                    if (selectedEspressoShot.Shot ==
-                        EspressoShotButtonUI.ShotType.Single)
-                    {
-                        price = 2.15f;
+                    string shotName =
+                        selectedEspressoShot.Shot ==
+                        EspressoShotButtonUI.ShotType.Single
+                            ? "Tek Shot"
+                            : "Double Shot";
 
-                        lines +=
-                            $"Espresso - Tek Shot " +
-                            $"{price:0.00}$\n";
-                    }
-                    else
-                    {
-                        price = 2.75f;
-
-                        lines +=
-                            $"Espresso - Double Shot " +
-                            $"{price:0.00}$\n";
-                    }
+                    lines +=
+                        $"Espresso - {shotName} " +
+                        $"{price:0.00}$\n";
 
                     total += price;
                 }
@@ -653,15 +662,10 @@ public class OrderScreenUI : MonoBehaviour
         if (selectedCoffee.CoffeeType ==
             CoffeeType.Espresso)
         {
-            if (selectedEspressoShot.Shot ==
-                EspressoShotButtonUI.ShotType.Single)
-            {
-                total = 2.15f;
-            }
-            else
-            {
-                total = 2.75f;
-            }
+            total =
+                GetEspressoPrice(
+                    selectedEspressoShot.Shot
+                );
         }
         else
         {
@@ -982,6 +986,12 @@ public class OrderScreenUI : MonoBehaviour
 
             case CoffeeType.Americano:
                 return "Americano";
+
+            case CoffeeType.Mocha:
+                return "Mocha";
+
+            case CoffeeType.Filter:
+                return "Filtre Kahve";
         }
 
         return "";

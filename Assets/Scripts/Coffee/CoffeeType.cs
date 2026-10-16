@@ -3,7 +3,9 @@ public enum CoffeeType
     Espresso,
     Latte,
     Cappuccino,
-    Americano
+    Americano,
+    Mocha,
+    Filter
 }
 
 public enum CupSize

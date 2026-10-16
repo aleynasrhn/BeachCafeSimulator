@@ -8,6 +8,7 @@ using UnityEngine;
 /// Ayrıca:
 /// - Espresso shot sayısını
 /// - Sütün ısı durumunu
+/// - Filtre kahve olup olmadığını
 /// - Ekstra malzemeleri
 /// takip eder.
 /// </summary>
@@ -18,6 +19,12 @@ public class DrinkRecipe : MonoBehaviour
     [SerializeField] private CupSize size;
 
 
+    // Mocha için gereken çikolata şurubu ekstrasının adı.
+    // Sipariş / ExtraButton tarafındaki yazımla birebir aynı olmalı.
+    private const string ChocolateSyrupName =
+        "Çikolata Şurubu";
+
+
     // =========================================================
     // İÇERİK DURUMLARI
     // =========================================================
@@ -25,6 +32,9 @@ public class DrinkRecipe : MonoBehaviour
     private bool hasEspresso = false;
     private bool hasMilk = false;
     private bool hasHotWater = false;
+
+    // Bardakta sürahiden dökülmüş filtre kahve var mı?
+    private bool hasFilterCoffee = false;
 
     // Bardağa dökülen sütün ısı durumu.
     private MilkHeatState milkHeat =
@@ -78,6 +88,10 @@ public class DrinkRecipe : MonoBehaviour
         hasHotWater;
 
 
+    public bool HasFilterCoffee =>
+        hasFilterCoffee;
+
+
     public int EspressoShotCount =>
         espressoShotCount;
 
@@ -93,7 +107,8 @@ public class DrinkRecipe : MonoBehaviour
     public bool HasAnyContent =>
         hasEspresso ||
         hasMilk ||
-        hasHotWater;
+        hasHotWater ||
+        hasFilterCoffee;
 
 
     // =========================================================
@@ -107,6 +122,16 @@ public class DrinkRecipe : MonoBehaviour
         // Bir espresso eklendiğinde
         // shot sayısını 1 artır.
         espressoShotCount++;
+    }
+
+
+    // =========================================================
+    // FİLTRE KAHVE
+    // =========================================================
+
+    public void AddFilterCoffee()
+    {
+        hasFilterCoffee = true;
     }
 
 
@@ -205,6 +230,28 @@ public class DrinkRecipe : MonoBehaviour
     public CoffeeType? DetermineCoffeeType()
     {
         // -----------------------------------------------------
+        // FİLTRE KAHVE
+        //
+        // Bardakta filtre kahve varsa başka hiçbir şey
+        // (espresso, süt, su) olmamalı. Karışmışsa geçersiz.
+        // Bu kontrol en başta olmalı, yoksa espresso+filtre
+        // karışımı "Espresso" sayılır.
+        // -----------------------------------------------------
+
+        if (hasFilterCoffee)
+        {
+            if (!hasEspresso &&
+                !hasMilk &&
+                !hasHotWater)
+            {
+                return CoffeeType.Filter;
+            }
+
+            return null;
+        }
+
+
+        // -----------------------------------------------------
         // CAPPUCCINO (süt 5-6 sn ısıtılmış olmalı)
         // -----------------------------------------------------
 
@@ -214,6 +261,23 @@ public class DrinkRecipe : MonoBehaviour
             !hasHotWater)
         {
             return CoffeeType.Cappuccino;
+        }
+
+
+        // -----------------------------------------------------
+        // MOCHA (latte ısısında süt + çikolata şurubu)
+        //
+        // Latte'den ÖNCE kontrol edilmeli, yoksa
+        // çikolata şuruplu bardak latte sayılır.
+        // -----------------------------------------------------
+
+        if (hasEspresso &&
+            hasMilk &&
+            MilkHeatRules.IsLatteHeat(milkHeat) &&
+            !hasHotWater &&
+            HasExtra(ChocolateSyrupName))
+        {
+            return CoffeeType.Mocha;
         }
 
 
@@ -272,6 +336,8 @@ public class DrinkRecipe : MonoBehaviour
 
         hasHotWater = false;
 
+        hasFilterCoffee = false;
+
         milkHeat = MilkHeatState.Cold;
 
 
@@ -279,5 +345,23 @@ public class DrinkRecipe : MonoBehaviour
 
 
         addedExtras.Clear();
+    }
+
+
+    // =========================================================
+    // GEÇİCİ TEST (filtre kahve mekanizması yapılınca kaldır)
+    // =========================================================
+
+    // Play modunda, Inspector'da bu component'in başlığına
+    // sağ tıkla → "TEST - Filtre Kahve Ekle" seçeneğini kullan.
+    [ContextMenu("TEST - Filtre Kahve Ekle")]
+    private void DebugAddFilterCoffee()
+    {
+        AddFilterCoffee();
+
+        Debug.Log(
+            $"TEST: {gameObject.name} bardağına filtre kahve eklendi. " +
+            $"Tür: {DetermineCoffeeType()}"
+        );
     }
 }
