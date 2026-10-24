@@ -4,9 +4,9 @@ using UnityEngine;
 /// Gün geçişinde (siyah ekranın arkasında) sahneyi sıfırlar:
 /// - Tuvalet kabinleri + ortak alan + kafe zemini: tüm kirler yok olur
 /// - Masalardaki (müşteriye servis edilmiş) kullanılmış bardaklar yok edilir
-/// - Elde tutulmayan tüm diğer ekipman (portafilter, shot bardağı,
-///   kettle, tamper vb.) kendi orijinal konumuna/rotasyonuna döner
-///   ve varsa üzerindeki kahve/espresso telvesi temizlenir
+/// - Elde tutulmayan alet/ekipman (portafilter, shot bardağı, kettle,
+///   tamper vb.) kendi orijinal konumuna döner, telve/espresso temizlenir
+/// - Çöp poşetleri ve atılabilir kutular olduğu yerde kalır
 ///
 /// Oyuncunun pozisyonuna/rotasyonuna HİÇ dokunulmaz.
 /// </summary>
@@ -28,7 +28,9 @@ public static class DayResetManager
     private static void ClearAllTableCups()
     {
         DrinkPlacePoint[] points =
-            Object.FindObjectsOfType<DrinkPlacePoint>();
+            Object.FindObjectsByType<DrinkPlacePoint>(
+                FindObjectsSortMode.None
+            );
 
         foreach (DrinkPlacePoint point in points)
         {
@@ -46,7 +48,9 @@ public static class DayResetManager
     private static void CleanAllLitter()
     {
         AreaLitterZone[] areaZones =
-            Object.FindObjectsOfType<AreaLitterZone>();
+            Object.FindObjectsByType<AreaLitterZone>(
+                FindObjectsSortMode.None
+            );
 
         foreach (AreaLitterZone zone in areaZones)
         {
@@ -63,18 +67,20 @@ public static class DayResetManager
     // 3) EKİPMANI ESKİ KONUMUNA DÖNDÜR
     // =========================================================
     //
-    // Masadaki bardaklar üst adımda zaten yok edildi (Unity'de
-    // Destroy() çağrısından hemen sonra referans "null" sayılır),
-    // bu yüzden burada kalan her PickupItem bir ARAÇ'tır — elde
-    // tutulmuyorsa kendi başlangıç konumuna/rotasyonuna döner ve
-    // üzerindeki kahve telvesi/espresso varsa temizlenir.
+    // Masadaki bardaklar üst adımda Destroy ile işaretlendi, kare
+    // sonunda silinecekler; burada konumlarının değişmesi önemsiz.
+    //
+    // Çöp poşetleri ve atılabilir kutular alet değildir: yere
+    // bıraktıysan olduğu yerde kalır.
     //
     // =========================================================
 
     private static void ReturnToolsToOriginalPosition()
     {
         PickupItem[] items =
-            Object.FindObjectsOfType<PickupItem>();
+            Object.FindObjectsByType<PickupItem>(
+                FindObjectsSortMode.None
+            );
 
         foreach (PickupItem item in items)
         {
@@ -84,6 +90,12 @@ public static class DayResetManager
             if (item.IsHeld)
             {
                 // Oyuncunun elindeyse dokunma.
+                continue;
+            }
+
+            if (item.GetComponent<TrashBagItem>() != null ||
+                item.GetComponent<TrashableItem>() != null)
+            {
                 continue;
             }
 
